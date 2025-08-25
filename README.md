@@ -22,7 +22,6 @@ Log filename
 
 Functions:
 
-|                           |         |                                   |     |
 | ------------------------- | ------- | --------------------------------- | --- |
 | **getScriptName**         |         | Return the script filename.       |     |
 | param                     | none    |                                   |     |
