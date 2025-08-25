@@ -22,10 +22,6 @@ Log filename
 
 Functions:
 
-getScriptName    Return the script filename and extension without path.
-
-getFileName    Return the parameter filename and extension without path.
-
 |                           |         |                                   |     |
 | ------------------------- | ------- | --------------------------------- | --- |
 | **getScriptName**         |         | Return the script filename.       |     |
