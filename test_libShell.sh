@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
-################################################################################
+##
 # @brief		Shell script to test libShell Library                          #
 # @file			test_libShell.sh                                               #
 # @author		Leandro - leandrohuff@programmer.net                           #
 # @date			2025-08-25                                                     #
 # @version		2.0.0                                                          #
+# @date			2025-08-26                                                     #
+# @version		2.0.1                                                          #
 # @copyright	CC01 1.0 Universal                                             #
 # @details		Run a set of tests stored in a tatble to call libShell         #
 #				functions and pass some parameters to check its results.       #
@@ -14,23 +16,24 @@
 #				Functions or variables started with underline char (_) is a    #
 #				local name and the underline is to avoid conflict with the     #
 #				libShell name's.
-################################################################################
+
+declare -a -i -r testVERSION=(2 0 1)
 
 ## @brief	Load libShell file and its content, any error, log and exit.
 source libShell.sh || { logF "Load libShell"   ; exit 1 ; }
 ## @brief	Start libShell and pass all command line parameters, any error, log and exit.
-libStart -v        || { logF "Call libStart()" ; exit 1 ; }
+libStart -v "$@"   || { logF "Call libStart()" ; exit 1 ; }
 
 ## @brief	Set global variables for local use.
-declare i iRES=1
-declare i iFUNC=2
-declare i iPARAM1=3
-declare i iPARAM2=4
-declare i iMAX=5
-declare i LINE=0
-declare i OK=0
-declare i ERR=0
-declare i RES=0
+declare -i -r iRES=1
+declare -i -r iFUNC=2
+declare -i -r iPARAM1=3
+declare -i -r iPARAM2=4
+declare -i -r iMAX=5
+declare -i    LINE=0
+declare -i    OK=0
+declare -i    ERR=0
+declare       RES
 
 ##
 # @brief	Test Table
@@ -52,137 +55,133 @@ declare i RES=0
 #
 #+---+---------------------------+--------------------+---------------------------------------------+--------+
 #| N | return|result             | function           | param1                                      | param2 |
-declare -a testTABLE=(\
-01  'test_libShell.sh'           'getScriptName'      ''                                            '' \
-02  'test_libShell.sh'           'getFileName'        "/var/home/$USER/dev/script/test_libShell.sh" '' \
-03  'libShell.sh'                'getFileName'        "/var/home/$USER/dev/script/libShell.sh"      '' \
-04  'test_libShell'              'getName'            'test_libShell.sh'                            '' \
-05  'test_libShell'              'getName'            'test_libShell.sh'                            '' \
-06  'sh'                         'getExt'             'test_libShell.sh'                            '' \
-07  'doc'                        'getExt'             'document.doc'                                '' \
-08  "/var/home/$USER/dev/script" 'getPath'            "/var/home/$USER/dev/script/test_libShell.sh" '' \
-09  '2.0.0'                      'getVersionStr'      ''                                            '' \
-10  200                          'getVersionNum'      ''                                            '' \
-11  0                            'test_getRuntime'    ''                                            '' \
-12  "/tmp/$(basename $0).log"    'getLogFilename'     ''                                            '' \
-13  "$ID"                        'getID'              ''                                            '' \
-14  0                            'test_isFloat'       2.1                                           '' \
-15  0                            'test_isFloat'       123.456                                       '' \
-16  0                            'test_isFloat'       0.9                                           '' \
-17  0                            'test_isFloat'       -1.2                                          '' \
-18  0                            'test_isFloat'       +3.4                                          '' \
-19  1                            'test_isFloat'       12                                            '' \
-20  1                            'test_isFloat'       .12                                           '' \
-21  1                            'test_isFloat'       12.                                           '' \
-22  0                            'test_isInteger'     1                                             '' \
-23  1                            'test_isInteger'     2.1                                           '' \
-24  1                            'test_isInteger'     .2                                            '' \
-25  1                            'test_isInteger'     1.                                            '' \
-26  0                            'test_isInteger'     -1                                            '' \
-27  0                            'test_isInteger'     +1                                            '' \
-28  1                            'test_isInteger'     +.1                                           '' \
-29  1                            'test_isInteger'     +1.                                           '' \
-30  0                            'test_isYes'         'y'                                           '' \
-31  0                            'test_isYes'         'Y'                                           '' \
-32  0                            'test_isYes'         'yes'                                         '' \
-33  0                            'test_isYes'         'Yes'                                         '' \
-34  0                            'test_isYes'         'yEs'                                         '' \
-35  0                            'test_isYes'         'yeS'                                         '' \
-36  0                            'test_isYes'         'YES'                                         '' \
-37  1                            'test_isYes'         'yess'                                        '' \
-38  1                            'test_isYes'         'yyes'                                        '' \
-39  0                            'test_isNot'         'n'                                           '' \
-40  0                            'test_isNot'         'N'                                           '' \
-41  0                            'test_isNot'         'not'                                         '' \
-42  0                            'test_isNot'         'Not'                                         '' \
-43  0                            'test_isNot'         'nOt'                                         '' \
-44  0                            'test_isNot'         'noT'                                         '' \
-45  0                            'test_isNot'         'NOT'                                         '' \
-46  1                            'test_isNot'         'nott'                                        '' \
-47  1                            'test_isNot'         'nnot'                                        '' \
-48  0                            'test_isNot'         'no'                                          '' \
-49  0                            'test_isNot'         'No'                                          '' \
-50  0                            'test_isNot'         'nO'                                          '' \
-51  0                            'test_isNot'         'NO'                                          '' \
-52  1                            'test_isNot'         'nno'                                         '' \
-53  1                            'test_isNot'         'noo'                                         '' \
-54  0                            'test_isConnected'   ''                                            '' \
-55  0                            'test_isConnected'   ''                                            '' \
-56  0                            'test_getRuntimeStr' ''                                            '' \
-57  0                            'test_isParameter'   '-a'                                          '' \
-58  0                            'test_isParameter'   '--a'                                         '' \
-59  0                            'test_isParameter'   '---a'                                        '' \
-60  1                            'test_isParameter'   'a'                                           '' \
-61  1                            'test_isParameter'   '1'                                           '' \
-62  1                            'test_isParameter'   ''                                            '' \
-63  0                            'testt_isArgValue'   '1'                                           '' \
-64  0                            'testt_isArgValue'   '1.2'                                         '' \
-65  1                            'testt_isArgValue'   '-a'                                          '' \
-66  1                            'testt_isArgValue'   '--a'                                         '' \
-67  1                            'testt_isArgValue'   ''                                            '' \
-68  '/media'                     'getMountDir'        ''                                            '' \
-69  1                            'libStart'           '-x'                                          '' \
-70  1                            'libStart'           '-l'                                          '' \
-71  1                            'libStart'           '-l'                                          -1 \
-72  0                            'libStart'           '-l'                                          0  \
-73  0                            'libStart'           '-l'                                          1  \
-74  0                            'libStart'           '-l'                                          2  \
-75  0                            'libStart'           '-l'                                          3  \
-76  1                            'libStart'           '-l'                                          4  \
-77  1                            'libStart'           '-l'                                         'a' \
-78  1                            'libStart'           '-q'                                         'a' \
-79  0                            'libStart'           '-q'                                          '' \
-80  1                            'libStart'           '+q'                                         'a' \
-81  0                            'libStart'           '+q'                                          '' \
-82  1                            'libStart'           '-v'                                         'a' \
-83  0                            'libStart'           '-v'                                          '' \
-84  1                            'libStart'           '+v'                                         'a' \
-85  0                            'libStart'           '+v'                                          '' \
-86  1                            'libStart'           '-g'                                         'a' \
-87  0                            'libStart'           '-g'                                          '' \
-88  1                            'libStart'           '+g'                                         'a' \
-89  0                            'libStart'           '+g'                                          '' \
-90  1                            'libStart'           '-t'                                         'a' \
-91  0                            'libStart'           '-t'                                          '' \
-92  1                            'libStart'           '+t'                                         'a' \
-93  0                            'libStart'           '+t'                                          '' \
-94  1                            'libStart'           'a'                                          'a' \
-95  1                            'libStart'           '-T'                                          '' \
-96  1                            'libStart'           '-T'                                         'a' \
-97  0                            'libStart'           '-T'                                         '1' \
-98  1                            'libStart'           '-T'                                        '-1' \
-99  1                            'libStart'           '-T'                                       '1.0' \
-100 1                            'libStart'           '-T'                                        '-q' \
-101 0                            'libStart'           '-l'                                          0  \
-102 0                            'test_logStart_0'    ''                                            '' \
-103 0                            'logEnd'             ''                                            '' \
-104 0                            'libStart'           '-l'                                          1  \
-105 0                            'test_logStart_1'    ''                                            '' \
-106 0                            'logEnd'             ''                                            '' \
-107 0                            'libStart'           '-l'                                          2  \
-108 0                            'test_logStart_2'    ''                                            '' \
-109 0                            'logEnd'             ''                                            '' \
-110 0                            'libStart'           '-l'                                          3  \
-111 0                            'test_logStart_3'    ''                                            '' \
-112 0                            'logEnd'             ''                                            '' \
-113 0                            'libStop'            ''                                            '' \
-)
+declare -a -r testTABLE=(\
+01  'test_libShell.sh'           'getScriptName'      ''                                            ''    \
+02  'test_libShell.sh'           'getFileName'        "/var/home/$USER/dev/script/test_libShell.sh" ''    \
+03  'libShell.sh'                'getFileName'        "/var/home/$USER/dev/script/libShell.sh"      ''    \
+04  'test_libShell'              'getName'            'test_libShell.sh'                            ''    \
+05  'test_libShell'              'getName'            'test_libShell.sh'                            ''    \
+06  'sh'                         'getExt'             'test_libShell.sh'                            ''    \
+07  'doc'                        'getExt'             'document.doc'                                ''    \
+08  "/var/home/$USER/dev/script" 'getPath'            "/var/home/$USER/dev/script/test_libShell.sh" ''    \
+09  1.2.3                        'genVersionStr'      '1 2 3'                                       ''    \
+10  123                          'genVersionNum'      '1 2 3'                                       ''    \
+11  2.1.0                        'getLibVersionStr'   ''                                            ''    \
+12  210                          'getLibVersionNum'   ''                                            ''    \
+13  0                            'test_getRuntime'    ''                                            ''    \
+14  "/tmp/$(basename $0).log"    'getLogFilename'     ''                                            ''    \
+15  "$ID"                        'getID'              ''                                            ''    \
+16  0                            'test_isFloat'       2.1                                           ''    \
+17  0                            'test_isFloat'       123.456                                       ''    \
+18  0                            'test_isFloat'       0.9                                           ''    \
+19  0                            'test_isFloat'       -1.2                                          ''    \
+20  0                            'test_isFloat'       +3.4                                          ''    \
+21  1                            'test_isFloat'       12                                            ''    \
+22  1                            'test_isFloat'       .12                                           ''    \
+23  1                            'test_isFloat'       12.                                           ''    \
+24  0                            'test_isInteger'     1                                             ''    \
+25  1                            'test_isInteger'     2.1                                           ''    \
+26  1                            'test_isInteger'     .2                                            ''    \
+27  1                            'test_isInteger'     1.                                            ''    \
+28  0                            'test_isInteger'     -1                                            ''    \
+29  0                            'test_isInteger'     +1                                            ''    \
+30  1                            'test_isInteger'     +.1                                           ''    \
+31  1                            'test_isInteger'     +1.                                           ''    \
+32  0                            'test_isYes'         'y'                                           ''    \
+33  0                            'test_isYes'         'Y'                                           ''    \
+34  0                            'test_isYes'         'yes'                                         ''    \
+35  0                            'test_isYes'         'Yes'                                         ''    \
+36  0                            'test_isYes'         'yEs'                                         ''    \
+37  0                            'test_isYes'         'yeS'                                         ''    \
+38  0                            'test_isYes'         'YES'                                         ''    \
+39  1                            'test_isYes'         'yess'                                        ''    \
+40  1                            'test_isYes'         'yyes'                                        ''    \
+41  0                            'test_isNot'         'n'                                           ''    \
+42  0                            'test_isNot'         'N'                                           ''    \
+43  0                            'test_isNot'         'not'                                         ''    \
+44  0                            'test_isNot'         'Not'                                         ''    \
+45  0                            'test_isNot'         'nOt'                                         ''    \
+46  0                            'test_isNot'         'noT'                                         ''    \
+47  0                            'test_isNot'         'NOT'                                         ''    \
+48  1                            'test_isNot'         'nott'                                        ''    \
+49  1                            'test_isNot'         'nnot'                                        ''    \
+50  0                            'test_isNot'         'no'                                          ''    \
+51  0                            'test_isNot'         'No'                                          ''    \
+52  0                            'test_isNot'         'nO'                                          ''    \
+53  0                            'test_isNot'         'NO'                                          ''    \
+54  1                            'test_isNot'         'nno'                                         ''    \
+55  1                            'test_isNot'         'noo'                                         ''    \
+56  0                            'test_isConnected'   ''                                            ''    \
+57  0                            'test_isConnected'   ''                                            ''    \
+58  0                            'test_getRuntimeStr' ''                                            ''    \
+59  0                            'test_isParameter'   '-a'                                          ''    \
+60  0                            'test_isParameter'   '--a'                                         ''    \
+61  0                            'test_isParameter'   '---a'                                        ''    \
+62  1                            'test_isParameter'   'a'                                           ''    \
+63  1                            'test_isParameter'   '1'                                           ''    \
+64  1                            'test_isParameter'   ''                                            ''    \
+65  0                            'test_isArgValue'    '1'                                           ''    \
+66  0                            'test_isArgValue'    '1.2'                                         ''    \
+67  1                            'test_isArgValue'    '-a'                                          ''    \
+68  1                            'test_isArgValue'    '--a'                                         ''    \
+69  1                            'test_isArgValue'    ''                                            ''    \
+70  '/media'                     'getMountDir'        ''                                            ''    \
+71  1                            'libStart'           '-x'                                          ''    \
+72  0                            'libStart'           '-l'                                          ''    \
+73  1                            'libStart'           '-l'                                          -1    \
+74  0                            'libStart'           '-l'                                          0     \
+75  0                            'libStart'           '-l'                                          1     \
+76  0                            'libStart'           '-l'                                          2     \
+77  0                            'libStart'           '-l'                                          3     \
+78  1                            'libStart'           '-l'                                          4     \
+79  1                            'libStart'           '-l'                                          'a'   \
+80  1                            'libStart'           '-q'                                          'a'   \
+81  0                            'libStart'           '-q'                                          ''    \
+82  1                            'libStart'           '+q'                                          'a'   \
+83  1                            'libStart'           '+q'                                          ''    \
+84  1                            'libStart'           '-v'                                          'a'   \
+85  0                            'libStart'           '-v'                                          ''    \
+86  1                            'libStart'           '+v'                                          'a'   \
+87  1                            'libStart'           '+v'                                          ''    \
+88  1                            'libStart'           '-g'                                          'a'   \
+89  0                            'libStart'           '-g'                                          ''    \
+90  1                            'libStart'           '+g'                                          'a'   \
+91  1                            'libStart'           '+g'                                          ''    \
+92  1                            'libStart'           '-t'                                          'a'   \
+93  0                            'libStart'           '-t'                                          ''    \
+94  1                            'libStart'           '+t'                                          'a'   \
+95  1                            'libStart'           '+t'                                          ''    \
+96  1                            'libStart'           'a'                                           'a'   \
+97  1                            'libStart'           '-T'                                          ''    \
+98  1                            'libStart'           '-T'                                          'a'   \
+99  0                            'libStart'           '-T'                                          '1'   \
+100 1                            'libStart'           '-T'                                          '-1'  \
+101 1                            'libStart'           '-T'                                          '1.0' \
+102 1                            'libStart'           '-T'                                          '-q'  \
+103 0                            'libStart'           '-l'                                          0     \
+104 0                            'test_logStart_0'    ''                                            ''    \
+105 0                            'logBegin'           ''                                            ''    \
+106 0                            'libStart'           '-l'                                          1     \
+107 0                            'test_logStart_1'    ''                                            ''    \
+108 0                            'logBegin'           ''                                            ''    \
+109 0                            'libStart'           '-l'                                          2     \
+110 0                            'test_logStart_2'    ''                                            ''    \
+111 0                            'logBegin'           ''                                            ''    \
+112 0                            'libStart'           '-l'                                          3     \
+113 0                            'test_logStart_3'    ''                                            ''    \
+114 0                            'logBegin'           ''                                            ''    \
+115 0                            'libStop'            ''                                            '')
 #| N | return                    | function           | param1                                      | param2 |
 #+---+---------------------------+--------------------+---------------------------------------------+--------+
 
 ## @brief	Unset global test variables, not in libShell, for libShell call libEnd() function.
 function _unsetVars
 {
-	unset -v iRES
-	unset -v iFUNC
-	unset -v iPARAM1
-	unset -v iPARAM2
-	unset -v iMAX
 	unset -v LINE
 	unset -v OK
 	unset -v ERR
 	unset -v RES
-	unset -v testTABLE
+	return 0
 }
 
 ##
@@ -225,14 +224,14 @@ function test_isNot()     { if isNot     "$1" ; then echo -n 0 ; else echo -n 1 
 #			1	Error
 function test_isConnected
 {
-    local connected=$(ping 8.8.8.8 -q -t 10 -c 1 > /dev/null 2>&1 && true || false)
-    if $connected && isConnected ; then
-        echo -n 0
-    elif ! $connected && ! isConnected ; then
-        echo -n 0
-    else
-        echo -n 1
-    fi
+	local connected=$(ping 8.8.8.8 -q -t 10 -c 1 > /dev/null 2>&1 && true || false)
+	if $connected && isConnected ; then
+		echo -n 0
+	elif ! $connected && ! isConnected ; then
+		echo -n 0
+	else
+		echo -n 1
+	fi
 }
 
 ##
@@ -251,7 +250,7 @@ function test_isConnected
 #				1  for 1st greater than 2nd
 function test_getRuntimeStr()
 {
-    declare beforeSleep=$(getRuntimeStr)
+	declare beforeSleep=$(getRuntimeStr)
 	sleep 1
 	declare afterSleep=$(getRuntimeStr)
 	declare diff=$(bin/subfloat "$afterSleep" "$beforeSleep")
@@ -266,10 +265,10 @@ function test_getRuntimeStr()
 function test_isParameter() { if isParameter "$1" ; then echo 0 ; else echo 1 ; fi ; }
 
 ## @brief	Call isArgValue() function passing a parameter and return 0 for success or 1 for error.
-function testt_isArgValue() { if isArgValue  "$1" ; then echo 0 ; else echo 1 ; fi ; }
+function test_isArgValue() { if isArgValue  "$1" ; then echo 0 ; else echo 1 ; fi ; }
 
-## 
-# @brief	Test logStart() function and log filename presence.
+##
+# @brief	Test logBegin() function and log filename presence.
 # @param	none
 # @return	0	Success
 #			1	Error
@@ -278,60 +277,60 @@ function testt_isArgValue() { if isArgValue  "$1" ; then echo 0 ; else echo 1 ; 
 #				Return 0 for success and 1 for any error, these results
 #				will be compared at end of test.
 
-## @brief	Test logStart() function by libStart -l 0 parameters.
+## @brief	Test logBegin() function by libStart -l 0 parameters.
 function test_logStart_0()
 {
-    libStart -q -l 0 || return 2
-    $(rm -f "$(getLogFilename)" > /dev/null 2>&1)
-    logStart
+	libStart -q -l 0 || return 2
+	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
+	logBegin
 	#DISABLED=0	From libShell variables list.
-    if [ $LOG -eq $DISABLED ] && ! [ -f "${LOGFILE}" ] ; then
-        return 0
-    else
-        return 1
-    fi
+	if [ $LOG -eq $DISABLED ] && ! [ -f "${LOGFILE}" ] ; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 ## @brief	Test logStart() function by libStart -l 1 parameters.
 function test_logStart_1()
 {
-    libStart -q -l 1 || return 2
-    $(rm -f "$(getLogFilename)" > /dev/null 2>&1)
-    logStart
+	libStart -q -l 1 || return 2
+	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
+	logBegin
 	#SCREEN=10	From libShell variables list.
-    if [ $((LOG - (LOG % $SCREEN))) -eq $SCREEN ] && ! [ -f "${LOGFILE}" ] ; then
-        return 0
-    else
-        return 1
-    fi
+	if [ $((LOG - (LOG % $SCREEN))) -eq $SCREEN ] && ! [ -f "${LOGFILE}" ] ; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 ## @brief	Test logStart() function by libStart -l 2 parameters.
 function test_logStart_2()
 {
-    libStart -q -l 2 || return 2
-    $(rm -f "$(getLogFilename)" > /dev/null 2>&1)
-    logStart
+	libStart -q -l 2 || return 2
+	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
+	logBegin
 	#FILE=20	From libShell variables list.
-    if [ $((LOG - (LOG % $FILE))) -eq $FILE ] && [ -f "${LOGFILE}" ] ; then
-        return 0
-    else
-        return 1
-    fi
+	if [ $((LOG - (LOG % $FILE))) -eq $FILE ] && [ -f "${LOGFILE}" ] ; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 ## @brief	Test logStart() function by libStart -l 3 parameters.
 function test_logStart_3()
 {
-    libStart -q -l 3 || return 2
-    $(rm -f "$(getLogFilename)" > /dev/null 2>&1)
-    logStart
+	libStart -q -l 3 || return 2
+	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
+	logBegin
 	#FULL=30	From libShell variables list.
-    if [ $((LOG - (LOG % $FULL))) -eq $FULL ] && [ -f "${LOGFILE}" ] ; then
-        return 0
-    else
-        return 1
-    fi
+	if [ $((LOG - (LOG % $FULL))) -eq $FULL ] && [ -f "${LOGFILE}" ] ; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 ##
@@ -347,10 +346,10 @@ function barGraph()
 	local ok=$2
 	# print '*' green for ok and red for not ok.
 	if $ok ; then printf "${HGREEN}*${NC}" ; else printf "${HRED}*${NC}" ; fi
-	# print [N] at module 10 and '|' at module 5
+	# print [N] each 10 and '|' each 5
 	if   [ $((num % 10)) -eq 0 ] ; then printf "[%3d]" $num
 	elif [ $((num %  5)) -eq 0 ] ; then printf '|' ; fi
-	# echo a new line at module 50
+	# echo a new line each 50
 	if   [ $((num % 50)) -eq 0 ] ; then echo ; fi
 }
 
@@ -400,7 +399,7 @@ function runScript()
 		iFunc=$((offset+iFUNC))
 		iParam1=$((offset+iPARAM1))
 		iParam2=$((offset+iPARAM2))
-		sleep 0.1
+		sleep 0.05
 	done
 	echo
 	# log Info
