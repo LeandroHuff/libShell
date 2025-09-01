@@ -12,14 +12,14 @@ Most used functions are ready to use and the developer do not need to re-write i
 
 ## Tools
 
-In the src folder are some C source files to build into bin as resources to add some
-float math capabilities to libShell.
+In the src folder are some C source files to build into bin as resources to add some float math capabilities to libShell.
 
-As shell script do not have float functions and commands, it was added as an external
-binary program that can be called as a command line program.
+As shell script do not have float functions and commands, it was added as an external binary program that can be called as a command line program.
 
 **libShell.sh**: Shell script library.
+
 **test_libShell.sh**: Test almost all libShell functions.
+
 **build.sh**: Compile C source files from src/ folder to bin/ folder.
 
 
@@ -27,6 +27,7 @@ binary program that can be called as a command line program.
 ### Resource List
 
 **addfloat.c**: Add 2 float parameters and return the result.
+
 Syntax:
 
 ```shell
@@ -36,7 +37,8 @@ addfloat 1.2 3.4
 
 
 
-**cmpfloat.c**: Compare 2 float numbers and return the result:
+**cmpfloat.c**: Compare 2 float numbers and return the result.
+
 Syntax:
 
 ```shell
@@ -49,12 +51,15 @@ cmpfloat 1.5 1.5
 ```
 
 -1: 1st number is lower than 2nd number.
+
  0: bouth is equal.
+
 +1: 1st number is greater than 2nd number.
 
 
 
 **divfloat.c**: Divide 2 float numbers and return the result.
+
 Syntax:
 
 ```shell
@@ -67,6 +72,7 @@ Obs.: 2nd float must be different than zero.
 
 
 **multifloat.c**: Multiply 2 float numbers and return the result.
+
 Syntax:
 
 ```shell
@@ -77,6 +83,7 @@ multifloat 5.0 2.0
 
 
 **rangefloat.c**: Check if float number is in the range and return true or false.
+
 Syntax:
 
 ```shell
@@ -88,14 +95,17 @@ false
 
 
 
-**strcmp.c**: Compare strings and return:
+**strcmp.c**: Compare strings and return.
+
 Syntax:
 
 ```shell
 strcmp "delta" "kilo"
 -1
+
 strcmp "charlie" "charlie"
 0
+
 strcmp "alpha" "bravo"
 -1
 ```
@@ -103,6 +113,7 @@ strcmp "alpha" "bravo"
 
 
 **strlen.c**: Return the string lenght of parameter.
+
 Syntax:
 
 ```shell
@@ -113,6 +124,7 @@ strlen "string"
 
 
 **subfloat.c**: Subtract 2 flaot numbers and return the result.
+
 Syntax:
 
 ```shell
