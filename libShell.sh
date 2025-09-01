@@ -4,12 +4,12 @@
 # @brief        Shell Script Library.                                          #
 # @file         libShell                                                       #
 # @author       Leandro - leandrohuff@programmer.net                           #
-# @date         2025-08-30                                                     #
+# @date         2025-09-01                                                     #
 # @version      2.1.0                                                          #
 # @copyright    CC01 1.0 Universal                                             #
 # @details      Formatted script file to service as a shell function library.  #
-#               Let a rapid develop with a list of common and most used        #
-#               functions.                                                     #
+#               Let a rapid shell script development with a list of common and #
+#               most used functions.                                           #
 ################################################################################
 
 ## @brief	Library Version Number
@@ -23,6 +23,7 @@ declare -i -r DISABLED=0
 declare -i -r SCREEN=10
 declare -i -r FILE=20
 declare -i -r FULL=30
+declare -i -r ENABLED=$((SCREEN + NORMAL))
 ## @brief	Log File
 declare    -r LOGFILE="/tmp/$(basename $0).log"
 ## @brief	Escape Codes for Colors
@@ -44,7 +45,6 @@ declare HWHITE="\033[97m"
 ## @brief	Variables
 declare    DEBUG=false
 declare    TRACE=false
-declare -i ENABLED=$((SCREEN + LEVEL))
 declare -i LEVEL=$NORMAL
 declare    LOG=$ENABLED
 declare -i TIMEOUT=10
@@ -54,35 +54,35 @@ declare -i TIMEOUT=10
 # @brief	Get and return the script filename.
 # @param	$0		Path and script filename
 # @return			Script filename
-function getScriptName()         { echo -n "$(basename $0)" ; }
+function getScriptName() { echo -n "$(basename $0)" ; }
 
 ##
 # @fn		getFileName( $1 )
 # @brief	Get filename from parameter.
 # @param	$1		Path and|or filename.
 # @return			Filename.
-function getFileName()           { echo -n "$(basename $1)" ; }
+function getFileName() { echo -n "$(basename $1)" ; }
 
 ##
 # @fn		getName( $1 )
 # @brief	Get and extract the name of a filename.
 # @param	$1		Filename.
 # @return			Name of a filename.
-function getName()               { echo -n "${1%.*}"        ; }
+function getName() { echo -n "${1%.*}" ; }
 
 ##
 # @fn		getExt( $1 )
 # @brief	Get and extract the extension of a filename.
 # @param	$1		Filename.
 # @return			Extension.
-function getExt()                { echo -n "${1##*.}"       ; }
+function getExt() { echo -n "${1##*.}" ; }
 
 ##
 # @fn		getPath( $1 )
 # @brief	Get and extract the path of a path+filename.
 # @param	$1		Path + Filename.
 # @return			Path (folder)
-function getPath()               { echo -n "${1%/*}"        ; }
+function getPath() { echo -n "${1%/*}" ; }
 
 ##
 # @fn		genRandomAlphaNumeric( $1 )
@@ -96,20 +96,20 @@ function genRandomAlphaNumeric() { tr < /dev/urandom -d -c "[:alnum:]" | head --
 # @brief	Generate a randomic hexadecimal string number, characters in upper case.
 # @param	$1		Lenght|Size
 # @return			Randomic hexadecimal string.
-function genRandomUpHexNumber()  { tr < /dev/urandom -d -c "0-9A-F"    | head --bytes=$1 ; }
+function genRandomUpHexNumber() { tr < /dev/urandom -d -c "0-9A-F" | head --bytes=$1 ; }
 
 ##
 # @fn		genRandomLowHexNumber( $1 )
 # @brief	Generate a randomic hexadecimal string number, characters in lower case.
 # @param	$1		Lenght|Size
-# @return			Randomic hexadecimal string.	
-function genRandomLowHexNumber() { tr < /dev/urandom -d -c "0-9a-f"    | head --bytes=$1 ; }
+# @return			Randomic hexadecimal string.
+function genRandomLowHexNumber() { tr < /dev/urandom -d -c "0-9a-f" | head --bytes=$1 ; }
 
 ##
 # @fn		genRandomMixHexNumber( $1 )
 # @brief	Generate a randomic hexadecimal string number, characters in mixed case.
 # @param	$1		Lenght|Size
-# @return			Randomic hexadecimal string.	
+# @return			Randomic hexadecimal string.
 function genRandomMixHexNumber() { tr < /dev/urandom -d -c "0-9A-Fa-f" | head --bytes=$1 ; }
 
 ##
@@ -117,56 +117,56 @@ function genRandomMixHexNumber() { tr < /dev/urandom -d -c "0-9A-Fa-f" | head --
 # @brief	Generate a randomic graphic characters string.
 # @param	$1		Lenght|Size
 # @return			Randomic string.
-function genRandomString()       { tr < /dev/urandom -d -c "[:graph:]" | head --bytes=$1 ; }
+function genRandomString() { tr < /dev/urandom -d -c "[:graph:]" | head --bytes=$1 ; }
 
 ##
 # @fn		genVersionStr( $@ )
 # @brief	Generate a version string according to array parameter.
 # @param	(X Y Z)		Version array.
 # @return	'X.Y.Z'		Version string.
-function genVersionStr           { declare -a -r vector=(${@}) ; echo -n "${vector[0]}.${vector[1]}.${vector[2]}" ; }
+function genVersionStr() { declare -a -r vector=(${@}) ; echo -n "${vector[0]}.${vector[1]}.${vector[2]}" ; }
 
 ##
 # @fn		genVersionNum( $@ )
 # @brief	Generate a version integer number according to array parameter.
 # @param	(X Y Z)		Version array.
 # @return	XYZ			Version number.
-function genVersionNum           { declare -a -i -r vector=(${@}) ; echo -n $((${vector[0]}*100 + ${vector[1]}*10 + ${vector[2]})) ; }
+function genVersionNum() { declare -a -i -r vector=(${@}) ; echo -n $((${vector[0]}*100 + ${vector[1]}*10 + ${vector[2]})) ; }
 
 ##
 # @fn		getLibVersionStr( $@ )
 # @brief	Generate|Get the library version string.
 # @param	none
 # @return	Library version string.
-function getLibVersionStr()      { echo -n $(genVersionStr ${libVERSION[@]}) ; }
+function getLibVersionStr() { echo -n $(genVersionStr ${libVERSION[@]}) ; }
 
 ##
 # @fn		getLibVersionNum( $@ )
 # @brief	Generate|Get the library version number.
 # @param	none
 # @return	Library version number.
-function getLibVersionNum()      { echo -n $(genVersionNum ${libVERSION[@]}) ; }
+function getLibVersionNum() { echo -n $(genVersionNum ${libVERSION[@]}) ; }
 
 ##
 # @fn		getRuntime()
 # @brief	Get the runtime string in seconds.
 # @param	none
 # @return	Runtime string in seconds.
-function getRuntime()            { echo -n $(( $(date +%s%N) / 1000000 )) ; }
+function getRuntime() { echo -n $(( $(date +%s%N) / 1000000 )) ; }
 
 ##
 # @fn		getLogFilename()
 # @brief	Get log path and filename.
 # @param	none
 # @return	Log path + filename.
-function getLogFilename()        { echo -n "/tmp/$(basename $0).log"      ; }
+function getLogFilename() { echo -n "/tmp/$(basename $0).log" ; }
 
 ##
 # @fn		getID()
 # @brief	Get the system ID according to /etc/os-release.
 # @param	none
 # @return	"$ID"	System ID.
-function getID()                 { if [ -n "$ID" ] ; then [ -f /etc/os-release ] && . /etc/os-release ; fi ; echo -n "$ID"  ; }
+function getID() { if [ -n "$ID" ] ; then [ -f /etc/os-release ] && . /etc/os-release ; fi ; echo -n "$ID" ; }
 
 ##
 # @fn		isFloat( $1 )
@@ -174,7 +174,7 @@ function getID()                 { if [ -n "$ID" ] ; then [ -f /etc/os-release ]
 # @param	$1		Float point number.
 # @return	true	Is float point number.
 #			false	Is not a float point number.
-function isFloat()               { if [ -n "$( echo -n "$1" | grep -aoP "^[+-]?[0-9]+\.[0-9]+$" )" ] ; then true ; else false ; fi ; }
+function isFloat() { if [ -n "$( echo -n "$1" | grep -aoP "^[+-]?[0-9]+\.[0-9]+$" )" ] ; then true ; else false ; fi ; }
 
 ##
 # @fn		isInteger( $1 )
@@ -182,7 +182,7 @@ function isFloat()               { if [ -n "$( echo -n "$1" | grep -aoP "^[+-]?[
 # @param	$1		Integer number.
 # @return	true	Is an integer number.
 #			false	Is not an integer number.
-function isInteger()             { [ -n "$(echo "$1" | grep -oP "^[+-]?([0-9]+)$")" ] && true || false ; }
+function isInteger() { [ -n "$(echo "$1" | grep -oP "^[+-]?([0-9]+)$")" ] && true || false ; }
 
 ##
 # @fn		isYes( $1 )
@@ -190,7 +190,7 @@ function isInteger()             { [ -n "$(echo "$1" | grep -oP "^[+-]?([0-9]+)$
 # @param	$1		Word to check.
 # @return	true	Is an affirmative word|letter.
 #			false	Is not an affirmative word|letter.
-function isYes()                 { case "$1" in [yY] | [yY][eE][sS])            true ;; *) false ;; esac ; }
+function isYes() { case "$1" in [yY] | [yY][eE][sS]) true ;; *) false ;; esac ; }
 
 ##
 # @fn		isNot( $1 )
@@ -198,34 +198,44 @@ function isYes()                 { case "$1" in [yY] | [yY][eE][sS])            
 # @param	$1		Word to check.
 # @return	true	Is an negative word|letter.
 #			false	Is not an negative word|letter.
-function isNot()                 { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
+function isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
 
 ##
 # @fn		isConnected()
-# @brief	Check active internet connection.
+# @brief	Check active internet connection sending a request message to an IP and wait for answer.
 # @param	none
 # @return	true	Is connected.
 #			false	Is not connected.
-function isConnected()           { ping 8.8.8.8 -q -t 10 -c 1 > /dev/null 2>&1 && true || false ; }
+function isConnected() { ping '8.8.8.8' -q -t 10 -c 1 > /dev/null 2>&1 && true || false ; }
 
-########################################
-# Log Table                            #
-########################################
-# logU - Unconditional, none    flag.  #
-# logC - Connection   , normal  flag.  #
-# logE - Error        , normal  flag.  #
-# logF - Failure      , normal  flag.  #
-# logI - Info         , normal  flag.  #
-# logR - Runtime      , normal  flag.  #
-# logS - Success      , verbose flag.  #
-# logV - Info         , verbose flag.  #
-# logW - Warning      , verbose flag.  #
-# logD - Debug        , debug   flag.  #
-# logT - Trace        , trace   flag.  #
-########################################
+# +=======+===============================+
+# | Func  | Description                   |
+# +=======+===============================+
+# | logIt | Unconditional, none    flag.  |
+# +-------+-------------------------------+
+# | logC  | Connection   , normal  flag.  |
+# +-------+-------------------------------+
+# | logE  | Error        , normal  flag.  |
+# +-------+-------------------------------+
+# | logF  | Failure      , normal  flag.  |
+# +-------+-------------------------------+
+# | logI  | Info         , normal  flag.  |
+# +-------+-------------------------------+
+# | logR  | Runtime      , normal  flag.  |
+# +-------+-------------------------------+
+# | logS  | Success      , verbose flag.  |
+# +-------+-------------------------------+
+# | logV  | Info         , verbose flag.  |
+# +-------+-------------------------------+
+# | logW  | Warning      , verbose flag.  |
+# +-------+-------------------------------+
+# | logD  | Debug        , debug   flag.  |
+# +-------+-------------------------------+
+# | logT  | Trace        , trace   flag.  |
+# +-------+-------------------------------+
 
 ## @brief	Unconditional Logs.
-function logU() { echo -e "${WHITE}    log:${NC} $*" ; }
+function logIt() { echo -e "${WHITE}    log:${NC} $*" ; }
 
 ## @brief	Warning Logs.
 function logW()
@@ -325,7 +335,7 @@ function logV()
 ## @brief	Success logs.
 function logS()
 {
-	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
+	[ $LOG -ge $ENABLED ] || return
 	if [ $LOG -ge $FULL ] ; then
 		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
 			echo -e "${HWHITE}success:${NC} $*" | tee -a "${LOGFILE}"
@@ -376,7 +386,7 @@ function logD()
 ## @brief	Trace Logs.
 function logT()
 {
-	if ! $TRACE ; then  return ; fi
+	if ! $TRACE ; then return ; fi
 	if [ $LOG -ge $FULL ] ; then
 		echo -e "${HYELLOW}  trace:${NC} $*" | tee -a "${LOGFILE}"
 	elif [ $LOG -ge $FILE ] ; then
@@ -400,9 +410,9 @@ function logC()
 ##
 # @fn		getRuntimeStr( $1 )
 # @brief	Generate|Get runtime string.
-# @param	$1		Runtime number.
-# 					Runtime formatted string.
-# @return	0		Success
+# @param	$1	Start runtime number.
+# @print		Formatted runtime string.
+# @return	0	Success
 function getRuntimeStr()
 {
 	declare elapsed
@@ -418,7 +428,7 @@ function getRuntimeStr()
 # @fn		printRuntime( $1 )
 # @brief	Print elapsed runtime log.
 # @param	$1	Runtime number.
-#				Elapsed runtime log message.
+# @print		Elapsed runtime log message.
 # @return	0	Success.
 function printRuntime()
 {
@@ -504,7 +514,6 @@ function libStop()
 # @return	none
 function printLibVersion() { echo -e "libShell Version: ${WHITE}$(getLibVersionStr)${NC}" ; }
 
-
 ##
 # @fn		printLibHelp()
 # @brief	Print library help information.
@@ -513,23 +522,23 @@ function printLibVersion() { echo -e "libShell Version: ${WHITE}$(getLibVersionS
 function printLibHelp()
 {
 	cat << EOT
-Library Shell Script
+Shell Script Library
 $(printLibVersion)
-Source functions for support tshell script programs.
+Source functions to support shell script programs.
 Syntax: source $(getScriptName) [parameters]
 Parameters:
--h|--help                 Show this help information.
--V|--version              Print version number.
--q|--quiet                Disable all messages.
--g|--debug                Enable debug messages.
--t|--trace 				Enable trace messages.
--l|--log <0|1|2|3>        Set log target:
-						0=Disabled
-						1=Screen only (default, at startup).
-						2=File only.
-						3=Both (default, for empty value).
--v|--verbose              Set verbose messages.
--T|--timeout <N>          Set default timeout value >= 0
+ -h|--help           Show this help information.
+ -V|--version        Print version number.
+ -q|--quiet          Disable all messages.
+ -v|--verbose        Set verbose messages.
+ -g|--debug          Enable debug messages.
+ -t|--trace          Enable trace messages.
+ -l|--log <0|1|2|3>  Set log target:
+                       0=Disabled
+                       1=Screen only (default, at startup).
+                       2=File only.
+                       3=Both (default, for empty value).
+ -T|--timeout <N>    Set default timeout value >= 0
 EOT
 	return 0
 }
