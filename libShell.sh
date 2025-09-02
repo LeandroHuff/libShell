@@ -208,51 +208,81 @@ function isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false
 #			false	Is not connected.
 function isConnected() { ping '8.8.8.8' -q -t 10 -c 1 > /dev/null 2>&1 && true || false ; }
 
-# +=======+===============================+
-# | Func  | Description                   |
-# +=======+===============================+
-# | logIt | Unconditional, none    flag.  |
-# +-------+-------------------------------+
-# | logC  | Connection   , normal  flag.  |
-# +-------+-------------------------------+
-# | logE  | Error        , normal  flag.  |
-# +-------+-------------------------------+
-# | logF  | Failure      , normal  flag.  |
-# +-------+-------------------------------+
-# | logI  | Info         , normal  flag.  |
-# +-------+-------------------------------+
-# | logR  | Runtime      , normal  flag.  |
-# +-------+-------------------------------+
-# | logS  | Success      , verbose flag.  |
-# +-------+-------------------------------+
-# | logV  | Info         , verbose flag.  |
-# +-------+-------------------------------+
-# | logW  | Warning      , verbose flag.  |
-# +-------+-------------------------------+
-# | logD  | Debug        , debug   flag.  |
-# +-------+-------------------------------+
-# | logT  | Trace        , trace   flag.  |
-# +-------+-------------------------------+
+# +===========+===============+==============+
+# | Function  | Description   | Flag         |
+# +===========+===============+==============+
+# | logIt     | Unconditional | none         |
+# +-----------+---------------+--------------+
+# | logI      | Info          | normal       |
+# +-----------+---------------+--------------+
+# | logR      | Runtime       | normal       |
+# +-----------+---------------+--------------+
+# | logC      | Connection    | normal       |
+# +-----------+---------------+--------------+
+# | logE      | Error         | normal       |
+# +-----------+---------------+--------------+
+# | logF      | Failure       | normal       |
+# +-----------+---------------+--------------+
+# | logS      | Success       | verbose      |
+# +-----------+---------------+--------------+
+# | logV      | Info          | verbose      |
+# +-----------+---------------+--------------+
+# | logW      | Warning       | verbose      |
+# +-----------+---------------+--------------+
+# | logD      | Debug         | debug        |
+# +-----------+---------------+--------------+
+# | logT      | Trace         | trace        |
+# +-----------+---------------+--------------+
 
 ## @brief	Unconditional Logs.
 function logIt() { echo -e "${WHITE}    log:${NC} $*" ; }
 
-## @brief	Warning Logs.
-function logW()
+## @brief	Info Logs.
+function logI()
+{
+	[ $LOG -ge $ENABLED ] || return
+	if [ $LOG -ge $FULL ] ; then
+		if [ $LOG -ge $((FULL + NORMAL)) ] ; then
+			echo -e "${WHITE}   info:${NC} $*" | tee -a "${LOGFILE}"
+		fi
+	elif [ $LOG -ge $FILE ] ; then
+		if [ $LOG -ge $((FILE + NORMAL)) ] ; then
+			echo -e "${WHITE}   info:${NC} $*" >> "${LOGFILE}"
+		fi
+	elif [ $LOG -ge $SCREEN ] ; then
+		if [ $LOG -ge $((SCREEN + NORMAL)) ] ; then
+			echo -e "${WHITE}   info:${NC} $*"
+		fi
+	fi
+}
+
+## @brief	Runtime Logs.
+function logR()
 {
 	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
 	if [ $LOG -ge $FULL ] ; then
 		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
-			echo -e "${HCYAN}warning:${NC} $*" | tee -a "${LOGFILE}"
+			echo -e "${WHITE}runtime:${NC} $*" | tee -a "${LOGFILE}"
 		fi
 	elif [ $LOG -ge $FILE ] ; then
 		if [ $LOG -ge $((FILE + VERBOSE)) ] ; then
-			echo -e "${HCYAN}warning:${NC} $*" >> "${LOGFILE}"
+			echo -e "${WHITE}runtime:${NC} $*" >> "${LOGFILE}"
 		fi
 	elif [ $LOG -ge $SCREEN ] ; then
 		if [ $LOG -ge $((SCREEN + VERBOSE)) ] ; then
-			echo -e "${HCYAN}warning:${NC} $*"
+			echo -e "${WHITE}runtime:${NC} $*"
 		fi
+	fi
+}
+
+## @brief	Connection Logs.
+function logC()
+{
+	[ $LOG -ge $ENABLED ] || return
+	if isConnected ; then
+		logI "Internet ${HGREEN}is connected${NC}."
+	else
+		logI "Internet is ${HRED}not connected${NC}."
 	fi
 }
 
@@ -294,21 +324,21 @@ function logF()
 	fi
 }
 
-## @brief	Info Logs.
-function logI()
+## @brief	Success logs.
+function logS()
 {
-	[ $LOG -ge $ENABLED ] || return
+	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
 	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + NORMAL)) ] ; then
-			echo -e "${WHITE}   info:${NC} $*" | tee -a "${LOGFILE}"
+		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
+			echo -e "${HWHITE}success:${NC} $*" | tee -a "${LOGFILE}"
 		fi
 	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + NORMAL)) ] ; then
-			echo -e "${WHITE}   info:${NC} $*" >> "${LOGFILE}"
+		if [ $LOG -ge $((FILE + VERBOSE)) ] ; then
+			echo -e "${HWHITE}success:${NC} $*" >> "${LOGFILE}"
 		fi
 	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + NORMAL)) ] ; then
-			echo -e "${WHITE}   info:${NC} $*"
+		if [ $LOG -ge $((SCREEN + VERBOSE)) ] ; then
+			echo -e "${HWHITE}success:${NC} $*"
 		fi
 	fi
 }
@@ -332,40 +362,21 @@ function logV()
 	fi
 }
 
-## @brief	Success logs.
-function logS()
+## @brief	Warning Logs.
+function logW()
 {
-	[ $LOG -ge $ENABLED ] || return
+	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
 	if [ $LOG -ge $FULL ] ; then
 		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
-			echo -e "${HWHITE}success:${NC} $*" | tee -a "${LOGFILE}"
+			echo -e "${HCYAN}warning:${NC} $*" | tee -a "${LOGFILE}"
 		fi
 	elif [ $LOG -ge $FILE ] ; then
 		if [ $LOG -ge $((FILE + VERBOSE)) ] ; then
-			echo -e "${HWHITE}success:${NC} $*" >> "${LOGFILE}"
+			echo -e "${HCYAN}warning:${NC} $*" >> "${LOGFILE}"
 		fi
 	elif [ $LOG -ge $SCREEN ] ; then
 		if [ $LOG -ge $((SCREEN + VERBOSE)) ] ; then
-			echo -e "${HWHITE}success:${NC} $*"
-		fi
-	fi
-}
-
-## @brief	Runtime Logs.
-function logR()
-{
-	[ $LOG -ge $ENABLED ] || return
-	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + NORMAL)) ] ; then
-			echo -e "${WHITE}runtime:${NC} $*" | tee -a "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + NORMAL)) ] ; then
-			echo -e "${WHITE}runtime:${NC} $*" >> "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + NORMAL)) ] ; then
-			echo -e "${WHITE}runtime:${NC} $*"
+			echo -e "${HCYAN}warning:${NC} $*"
 		fi
 	fi
 }
@@ -393,17 +404,6 @@ function logT()
 		echo -e "${HYELLOW}  trace:${NC} $*" >> "${LOGFILE}"
 	elif [ $LOG -ge $SCREEN ] ; then
 		echo -e "${HYELLOW}  trace:${NC} $*"
-	fi
-}
-
-## @brief	Connection Logs.
-function logC()
-{
-	[ $LOG -ge $ENABLED ] || return
-	if isConnected ; then
-		logI "Internet ${HGREEN}is connected${NC}."
-	else
-		logI "Internet is ${HRED}not connected${NC}."
 	fi
 }
 
@@ -489,6 +489,7 @@ function unsetLibVars()
 {
 	unset -v DEBUG
 	unset -v TRACE
+	unset -v ENABLED
 	unset -v LEVEL
 	unset -v LOG
 	unset -v TIMEOUT
