@@ -489,7 +489,6 @@ function unsetLibVars()
 {
 	unset -v DEBUG
 	unset -v TRACE
-	unset -v ENABLED
 	unset -v LEVEL
 	unset -v LOG
 	unset -v TIMEOUT
