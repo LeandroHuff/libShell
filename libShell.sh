@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @brief        Shell Script Library.                                          #
 # @file         libShell                                                       #
