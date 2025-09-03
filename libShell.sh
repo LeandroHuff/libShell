@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 ################################################################################
 # @brief        Shell Script Library.                                          #
 # @file         libShell.sh                                                    #
@@ -777,7 +779,7 @@ function libInit()
 			if isArgValue $2 ; then
 				shift
 				if isInteger $1 ; then
-					if [[ $1 -ge 0 && $1 -le 3 ]] ; then
+					if [ $1 -ge 0 ] && [ $1 -le 3 ] ; then
 						LOG=$(($1 * 10 + LEVEL))
 						logD "Log level set to ($LOG)."
 					else
