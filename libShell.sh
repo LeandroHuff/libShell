@@ -1,9 +1,9 @@
 ################################################################################
 # @brief        Shell Script Library.                                          #
-# @file         libShell                                                       #
+# @file         libShell.sh                                                    #
 # @author       Leandro - leandrohuff@programmer.net                           #
-# @date         2025-09-01                                                     #
-# @version      2.1.0                                                          #
+# @date         2025-09-02                                                     #
+# @version      2.1.1                                                          #
 # @copyright    CC01 1.0 Universal                                             #
 # @details      Formatted script file to service as a shell function library.  #
 #               Let a rapid shell script development with a list of common and #
@@ -11,7 +11,7 @@
 ################################################################################
 
 ## @brief	Library Version Number
-declare -a -r libVERSION=(2 1 0)
+declare -a -r libVERSION=(2 1 1)
 ## @brief	Log Levels
 declare -i -r QUIET=0
 declare -i -r NORMAL=1
@@ -24,6 +24,8 @@ declare -i -r FULL=30
 declare -i -r ENABLED=$((SCREEN + NORMAL))
 ## @brief	Log File
 declare    -r LOGFILE="/tmp/$(basename $0).log"
+## @brief	Random types
+declare -a -r typeRANDOM=(alpha digit alnum lowhex uphex mixhex random space date)
 ## @brief	Escape Codes for Colors
 declare NC="\033[0m"
 declare RED="\033[31m"
@@ -44,7 +46,7 @@ declare HWHITE="\033[97m"
 declare    DEBUG=false
 declare    TRACE=false
 declare -i LEVEL=$NORMAL
-declare    LOG=$ENABLED
+declare -i LOG=$ENABLED
 declare -i TIMEOUT=10
 
 ##
@@ -82,40 +84,15 @@ function getExt() { echo -n "${1##*.}" ; }
 # @return			Path (folder)
 function getPath() { echo -n "${1%/*}" ; }
 
-##
-# @fn		genRandomAlphaNumeric( $1 )
-# @brief	Generate a ransomic alphanumeric string according to the lenght parameter.
-# @param	$1		Lenght|Size
-# @return			Randomic alphanumeric string.
-function genRandomAlphaNumeric() { tr < /dev/urandom -d -c "[:alnum:]" | head --bytes=$1 ; }
-
-##
-# @fn		genRandomUpHexNumber( $1 )
-# @brief	Generate a randomic hexadecimal string number, characters in upper case.
-# @param	$1		Lenght|Size
-# @return			Randomic hexadecimal string.
-function genRandomUpHexNumber() { tr < /dev/urandom -d -c "0-9A-F" | head --bytes=$1 ; }
-
-##
-# @fn		genRandomLowHexNumber( $1 )
-# @brief	Generate a randomic hexadecimal string number, characters in lower case.
-# @param	$1		Lenght|Size
-# @return			Randomic hexadecimal string.
-function genRandomLowHexNumber() { tr < /dev/urandom -d -c "0-9a-f" | head --bytes=$1 ; }
-
-##
-# @fn		genRandomMixHexNumber( $1 )
-# @brief	Generate a randomic hexadecimal string number, characters in mixed case.
-# @param	$1		Lenght|Size
-# @return			Randomic hexadecimal string.
-function genRandomMixHexNumber() { tr < /dev/urandom -d -c "0-9A-Fa-f" | head --bytes=$1 ; }
-
-##
-# @fn		genRandomString( $1 )
-# @brief	Generate a randomic graphic characters string.
-# @param	$1		Lenght|Size
-# @return			Randomic string.
-function genRandomString() { tr < /dev/urandom -d -c "[:graph:]" | head --bytes=$1 ; }
+function genRandomAlpha()        { tr < /dev/urandom -d -c "[:alpha:]"          | head --bytes=$1 ; }
+function genRandomNumeric()      { tr < /dev/urandom -d -c "[:digit:]"          | head --bytes=$1 ; }
+function genRandomAlphaNumeric() { tr < /dev/urandom -d -c "[:alnum:]"          | head --bytes=$1 ; }
+function genRandomLowHexNumber() { tr < /dev/urandom -d -c "[:digit:]a-f"       | head --bytes=$1 ; }
+function genRandomUpHexNumber()  { tr < /dev/urandom -d -c "[:digit:]A-F"       | head --bytes=$1 ; }
+function genRandomMixHexNumber() { tr < /dev/urandom -d -c "[:xdigit:]"         | head --bytes=$1 ; }
+function genRandomString()       { tr < /dev/urandom -d -c "[:graph:]"          | head --bytes=$1 ; }
+function genRandomStringSpace()  { tr < /dev/urandom -d -c "[:graph:][:space:]" | head --bytes=$1 ; }
+function genDateTime()           { echo -n $(date +%Y-%m-%d-%H-%M-%S-%3N)                         ; }
 
 ##
 # @fn		genVersionStr( $@ )
@@ -487,7 +464,6 @@ function unsetLibVars()
 {
 	unset -v DEBUG
 	unset -v TRACE
-	unset -v ENABLED
 	unset -v LEVEL
 	unset -v LOG
 	unset -v TIMEOUT
@@ -542,57 +518,96 @@ EOT
 }
 
 ##
-# @fn		_genUUID( $1 )
-# @brief	Generate an UUID string accorging parameter lenght.
-# @param	$1	Lenght
-# @return		UUID string.
-function _genUUID()
+# @fn		genRandom( $1 $2 )
+# @brief	Generate an random string according parameter length.
+# @param	$1		Type (alpha digit alnum lowhex uphex mixhex random date)
+#			$2		Length
+# @print	string	Random characters.
+# @return	0		Success
+#			1..N	Error code.
+function genRandom()
 {
-	local uuid
-	if [ -n "$1" ] && isInteger $1
-	then
-		declare -i len=$1
-		uuid="$(genRandomLowHexNumber $len)"
-		shift
-		len=$1
-		while [ -n "$len" ]
-		do
-			if isInteger $len
-			then
-				uuid="$uuid-$(genRandomLowHexNumber $len)"
-				if [ -n "$2" ] && isInteger $2
-				then
-					shift
-					len=$1
-				else
-					break
-				fi
-			else
-				break
-			fi
-		done
+	local type=$1
+	local len=$2
+	local err=0
+	local str=""
+	if [[ "${typeRANDOM[@]}" =~ "$type" ]] ; then
+		case $type in
+		alpha)  str="$(genRandomAlpha        $len)" ;;
+		digit)  str="$(genRandomNumeric      $len)" ;;
+		alnum)  str="$(genRandomAlphaNumeric $len)" ;;
+		lowhex) str="$(genRandomLowHexNumber $len)" ;;
+		uphex)  str="$(genRandomUpHexNumber  $len)" ;;
+		mixhex) str="$(genRandomMixHexNumber $len)" ;;
+		random) str="$(genRandomString       $len)" ;;
+		space)  str="$(genRandomStringSpace  $len)" ;;
+		date)   str="$(genDateTime)"                ;;
+		*) err=1 ;;
+		esac
 	else
-		return
+		err=1
 	fi
-	echo -n "$uuid"
+	echo -n "${str}"
+	return $err
 }
 
 ##
-# @fn		genUUID( $@ )
-# @brief	Generate an UUID string accorging parameter schema.
-# @param	$@	Array schema.
-# @return		UUID string.
+# @fn        genUUID( $1 $2 [$3 ... $@] )
+# @brief     Generate an random string according parameters.
+# @param     $1           Type (alpha digit alnum lowhex uphex mixhex random date)
+#            $2           Length for first string group.
+#            [$3 ... $N]  Schema for next string group.
+# @return    string       Random String
+# @details   Generate a random string according to the parameters,
+#            the fist parameter set the random type, for date, the second parameter
+#            length can be any integer value, it will be ignored, for others type,
+#            the function will generate groups of string separated by '-' character.
+#            The result could be something like: 12345678-1234-1234-1234-12345678902
+#            The type instruct how the string group will be generated.
+#            alpha : Alphabetic [A-Za-z]
+#            digit : Numeric [0-9]
+#            alnum : Alphanumeric [A-Za-z0-9]
+#            lowhex: Lower Case Hexadecimal [0-9a-f]
+#            uphex : Upper Case Haxadecimal [0-9A-F]
+#            mixhex: Lower + Upper Case Hexadecimal [0-9a-fA-F]
+#            random: alphanumeric + punctuation characters.
+#            space : alphanumeric + punctuation + space characters.
+#            date  : Formatted date as YYYY-mm-dd-HH-MM-SS-sss
+#            Where:
+#            YYYY: Year        0000..9999
+#              mm: Month         01..12
+#              dd: Day           01..31
+#              HH: Hour          00..23
+#              MM: Minutes       00..59
+#              SS: Seconds       00..59
+#             sss: Milliseconds 000..999
+#
 function genUUID()
 {
-	local -a schema=(8 4 4 4 12)
-	local uuid=""
-	if [ -n "$1" ]
+	local type=$1
+	local string=""
+	if [ -n "$2" ] && isInteger $2
 	then
-		uuid="$(_genUUID $@)"
+		shift
+		declare -i len=$1
+		string="$(genRandom $type $len)"
+		shift
+		while [ -n "$1" ]
+		do
+			if isInteger $1
+			then
+				len=$1
+				string="${string}-$(genRandom $type $len)"
+			else
+				string="FAILURE"
+			fi
+			shift
+		done
 	else
-		uuid="$(_genUUID ${schema[@]})"
+		string="FAILURE"
 	fi
-	echo -n "$uuid"
+	echo -n "${string}"
+	return 0
 }
 
 ##
@@ -622,8 +637,8 @@ function logBegin()
 	touch "${LOGFILE}"
 	if [ -f "${LOGFILE}" ]
 	then
-		echo "################################################################################"  > "${LOGFILE}"
-		echo "         Start Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"                >> "${LOGFILE}"
+		echo "################################################################################" > "${LOGFILE}"
+		echo "         Start Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"               >> "${LOGFILE}"
 	else
 		logE "Could not access ${LOGFILE}"
 		return 1
@@ -742,12 +757,12 @@ function getDistroName()
 }
 
 ##
-# @fn		libStart( $1 )
-# @brief	Start library by parsing arguments.
+# @fn		libInit( $@ )
+# @brief	Initialize library by parsing arguments.
 # @param	$@		Arguments to parsing.
 # @return	0		Success
 #			1..N	Error code.
-function libStart()
+function libInit()
 {
 	while [ -n "$1" ]
 	do

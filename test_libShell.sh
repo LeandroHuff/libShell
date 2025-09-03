@@ -22,7 +22,7 @@ declare -a -i -r testVERSION=(2 0 1)
 ## @brief	Load libShell file and its content, any error, log and exit.
 source libShell.sh || { logF "Load libShell"   ; exit 1 ; }
 ## @brief	Start libShell and pass all command line parameters, any error, log and exit.
-libStart -v "$@"   || { logF "Call libStart()" ; exit 1 ; }
+libInit -v "$@"   || { logF "Call libInit()" ; exit 1 ; }
 
 ## @brief	Set global variables for local use.
 declare -i -r iRES=1
@@ -66,8 +66,8 @@ declare -a -r testTABLE=(\
 08  "/var/home/$USER/dev/script" 'getPath'            "/var/home/$USER/dev/script/test_libShell.sh" ''    \
 09  1.2.3                        'genVersionStr'      '1 2 3'                                       ''    \
 10  123                          'genVersionNum'      '1 2 3'                                       ''    \
-11  2.1.0                        'getLibVersionStr'   ''                                            ''    \
-12  210                          'getLibVersionNum'   ''                                            ''    \
+11  2.1.1                        'getLibVersionStr'   ''                                            ''    \
+12  211                          'getLibVersionNum'   ''                                            ''    \
 13  0                            'test_getRuntime'    ''                                            ''    \
 14  "/tmp/$(basename $0).log"    'getLogFilename'     ''                                            ''    \
 15  "$ID"                        'getID'              ''                                            ''    \
@@ -126,48 +126,48 @@ declare -a -r testTABLE=(\
 68  1                            'test_isArgValue'    '--a'                                         ''    \
 69  1                            'test_isArgValue'    ''                                            ''    \
 70  '/media'                     'getMountDir'        ''                                            ''    \
-71  1                            'libStart'           '-x'                                          ''    \
-72  0                            'libStart'           '-l'                                          ''    \
-73  1                            'libStart'           '-l'                                          -1    \
-74  0                            'libStart'           '-l'                                          0     \
-75  0                            'libStart'           '-l'                                          1     \
-76  0                            'libStart'           '-l'                                          2     \
-77  0                            'libStart'           '-l'                                          3     \
-78  1                            'libStart'           '-l'                                          4     \
-79  1                            'libStart'           '-l'                                          'a'   \
-80  1                            'libStart'           '-q'                                          'a'   \
-81  0                            'libStart'           '-q'                                          ''    \
-82  1                            'libStart'           '+q'                                          'a'   \
-83  1                            'libStart'           '+q'                                          ''    \
-84  1                            'libStart'           '-v'                                          'a'   \
-85  0                            'libStart'           '-v'                                          ''    \
-86  1                            'libStart'           '+v'                                          'a'   \
-87  1                            'libStart'           '+v'                                          ''    \
-88  1                            'libStart'           '-g'                                          'a'   \
-89  0                            'libStart'           '-g'                                          ''    \
-90  1                            'libStart'           '+g'                                          'a'   \
-91  1                            'libStart'           '+g'                                          ''    \
-92  1                            'libStart'           '-t'                                          'a'   \
-93  0                            'libStart'           '-t'                                          ''    \
-94  1                            'libStart'           '+t'                                          'a'   \
-95  1                            'libStart'           '+t'                                          ''    \
-96  1                            'libStart'           'a'                                           'a'   \
-97  1                            'libStart'           '-T'                                          ''    \
-98  1                            'libStart'           '-T'                                          'a'   \
-99  0                            'libStart'           '-T'                                          '1'   \
-100 1                            'libStart'           '-T'                                          '-1'  \
-101 1                            'libStart'           '-T'                                          '1.0' \
-102 1                            'libStart'           '-T'                                          '-q'  \
-103 0                            'libStart'           '-l'                                          0     \
+71  1                            'libInit'            '-x'                                          ''    \
+72  0                            'libInit'            '-l'                                          ''    \
+73  1                            'libInit'            '-l'                                          -1    \
+74  0                            'libInit'            '-l'                                          0     \
+75  0                            'libInit'            '-l'                                          1     \
+76  0                            'libInit'            '-l'                                          2     \
+77  0                            'libInit'            '-l'                                          3     \
+78  1                            'libInit'            '-l'                                          4     \
+79  1                            'libInit'            '-l'                                          'a'   \
+80  1                            'libInit'            '-q'                                          'a'   \
+81  0                            'libInit'            '-q'                                          ''    \
+82  1                            'libInit'            '+q'                                          'a'   \
+83  1                            'libInit'            '+q'                                          ''    \
+84  1                            'libInit'            '-v'                                          'a'   \
+85  0                            'libInit'            '-v'                                          ''    \
+86  1                            'libInit'            '+v'                                          'a'   \
+87  1                            'libInit'            '+v'                                          ''    \
+88  1                            'libInit'            '-g'                                          'a'   \
+89  0                            'libInit'            '-g'                                          ''    \
+90  1                            'libInit'            '+g'                                          'a'   \
+91  1                            'libInit'            '+g'                                          ''    \
+92  1                            'libInit'            '-t'                                          'a'   \
+93  0                            'libInit'            '-t'                                          ''    \
+94  1                            'libInit'            '+t'                                          'a'   \
+95  1                            'libInit'            '+t'                                          ''    \
+96  1                            'libInit'            'a'                                           'a'   \
+97  1                            'libInit'            '-T'                                          ''    \
+98  1                            'libInit'            '-T'                                          'a'   \
+99  0                            'libInit'            '-T'                                          '1'   \
+100 1                            'libInit'            '-T'                                          '-1'  \
+101 1                            'libInit'            '-T'                                          '1.0' \
+102 1                            'libInit'            '-T'                                          '-q'  \
+103 0                            'libInit'            '-l'                                          0     \
 104 0                            'test_logStart_0'    ''                                            ''    \
 105 0                            'logBegin'           ''                                            ''    \
-106 0                            'libStart'           '-l'                                          1     \
+106 0                            'libInit'            '-l'                                          1     \
 107 0                            'test_logStart_1'    ''                                            ''    \
 108 0                            'logBegin'           ''                                            ''    \
-109 0                            'libStart'           '-l'                                          2     \
+109 0                            'libInit'            '-l'                                          2     \
 110 0                            'test_logStart_2'    ''                                            ''    \
 111 0                            'logBegin'           ''                                            ''    \
-112 0                            'libStart'           '-l'                                          3     \
+112 0                            'libInit'            '-l'                                          3     \
 113 0                            'test_logStart_3'    ''                                            ''    \
 114 0                            'logBegin'           ''                                            ''    \
 115 0                            'libStop'            ''                                            '')
@@ -272,15 +272,15 @@ function test_isArgValue() { if isArgValue  "$1" ; then echo 0 ; else echo 1 ; f
 # @param	none
 # @return	0	Success
 #			1	Error
-# @details		Call libStart() and pass some parameters to set log flags,
+# @details		Call libInit() and pass some parameters to set log flags,
 #				Call logStart() and check log flags and log file presence.
 #				Return 0 for success and 1 for any error, these results
 #				will be compared at end of test.
 
-## @brief	Test logBegin() function by libStart -l 0 parameters.
+## @brief	Test logBegin() function by libInit -l 0 parameters.
 function test_logStart_0()
 {
-	libStart -q -l 0 || return 2
+	libInit -q -l 0 || return 2
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#DISABLED=0	From libShell variables list.
@@ -291,10 +291,10 @@ function test_logStart_0()
 	fi
 }
 
-## @brief	Test logStart() function by libStart -l 1 parameters.
+## @brief	Test logStart() function by libInit -l 1 parameters.
 function test_logStart_1()
 {
-	libStart -q -l 1 || return 2
+	libInit -q -l 1 || return 2
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#SCREEN=10	From libShell variables list.
@@ -305,10 +305,10 @@ function test_logStart_1()
 	fi
 }
 
-## @brief	Test logStart() function by libStart -l 2 parameters.
+## @brief	Test logStart() function by libInit -l 2 parameters.
 function test_logStart_2()
 {
-	libStart -q -l 2 || return 2
+	libInit -q -l 2 || return 2
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#FILE=20	From libShell variables list.
@@ -319,10 +319,10 @@ function test_logStart_2()
 	fi
 }
 
-## @brief	Test logStart() function by libStart -l 3 parameters.
+## @brief	Test logStart() function by libInit -l 3 parameters.
 function test_logStart_3()
 {
-	libStart -q -l 3 || return 2
+	libInit -q -l 3 || return 2
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#FULL=30	From libShell variables list.
