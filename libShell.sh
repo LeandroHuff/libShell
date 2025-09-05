@@ -11,7 +11,7 @@
 #               Let a rapid shell script development with a list of common and #
 #               most used functions.                                           #
 ################################################################################
-
+declare -i -r libSTARTIME=$(( $(date +%s%N) / 1000000 ))
 ## @brief	Library Version Number
 declare -a -r libVERSION=(2 1 1)
 ## @brief	Log Levels
@@ -218,6 +218,7 @@ function logIt() { echo -e "${WHITE}    log:${NC} $*" ; }
 function logI()
 {
 	[ $LOG -ge $ENABLED ] || return
+
 	if [ $LOG -ge $FULL ] ; then
 		if [ $LOG -ge $((FULL + NORMAL)) ] ; then
 			echo -e "${WHITE}   info:${NC} $*" | tee -a "${LOGFILE}"
@@ -230,36 +231,6 @@ function logI()
 		if [ $LOG -ge $((SCREEN + NORMAL)) ] ; then
 			echo -e "${WHITE}   info:${NC} $*"
 		fi
-	fi
-}
-
-## @brief	Runtime Logs.
-function logR()
-{
-	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
-	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
-			echo -e "${WHITE}runtime:${NC} $*" | tee -a "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + VERBOSE)) ] ; then
-			echo -e "${WHITE}runtime:${NC} $*" >> "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + VERBOSE)) ] ; then
-			echo -e "${WHITE}runtime:${NC} $*"
-		fi
-	fi
-}
-
-## @brief	Connection Logs.
-function logC()
-{
-	[ $LOG -ge $ENABLED ] || return
-	if isConnected ; then
-		logI "Internet ${HGREEN}is connected${NC}."
-	else
-		logI "Internet is ${HRED}not connected${NC}."
 	fi
 }
 
@@ -298,6 +269,39 @@ function logF()
 		if [ $LOG -ge $((SCREEN + NORMAL)) ] ; then
 			echo -e "${HRED}failure:${NC} $*"
 		fi
+	fi
+}
+
+## @brief	Runtime Logs.
+function logR()
+{
+	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
+
+	local runtime="$(getRuntimeStr)"
+
+	if [ $LOG -ge $FULL ] ; then
+		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
+			echo -e "${WHITE}runtime:${NC} ${runtime}s" | tee -a "${LOGFILE}"
+		fi
+	elif [ $LOG -ge $FILE ] ; then
+		if [ $LOG -ge $((FILE + VERBOSE)) ] ; then
+			echo -e "${WHITE}runtime:${NC} ${runtime}s" >> "${LOGFILE}"
+		fi
+	elif [ $LOG -ge $SCREEN ] ; then
+		if [ $LOG -ge $((SCREEN + VERBOSE)) ] ; then
+			echo -e "${WHITE}runtime:${NC} ${runtime}s"
+		fi
+	fi
+}
+
+## @brief	Connection Logs.
+function logC()
+{
+	[ $LOG -ge $VERBOSE$((SCREEN + VERBOSE)) ] || return
+	if isConnected ; then
+		logI "Internet ${HGREEN}is connected${NC}."
+	else
+		logI "Internet is ${HRED}not connected${NC}."
 	fi
 }
 
@@ -393,27 +397,12 @@ function logT()
 function getRuntimeStr()
 {
 	declare elapsed
-	declare -i begin=$1
-	declare -i end=$(getRuntime)
-	declare -i runtime=$((end - begin))
+	declare -i libENDTIME
+	declare -i runtime
+	libENDTIME=$(( $(date +%s%N) / 1000000 ))
+	runtime=$((libENDTIME - libSTARTIME))
 	printf -v elapsed "%u.%03u" $((runtime / 1000)) $((runtime % 1000))
 	echo -n "${elapsed}"
-	return 0
-}
-
-##
-# @fn		printRuntime( $1 )
-# @brief	Print elapsed runtime log.
-# @param	$1	Runtime number.
-# @print		Elapsed runtime log message.
-# @return	0	Success.
-function printRuntime()
-{
-	if [ $LEVEL -ge $ENABLED ] ; then
-		declare -i time=$1
-		declare elapsed="$(getRuntimeStr $time)"
-		logR "${elapsed}s"
-	fi
 	return 0
 }
 
@@ -479,6 +468,7 @@ function unsetLibVars()
 # @return	0	Success.
 function libStop()
 {
+	logR
 	unsetLibVars
 	return 0
 }
@@ -671,25 +661,51 @@ function logEnd()
 ##
 # @fn		askToContinue( $1 )
 # @brief	Print a message and ask user to continue and get the answer.
-# @param	$1		Alternative message.
+# @param	$1		Timeout
+#           $2      Message
 # @return	0		Yes
 #			1		Not
 #			2		Error
 function askToContinue()
 {
+	local ret=0
+	local timeout
 	local ans
-	local message=$([ -n "$1" ] && echo -n "$1" || echo -n "Continue" )
-	printf "$message [${HWHITE}y${NC}|${HWHITE}n${NC}]? "
-	read -n 1 -N 1 -t 1 ans
-	if isYes $ans ; then
-		echo
-		return 0
-	elif isNot $ans ; then
-		echo
-		return 1
+	local message
+
+	if isInteger $1 || isFloat $1
+	then
+		timeout=$1
+	else
+		timeout=$TIMEOUT
 	fi
+
+	if [ -n "$2" ]
+	then
+		message="${2}"
+	else
+		message="Continue? Wainting for "
+	fi
+
+	echo -e -n "$message ${timeout}s [${HWHITE}y${NC}|${HWHITE}N${NC}]: "
+
+	if [ $(cmpfloat "$timeout" 0.0) -gt 0 ]
+	then
+		read -n 1 -N 1 -t $timeout ans
+	else
+		read -n 1 -N 1 ans
+	fi
+
+	if isYes $ans ; then
+		ret=0
+	elif isNot $ans ; then
+		ret=1
+	else
+		ret=2
+	fi
+
 	echo
-	return 2
+	return $ret
 }
 
 ##
@@ -701,20 +717,23 @@ function askToContinue()
 #			2		Timeout
 function wait()
 {
-	local ans
-	declare -i time=$([ -n "$1" ] && echo -n $1 || echo -n 10)
-	local message=$([ -n "$2" ] && echo -n "${2}" || echo -n "Wait")
-	while [ $time -ge 0 ]
-	do
-		printf "\r${message} %02ds? [${HWHITE}n${NC}|${HWHITE}N${NC}]: " $time
-		read -n 1 -N 1 -t 1 ans
-		time=$((time - 1))
-		if isNot $ans
-		then
-			echo
-			return 0
-		fi
-	done
+	local ans=''
+	declare timeout=$([ -n "$1" ] && echo -n $1 || echo -n $TIMEOUT)
+	local message=$([ -n "$2" ] && echo -n "${2}" || echo -n "Do Wait for ")
+	echo -e -n "${message} ${timeout}s [${HWHITE}n${NC}|${HWHITE}N${NC}]?: "
+
+	if [ $(cmpfloat "$time" 0.0) -gt 0 ]
+	then
+		read -n 1 -N 1 -t $timeout ans
+	else
+		read -n 1 -N 1 ans
+	fi
+
+	if isNot $ans
+	then
+		echo
+		return 0
+	fi
 	echo
 	return 2
 }
