@@ -334,7 +334,7 @@ function logF()
 ## @brief	Runtime Logs.
 function logR()
 {
-	if ! isLogEnabled && ! isLogVerbose ; then return ; fi
+	if ! isLogEnabled || ! isLogVerbose ; then return ; fi
 
 	local runtime="$(getRuntimeStr)"
 
@@ -350,7 +350,7 @@ function logR()
 ## @brief	Connection Logs.
 function logC()
 {
-	if ! isLogEnabled && ! isLogVerbose ; then return ; fi
+	if ! isLogEnabled || ! isLogVerbose ; then return ; fi
 
 	if isConnected ; then
 		logIt "${WHITE}netconn:${NC} is ${HGREEN}connected${NC}"
@@ -362,7 +362,7 @@ function logC()
 ## @brief	Success logs.
 function logS()
 {
-	if ! isLogEnabled && ! isLogVerbose ; then return ; fi
+	if ! isLogEnabled || ! isLogVerbose ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
 		echo -e "${HWHITE}success:${NC} $*" | tee -a "${libLOGFILE}"
@@ -376,7 +376,7 @@ function logS()
 ## @brief	Verbose info logs.
 function logV()
 {
-	if ! isLogEnabled && ! isLogVerbose ; then return ; fi
+	if ! isLogEnabled || ! isLogVerbose ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
 		echo -e "${WHITE}   info:${NC} $*" | tee -a "${libLOGFILE}"
@@ -390,7 +390,7 @@ function logV()
 ## @brief	Warning Logs.
 function logW()
 {
-	if ! isLogEnabled && ! isLogVerbose ; then return ; fi
+	if ! isLogEnabled || ! isLogVerbose ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
 		echo -e "${HCYAN}warning:${NC} $*" | tee -a "${libLOGFILE}"
@@ -404,7 +404,7 @@ function logW()
 ## @brief	Debug Logs.
 function logD()
 {
-	if ! $flagDEBUG && ! isLogEnabled ; then return ; fi
+	if ! $flagDEBUG || ! isLogEnabled ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
 		echo -e "${HGREEN}  debug:${NC} $*" | tee -a "${libLOGFILE}"
@@ -418,7 +418,7 @@ function logD()
 ## @brief	Trace Logs.
 function logT()
 {
-	if ! $flagTRACE && ! isLogEnabled ; then return ; fi
+	if ! $flagTRACE || ! isLogEnabled ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
 		echo -e "${TC}  trace:${NC} $*" | tee -a "${libLOGFILE}"
