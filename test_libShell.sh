@@ -56,7 +56,7 @@ declare       RES
 #+---+---------------------------+--------------------+---------------------------------------------+--------+
 #| N | return|result             | function           | param1                                      | param2 |
 declare -a -r testTABLE=(\
-01  'test_libShell.sh'           'getScriptName'      ''                                            ''    \
+01  'test_libShell'              'getScriptName'      ''                                            ''    \
 02  'test_libShell.sh'           'getFileName'        "/var/home/$USER/dev/script/test_libShell.sh" ''    \
 03  'libShell.sh'                'getFileName'        "/var/home/$USER/dev/script/libShell.sh"      ''    \
 04  'test_libShell'              'getName'            'test_libShell.sh'                            ''    \
