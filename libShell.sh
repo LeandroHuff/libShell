@@ -3,7 +3,7 @@
 # @file         libShell.sh                                                    #
 # @author       Leandro - leandrohuff@programmer.net                           #
 # @date         2025-09-02                                                     #
-# @version      2.1.1                                                          #
+# @version      2.1.2                                                          #
 # @copyright    CC01 1.0 Universal                                             #
 # @details      Formatted script file to service as a shell function library.  #
 #               Let a rapid shell script development with a list of common and #
@@ -11,19 +11,20 @@
 ################################################################################
 declare -i -r libSTARTIME=$(( $(date +%s%N) / 1000000 ))
 ## @brief	Library Version Number
-declare -a -r libVERSION=(2 1 1)
+declare -a -r libVERSION=(2 1 2)
 ## @brief	Log Levels
-declare -i -r QUIET=0
-declare -i -r NORMAL=1
-declare -i -r VERBOSE=2
+declare -i -r logQUIET=0
+declare -i -r logDEFAULT=1
+declare -i -r logVERBOSE=2
 ## @brief	Log Targets
-declare -i -r DISABLED=0
-declare -i -r SCREEN=10
-declare -i -r FILE=20
-declare -i -r FULL=30
-declare -i -r ENABLED=$((SCREEN + NORMAL))
+declare -i -r logDISABLED=0
+declare -i -r logSCREEN=10
+declare -i -r logFILE=20
+declare -i -r logFULL=30
+declare -i -r logENABLED=$((logSCREEN + logDEFAULT))
 ## @brief	Log File
-declare    -r LOGFILE="/tmp/$(basename $0).log"
+declare    -r libTMP="/tmp/$(date '+%Y-%m-%d-%H-%M-%S-%3N')"
+declare    -r libLOGFILE="$libTMP/$(basename $0).log"
 ## @brief	Random types
 declare -a -r typeRANDOM=(alpha digit alnum lowhex uphex mixhex random space date)
 ## @brief	Escape Codes for Colors
@@ -45,11 +46,11 @@ declare -r HWHITE="\033[97m"
 # trace messages
 declare -r TC="\033[93;42m"
 ## @brief	Variables
-declare    DEBUG=false
-declare    TRACE=false
-declare -i LEVEL=$NORMAL
-declare -i LOG=$ENABLED
-declare -i TIMEOUT=10
+declare    flagDEBUG=false
+declare    flagTRACE=false
+declare -i LEVEL=$logDEFAULT
+declare -i libLOG=$logENABLED
+declare -i libTIMEOUT=10
 
 ##
 # @fn		getScriptName( $0 )
@@ -94,7 +95,8 @@ function genRandomUpHexNumber()  { tr < /dev/urandom -d -c "[:digit:]A-F"       
 function genRandomMixHexNumber() { tr < /dev/urandom -d -c "[:xdigit:]"         | head --bytes=$1 ; }
 function genRandomString()       { tr < /dev/urandom -d -c "[:graph:]"          | head --bytes=$1 ; }
 function genRandomStringSpace()  { tr < /dev/urandom -d -c "[:graph:][:space:]" | head --bytes=$1 ; }
-function genDateTime()           { echo -n $(date +%Y-%m-%d-%H-%M-%S-%3N)                         ; }
+function genDateTime()           { echo -n $(date '+%Y-%m-%d-%H-%M-%S-%3N')                       ; }
+function getDateTime()           { echo -n $(date '+%Y-%m-%d %H:%M:%S.%3N')                       ; }
 
 ##
 # @fn		genVersionStr( $@ )
@@ -183,7 +185,7 @@ function isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false
 # @param	none
 # @return	true	Is connected.
 #			false	Is not connected.
-function isConnected() { ping '8.8.8.8' -q -t 10 -c 1 > /dev/null 2>&1 && true || false ; }
+function isConnected() { ping '8.8.8.8' -q -t 30 -c 1 > /dev/null 2>&1 && true || false ; }
 
 # +===========+===============+==============+
 # | Function  | Description   | Flag         |
@@ -211,14 +213,76 @@ function isConnected() { ping '8.8.8.8' -q -t 10 -c 1 > /dev/null 2>&1 && true |
 # | logT      | Trace         | trace        |
 # +-----------+---------------+--------------+
 
+function isLogDefault()
+{
+	if [ $((libLOG % 10)) -ge $logDEFAULT ]
+	then
+		true
+	else
+		false
+	fi
+}
+
+function isLogQuiet()
+{
+	if [ $((libLOG % 10)) = $logQUIET ]
+	then
+		true
+	else
+		false
+	fi
+}
+
+function isLogVerbose()
+{
+	if [ $((libLOG % 10)) -ge $logVERBOSE ]
+	then
+		true
+	else
+		false
+	fi
+}
+
+function isLogToFileEnabled()
+{
+	if [ $((libLOG & logFILE)) = $logFILE ]
+	then
+		true
+	else
+		false
+	fi
+}
+
+function isLogToScreenEnabled()
+{
+	if [ $((libLOG & logSCREEN)) = $logSCREEN ]
+	then
+		true
+	else
+		false
+	fi
+}
+
+function isLogEnabled()
+{
+	if [ $((libLOG & logFULL)) > $logDISABLED ] && [ $((libLOG % 10)) > $logQUIET ]
+	then
+		true
+	else
+		false
+	fi
+}
+
 ## @brief	Unconditional Logs.
 function logIt()
 {
-	if [ $LOG -ge $FULL ] ; then
-		echo -e "$*" | tee -a "${LOGFILE}"
-	elif [ $LOG -ge $FILE ] ; then
-		echo -e "$*" >> "${LOGFILE}"
-	elif [ $LOG -ge $SCREEN ] ; then
+	if ! isLogEnabled ; then return ; fi
+
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "$*" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "$*" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
 		echo -e "$*"
 	fi
 }
@@ -226,160 +290,125 @@ function logIt()
 ## @brief	Info Logs.
 function logI()
 {
-	[ $LOG -ge $ENABLED ] || return
+	if ! isLogEnabled ; then return ; fi
 
-	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + NORMAL)) ] ; then
-			echo -e "${WHITE}   info:${NC} $*" | tee -a "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + NORMAL)) ] ; then
-			echo -e "${WHITE}   info:${NC} $*" >> "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + NORMAL)) ] ; then
-			echo -e "${WHITE}   info:${NC} $*"
-		fi
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "${WHITE}   info:${NC} $*" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "${WHITE}   info:${NC} $*" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
+		echo -e "${WHITE}   info:${NC} $*"
 	fi
 }
 
 ## @brief	Error Logs.
 function logE()
 {
-	[ $LOG -ge $ENABLED ] || return
-	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + NORMAL)) ] ; then
-			echo -e "${RED}  error:${NC} $*" | tee -a "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + NORMAL)) ] ; then
-			echo -e "${RED}  error:${NC} $*" >> "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + NORMAL)) ] ; then
-			echo -e "${RED}  error:${NC} $*"
-		fi
+	if ! isLogEnabled ; then return ; fi
+
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "${RED}  error:${NC} $*" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "${RED}  error:${NC} $*" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
+		echo -e "${RED}  error:${NC} $*"
 	fi
 }
 
 ## @brief	Failure Logs.
 function logF()
 {
-	[ $LOG -ge $ENABLED ] || return
-	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + NORMAL)) ] ; then
-			echo -e "${HRED}failure:${NC} $*" | tee -a "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + NORMAL)) ] ; then
-			echo -e "${HRED}failure:${NC} $*" >> "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + NORMAL)) ] ; then
-			echo -e "${HRED}failure:${NC} $*"
-		fi
+	if ! isLogEnabled ; then return ; fi
+
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "${HRED}failure:${NC} $*" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "${HRED}failure:${NC} $*" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
+		echo -e "${HRED}failure:${NC} $*"
 	fi
 }
 
 ## @brief	Runtime Logs.
 function logR()
 {
-	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
+	if ! isLogVerbose ; then return ; fi
 
 	local runtime="$(getRuntimeStr)"
 
-	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
-			echo -e "${WHITE}runtime:${NC} ${runtime}s" | tee -a "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + VERBOSE)) ] ; then
-			echo -e "${WHITE}runtime:${NC} ${runtime}s" >> "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + VERBOSE)) ] ; then
-			echo -e "${WHITE}runtime:${NC} ${runtime}s"
-		fi
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "${WHITE}runtime:${NC} ${runtime}s" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "${WHITE}runtime:${NC} ${runtime}s" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
+		echo -e "${WHITE}runtime:${NC} ${runtime}s"
 	fi
 }
 
 ## @brief	Connection Logs.
 function logC()
 {
-	[ $LOG -ge $VERBOSE$((SCREEN + VERBOSE)) ] || return
+	if ! isLogVerbose ; then return ; fi
+
 	if isConnected ; then
-		logI "Internet ${HGREEN}is connected${NC}."
+		logIt "${WHITE}netconn:${NC} is ${HGREEN}connected${NC}"
 	else
-		logI "Internet is ${HRED}not connected${NC}."
+		logIt "${WHITE}netconn:${NC} is ${HRED}not connected${NC}"
 	fi
 }
 
 ## @brief	Success logs.
 function logS()
 {
-	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
-	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
-			echo -e "${HWHITE}success:${NC} $*" | tee -a "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + VERBOSE)) ] ; then
-			echo -e "${HWHITE}success:${NC} $*" >> "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + VERBOSE)) ] ; then
-			echo -e "${HWHITE}success:${NC} $*"
-		fi
+	if ! isLogVerbose ; then return ; fi
+
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "${HWHITE}success:${NC} $*" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "${HWHITE}success:${NC} $*" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
+		echo -e "${HWHITE}success:${NC} $*"
 	fi
 }
 
 ## @brief	Verbose info logs.
 function logV()
 {
-	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
-	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
-			echo -e "${WHITE}   info:${NC} $*" | tee -a "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + VERBOSE)) ] ; then
-			echo -e "${WHITE}   info:${NC} $*" >> "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + VERBOSE)) ] ; then
-			echo -e "${WHITE}   info:${NC} $*"
-		fi
+	if ! isLogVerbose ; then return ; fi
+
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "${WHITE}   info:${NC} $*" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "${WHITE}   info:${NC} $*" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
+		echo -e "${WHITE}   info:${NC} $*"
 	fi
 }
 
 ## @brief	Warning Logs.
 function logW()
 {
-	[ $LOG -ge $((SCREEN + VERBOSE)) ] || return
-	if [ $LOG -ge $FULL ] ; then
-		if [ $LOG -ge $((FULL + VERBOSE)) ] ; then
-			echo -e "${HCYAN}warning:${NC} $*" | tee -a "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $FILE ] ; then
-		if [ $LOG -ge $((FILE + VERBOSE)) ] ; then
-			echo -e "${HCYAN}warning:${NC} $*" >> "${LOGFILE}"
-		fi
-	elif [ $LOG -ge $SCREEN ] ; then
-		if [ $LOG -ge $((SCREEN + VERBOSE)) ] ; then
-			echo -e "${HCYAN}warning:${NC} $*"
-		fi
+	if ! isLogVerbose ; then return ; fi
+
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "${HCYAN}warning:${NC} $*" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "${HCYAN}warning:${NC} $*" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
+		echo -e "${HCYAN}warning:${NC} $*"
 	fi
 }
 
 ## @brief	Debug Logs.
 function logD()
 {
-	if ! $DEBUG ; then return ; fi
-	if [ $LOG -ge $FULL ] ; then
-		echo -e "${HGREEN}  debug:${NC} $*" | tee -a "${LOGFILE}"
-	elif [ $LOG -ge $FILE ] ; then
-		echo -e "${HGREEN}  debug:${NC} $*" >> "${LOGFILE}"
-	elif [ $LOG -ge $SCREEN ] ; then
+	if ! $flagDEBUG ; then return ; fi
+
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "${HGREEN}  debug:${NC} $*" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "${HGREEN}  debug:${NC} $*" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
 		echo -e "${HGREEN}  debug:${NC} $*"
 	fi
 }
@@ -387,12 +416,13 @@ function logD()
 ## @brief	Trace Logs.
 function logT()
 {
-	if ! $TRACE ; then return ; fi
-	if [ $LOG -ge $FULL ] ; then
-		echo -e "${TC}  trace:${NC} $*" | tee -a "${LOGFILE}"
-	elif [ $LOG -ge $FILE ] ; then
-		echo -e "${TC}  trace:${NC} $*" >> "${LOGFILE}"
-	elif [ $LOG -ge $SCREEN ] ; then
+	if ! $flagTRACE ; then return ; fi
+
+	if isLogToFileEnabled && isLogToScreenEnabled ; then
+		echo -e "${TC}  trace:${NC} $*" | tee -a "${libLOGFILE}"
+	elif isLogToFileEnabled ; then
+		echo -e "${TC}  trace:${NC} $*" >> "${libLOGFILE}"
+	elif isLogToScreenEnabled ; then
 		echo -e "${TC}  trace:${NC} $*"
 	fi
 }
@@ -462,11 +492,11 @@ function isArgValue()
 # @return	0	Success.
 function unsetLibVars()
 {
-	unset -v DEBUG
-	unset -v TRACE
+	unset -v flagDEBUG
+	unset -v flagTRACE
 	unset -v LEVEL
-	unset -v LOG
-	unset -v TIMEOUT
+	unset -v libLOG
+	unset -v libTIMEOUT
 	return 0
 }
 
@@ -477,7 +507,6 @@ function unsetLibVars()
 # @return	0	Success.
 function libStop()
 {
-	logR
 	unsetLibVars
 	return 0
 }
@@ -634,14 +663,14 @@ function getMountDir()
 #			1	Failure
 function logBegin()
 {
-	[ $LOG -ge $FILE ] || return 0
-	touch "${LOGFILE}"
-	if [ -f "${LOGFILE}" ]
+	[ $libLOG -ge $logFILE ] || return 0
+	touch "${libLOGFILE}"
+	if [ -f "${libLOGFILE}" ]
 	then
-		echo "################################################################################" > "${LOGFILE}"
-		echo "         Start Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"               >> "${LOGFILE}"
+		echo "################################################################################" > "${libLOGFILE}"
+		echo "         Start Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"               >> "${libLOGFILE}"
 	else
-		logE "Could not access ${LOGFILE}"
+		logE "Could not access ${libLOGFILE}"
 		return 1
 	fi
 	return 0
@@ -655,13 +684,13 @@ function logBegin()
 #			1	Failure
 function logEnd()
 {
-	[ $LOG -ge $FILE ] || return 0
-	if [ -f "${LOGFILE}" ]
+	[ $libLOG -ge $logFILE ] || return 0
+	if [ -f "${libLOGFILE}" ]
 	then
-		echo "         End Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"                  >> "${LOGFILE}"
-		echo "################################################################################" >> "${LOGFILE}"
+		echo "         End Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"                  >> "${libLOGFILE}"
+		echo "################################################################################" >> "${libLOGFILE}"
 	else
-		logE "Could not access ${LOGFILE}"
+		logE "Could not access ${libLOGFILE}"
 		return 1
 	fi
 	return 0
@@ -686,7 +715,7 @@ function askToContinue()
 	then
 		timeout=$1
 	else
-		timeout=$TIMEOUT
+		timeout=$libTIMEOUT
 	fi
 
 	if [ -n "$2" ]
@@ -727,7 +756,7 @@ function askToContinue()
 function wait()
 {
 	local ans=''
-	declare timeout=$([ -n "$1" ] && echo -n $1 || echo -n $TIMEOUT)
+	declare timeout=$([ -n "$1" ] && echo -n $1 || echo -n $libTIMEOUT)
 	local message=$([ -n "$2" ] && echo -n "${2}" || echo -n "Do Wait for ")
 	echo -e -n "${message} ${timeout}s [${HWHITE}n${NC}|${HWHITE}N${NC}]?: "
 
@@ -794,22 +823,36 @@ function getDistroName()
 #			1..N	Error code.
 function libInit()
 {
+	if ! [ -d $libTMP ]
+	then
+		mkdir $libTMP
+		if [ $? -ne 0 ]
+		then
+			logF "Make dir $libTMP"
+			return 1
+		else
+			logS "Make dir $libTMP"
+		fi
+	else
+		logW "Dir $libTMP alredy exit."
+	fi
+
 	while [ -n "$1" ]
 	do
 		case "$1" in
 		-h|--help)    printLibHelp      ; break ;;
 		-V|--version) printLibVersion   ; break ;;
-		-q|--quiet)   LEVEL=$QUIET   ; LOG=$(( (LOG - (LOG % 10)) + LEVEL)) ;;
-		-v|--verbose) LEVEL=$VERBOSE ; LOG=$(( (LOG - (LOG % 10)) + LEVEL)) ;;
-		-g|--debug)   DEBUG=true  ; logD 'Enabled' ;;
-		-t|--trace)	  TRACE=true  ; logT 'Enabled' ;;
+		-q|--quiet)   LEVEL=$logQUIET   ; libLOG=$(( (libLOG - (libLOG % 10)) + LEVEL)) ;;
+		-v|--verbose) LEVEL=$logVERBOSE ; libLOG=$(( (libLOG - (libLOG % 10)) + LEVEL)) ;;
+		-g|--debug)   flagDEBUG=true  ; logD 'Enabled' ;;
+		-t|--trace)	  flagTRACE=true  ; logT 'Enabled' ;;
 		-l|--log)
 			if isArgValue $2 ; then
 				shift
 				if isInteger $1 ; then
 					if [ $1 -ge 0 ] && [ $1 -le 3 ] ; then
-						LOG=$(($1 * 10 + LEVEL))
-						logD "Log level set to ($LOG)."
+						libLOG=$(($1 * 10 + LEVEL))
+						logD "Log level set to ($libLOG)."
 					else
 						logF "Value for parameter -l|--log <0|1|2|3> is out of range."
 						return 1
@@ -819,8 +862,8 @@ function libInit()
 					return 1
 				fi
 			else
-				LOG=$((FULL + LEVEL))
-				logD "Log level set to ($LOG)."
+				libLOG=$((logFULL + LEVEL))
+				logD "Log level set to ($libLOG)."
 			fi
 			;;
 		-T|--timeout)
@@ -829,8 +872,8 @@ function libInit()
 				shift
 				if isInteger $1 ; then
 					if [ $1 -ge 0 ] ; then
-						TIMEOUT=$1
-						logD "Timeout set to ($TIMEOUT)."
+						libTIMEOUT=$1
+						logD "Timeout set to ($libTIMEOUT)."
 					else
 						logF "Parameter value for -T|--timeout <N> must be greater or equal to 0 (zero)."
 						return 1
