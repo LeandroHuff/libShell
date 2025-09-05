@@ -857,7 +857,7 @@ function libInit()
 				shift
 				if isInteger $1 ; then
 					if [ $1 -ge 0 ] && [ $1 -le 3 ] ; then
-						libLOG=$(($1 * 10 + logLEVEL))
+						libLOG=$(($1 * logSCREEN + logLEVEL))
 						logD "Log level set to ($libLOG)."
 					else
 						logF "Value for parameter -l|--log <0|1|2|3> is out of range."
@@ -868,7 +868,7 @@ function libInit()
 					return 1
 				fi
 			else
-				libLOG=$((logSCREENFILE + logLEVEL))
+				libLOG=$((logSCREEN + logFILE + logLEVEL))
 				logD "Log level set to ($libLOG)."
 			fi
 			;;
