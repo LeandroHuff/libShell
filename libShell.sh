@@ -264,7 +264,7 @@ function isLogToScreenEnabled()
 
 function isLogEnabled()
 {
-	if [ $((libLOG & logSCREEN)) -gt $logDISABLED ] && [ $((libLOG % logSCREEN)) -gt $logQUIET ]
+	if [ isLogToScreenEnabled || isLogToFileEnabled ] && [ $((libLOG % logSCREEN)) -gt $logQUIET ]
 	then
 		true
 	else
