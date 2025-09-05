@@ -404,6 +404,10 @@ function logW()
 ## @brief	Debug Logs.
 function logD()
 {
+	printf "$((libLOG % logSCREEN)) \n"
+
+	if ! isLogEnabled ; then return ; fi
+	
 	if ! $flagDEBUG ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
