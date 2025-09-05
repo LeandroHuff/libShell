@@ -18,9 +18,8 @@ declare -i -r logDEFAULT=1
 declare -i -r logVERBOSE=2
 ## @brief	Log Targets
 declare -i -r logDISABLED=0
-declare -i -r logSCREEN=10
-declare -i -r logFILE=20
-declare -i -r logFULL=30
+declare -i -r logSCREEN=16
+declare -i -r logFILE=32
 declare -i -r logENABLED=$((logSCREEN + logDEFAULT))
 ## @brief	Log File
 declare    -r libTMP="/tmp/$(date '+%Y-%m-%d-%H-%M-%S-%3N')"
@@ -48,7 +47,7 @@ declare -r TC="\033[93;42m"
 ## @brief	Variables
 declare    flagDEBUG=false
 declare    flagTRACE=false
-declare -i LEVEL=$logDEFAULT
+declare -i logLEVEL=$logDEFAULT
 declare -i libLOG=$logENABLED
 declare -i libTIMEOUT=10
 
@@ -215,7 +214,7 @@ function isConnected() { ping '8.8.8.8' -q -t 30 -c 1 > /dev/null 2>&1 && true |
 
 function isLogDefault()
 {
-	if [ $((libLOG % 10)) -ge $logDEFAULT ]
+	if [ $((libLOG % logSCREEN)) -ge $logDEFAULT ]
 	then
 		true
 	else
@@ -225,7 +224,7 @@ function isLogDefault()
 
 function isLogQuiet()
 {
-	if [ $((libLOG % 10)) -eq $logQUIET ]
+	if [ $((libLOG % logSCREEN)) -eq $logQUIET ]
 	then
 		true
 	else
@@ -235,7 +234,7 @@ function isLogQuiet()
 
 function isLogVerbose()
 {
-	if [ $((libLOG % 10)) -ge $logVERBOSE ]
+	if [ $((libLOG % logSCREEN)) -ge $logVERBOSE ]
 	then
 		true
 	else
@@ -245,7 +244,7 @@ function isLogVerbose()
 
 function isLogToFileEnabled()
 {
-	if [ $((libLOG & logFILE)) -eq $logFILE ]
+	if [ $((libLOG / logFILE)) -gt $logDISABLED ]
 	then
 		true
 	else
@@ -255,7 +254,7 @@ function isLogToFileEnabled()
 
 function isLogToScreenEnabled()
 {
-	if [ $((libLOG & logSCREEN)) -eq $logSCREEN ]
+	if [ $((libLOG / logSCREEN)) -gt $logDISABLED ]
 	then
 		true
 	else
@@ -265,7 +264,7 @@ function isLogToScreenEnabled()
 
 function isLogEnabled()
 {
-	if [ $((libLOG & logFULL)) -gt $logDISABLED ] && [ $((libLOG % 10)) -gt $logQUIET ]
+	if [ $((libLOG / logSCREEN)) -gt $logDISABLED ] && [ $((libLOG % logSCREEN)) -gt $logQUIET ]
 	then
 		true
 	else
@@ -273,7 +272,10 @@ function isLogEnabled()
 	fi
 }
 
-## @brief	Unconditional Logs.
+## @brief	Log anything to screen and file.
+function logU() { echo -e "$*" | tee -a "${libLOGFILE}" ; }
+
+## @brief	Log anything according to log flags.
 function logIt()
 {
 	if ! isLogEnabled ; then return ; fi
@@ -494,7 +496,7 @@ function unsetLibVars()
 {
 	unset -v flagDEBUG
 	unset -v flagTRACE
-	unset -v LEVEL
+	unset -v logLEVEL
 	unset -v libLOG
 	unset -v libTIMEOUT
 	return 0
@@ -840,18 +842,18 @@ function libInit()
 	while [ -n "$1" ]
 	do
 		case "$1" in
-		-h|--help)    printLibHelp      ; break ;;
-		-V|--version) printLibVersion   ; break ;;
-		-q|--quiet)   LEVEL=$logQUIET   ; libLOG=$(( (libLOG - (libLOG % 10)) + LEVEL)) ;;
-		-v|--verbose) LEVEL=$logVERBOSE ; libLOG=$(( (libLOG - (libLOG % 10)) + LEVEL)) ;;
-		-g|--debug)   flagDEBUG=true  ; logD 'Enabled' ;;
-		-t|--trace)	  flagTRACE=true  ; logT 'Enabled' ;;
+		-h|--help)    printLibHelp         ; break ;;
+		-V|--version) printLibVersion      ; break ;;
+		-q|--quiet)   logLEVEL=$logQUIET   ; libLOG=$((libLOG & logQUIET)) ;;
+		-v|--verbose) logLEVEL=$logVERBOSE ; libLOG=$(((libLOG & logQUIET) + logLEVEL)) ;;
+		-g|--debug)   flagDEBUG=true       ; logD 'Enabled' ;;
+		-t|--trace)	  flagTRACE=true       ; logT 'Enabled' ;;
 		-l|--log)
 			if isArgValue $2 ; then
 				shift
 				if isInteger $1 ; then
 					if [ $1 -ge 0 ] && [ $1 -le 3 ] ; then
-						libLOG=$(($1 * 10 + LEVEL))
+						libLOG=$(($1 * 10 + logLEVEL))
 						logD "Log level set to ($libLOG)."
 					else
 						logF "Value for parameter -l|--log <0|1|2|3> is out of range."
@@ -862,7 +864,7 @@ function libInit()
 					return 1
 				fi
 			else
-				libLOG=$((logFULL + LEVEL))
+				libLOG=$((logSCREENFILE + logLEVEL))
 				logD "Log level set to ($libLOG)."
 			fi
 			;;
