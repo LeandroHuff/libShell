@@ -347,18 +347,6 @@ function logR()
 	fi
 }
 
-## @brief	Connection Logs.
-function logC()
-{
-	if ! isLogEnabled || ! isLogVerbose ; then return ; fi
-
-	if isConnected ; then
-		logIt "${WHITE}netconn:${NC} is ${HGREEN}connected${NC}"
-	else
-		logIt "${WHITE}netconn:${NC} is ${HRED}not connected${NC}"
-	fi
-}
-
 ## @brief	Success logs.
 function logS()
 {
