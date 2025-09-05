@@ -27,21 +27,23 @@ declare    -r LOGFILE="/tmp/$(basename $0).log"
 ## @brief	Random types
 declare -a -r typeRANDOM=(alpha digit alnum lowhex uphex mixhex random space date)
 ## @brief	Escape Codes for Colors
-declare NC="\033[0m"
-declare RED="\033[31m"
-declare GREEN="\033[32m"
-declare YELLOW="\033[33m"
-declare BLUE="\033[34m"
-declare MAGENTA="\033[35m"
-declare CYAN="\033[36m"
-declare WHITE="\033[37m"
-declare HRED="\033[91m"
-declare HGREEN="\033[92m"
-declare HYELLOW="\033[93m"
-declare HBLUE="\033[94m"
-declare HMAGENTA="\033[95m"
-declare HCYAN="\033[96m"
-declare HWHITE="\033[97m"
+declare -r NC="\033[0m"
+declare -r RED="\033[31m"
+declare -r GREEN="\033[32m"
+declare -r YELLOW="\033[33m"
+declare -r BLUE="\033[34m"
+declare -r MAGENTA="\033[35m"
+declare -r CYAN="\033[36m"
+declare -r WHITE="\033[37m"
+declare -r HRED="\033[91m"
+declare -r HGREEN="\033[92m"
+declare -r HYELLOW="\033[93m"
+declare -r HBLUE="\033[94m"
+declare -r HMAGENTA="\033[95m"
+declare -r HCYAN="\033[96m"
+declare -r HWHITE="\033[97m"
+# trace messages
+declare -r TC="\033[93;42m"
 ## @brief	Variables
 declare    DEBUG=false
 declare    TRACE=false
@@ -210,7 +212,16 @@ function isConnected() { ping '8.8.8.8' -q -t 10 -c 1 > /dev/null 2>&1 && true |
 # +-----------+---------------+--------------+
 
 ## @brief	Unconditional Logs.
-function logIt() { echo -e "${WHITE}    log:${NC} $*" ; }
+function logIt()
+{
+	if [ $LOG -ge $FULL ] ; then
+		echo -e "$*" | tee -a "${LOGFILE}"
+	elif [ $LOG -ge $FILE ] ; then
+		echo -e "$*" >> "${LOGFILE}"
+	elif [ $LOG -ge $SCREEN ] ; then
+		echo -e "$*"
+	fi
+}
 
 ## @brief	Info Logs.
 function logI()
@@ -378,11 +389,11 @@ function logT()
 {
 	if ! $TRACE ; then return ; fi
 	if [ $LOG -ge $FULL ] ; then
-		echo -e "${HYELLOW}  trace:${NC} $*" | tee -a "${LOGFILE}"
+		echo -e "${TC}  trace:${NC} $*" | tee -a "${LOGFILE}"
 	elif [ $LOG -ge $FILE ] ; then
-		echo -e "${HYELLOW}  trace:${NC} $*" >> "${LOGFILE}"
+		echo -e "${TC}  trace:${NC} $*" >> "${LOGFILE}"
 	elif [ $LOG -ge $SCREEN ] ; then
-		echo -e "${HYELLOW}  trace:${NC} $*"
+		echo -e "${TC}  trace:${NC} $*"
 	fi
 }
 
@@ -623,7 +634,7 @@ function getMountDir()
 #			1	Failure
 function logBegin()
 {
-	[[ $LOG -ge $FULL || $LOG -eq $FILE ]] || return 0
+	[ $LOG -ge $FILE ] || return 0
 	touch "${LOGFILE}"
 	if [ -f "${LOGFILE}" ]
 	then
@@ -644,7 +655,7 @@ function logBegin()
 #			1	Failure
 function logEnd()
 {
-	[[ $LOG -ge $FULL || $LOG -eq $FILE ]] || return 0
+	[ $LOG -ge $FILE ] || return 0
 	if [ -f "${LOGFILE}" ]
 	then
 		echo "         End Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"                  >> "${LOGFILE}"
@@ -687,7 +698,7 @@ function askToContinue()
 
 	echo -e -n "$message ${timeout}s [${HWHITE}y${NC}|${HWHITE}N${NC}]: "
 
-	if [ $(cmpfloat "$timeout" 0.0) -gt 0 ]
+	if [ $(bin/cmpfloat "$timeout" 0.0) -gt 0 ]
 	then
 		read -n 1 -N 1 -t $timeout ans
 	else
@@ -720,7 +731,7 @@ function wait()
 	local message=$([ -n "$2" ] && echo -n "${2}" || echo -n "Do Wait for ")
 	echo -e -n "${message} ${timeout}s [${HWHITE}n${NC}|${HWHITE}N${NC}]?: "
 
-	if [ $(cmpfloat "$time" 0.0) -gt 0 ]
+	if [ $(bin/cmpfloat "$time" 0.0) -gt 0 ]
 	then
 		read -n 1 -N 1 -t $timeout ans
 	else
