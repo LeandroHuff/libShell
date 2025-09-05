@@ -225,7 +225,7 @@ function isLogDefault()
 
 function isLogQuiet()
 {
-	if [ $((libLOG % 10)) = $logQUIET ]
+	if [ $((libLOG % 10)) -eq $logQUIET ]
 	then
 		true
 	else
@@ -245,7 +245,7 @@ function isLogVerbose()
 
 function isLogToFileEnabled()
 {
-	if [ $((libLOG & logFILE)) = $logFILE ]
+	if [ $((libLOG & logFILE)) -eq $logFILE ]
 	then
 		true
 	else
@@ -255,7 +255,7 @@ function isLogToFileEnabled()
 
 function isLogToScreenEnabled()
 {
-	if [ $((libLOG & logSCREEN)) = $logSCREEN ]
+	if [ $((libLOG & logSCREEN)) -eq $logSCREEN ]
 	then
 		true
 	else
@@ -265,7 +265,7 @@ function isLogToScreenEnabled()
 
 function isLogEnabled()
 {
-	if [ $((libLOG & logFULL)) > $logDISABLED ] && [ $((libLOG % 10)) > $logQUIET ]
+	if [ $((libLOG & logFULL)) -gt $logDISABLED ] && [ $((libLOG % 10)) -gt $logQUIET ]
 	then
 		true
 	else
