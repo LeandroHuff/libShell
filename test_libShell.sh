@@ -5,7 +5,7 @@
 # @file			test_libShell.sh                                               #
 # @author		Leandro - leandrohuff@programmer.net                           #
 # @date			2025-08-25                                                     #
-# @version		2.0.0                                                          #
+# @version		2.0.1                                                          #
 # @date			2025-08-26                                                     #
 # @version		2.0.1                                                          #
 # @copyright	CC01 1.0 Universal                                             #
@@ -66,8 +66,8 @@ declare -a -r testTABLE=(\
 08  "/var/home/$USER/dev/script" 'getPath'            "/var/home/$USER/dev/script/test_libShell.sh" ''    \
 09  1.2.3                        'genVersionStr'      '1 2 3'                                       ''    \
 10  123                          'genVersionNum'      '1 2 3'                                       ''    \
-11  2.1.1                        'getLibVersionStr'   ''                                            ''    \
-12  211                          'getLibVersionNum'   ''                                            ''    \
+11  2.2.0                        'getLibVersionStr'   ''                                            ''    \
+12  220                          'getLibVersionNum'   ''                                            ''    \
 13  0                            'test_getRuntime'    ''                                            ''    \
 14  "/tmp/$(basename $0).log"    'getLogFilename'     ''                                            ''    \
 15  "$ID"                        'getID'              ''                                            ''    \
@@ -224,7 +224,7 @@ function test_isNot()     { if isNot     "$1" ; then echo -n 0 ; else echo -n 1 
 #			1	Error
 function test_isConnected
 {
-	local connected=$(ping 8.8.8.8 -q -t 10 -c 1 > /dev/null 2>&1 && true || false)
+	local connected=$(ping 8.8.8.8 -q -t 30 -c 1 > /dev/null 2>&1 && true || false)
 	if $connected && isConnected ; then
 		echo -n 0
 	elif ! $connected && ! isConnected ; then
@@ -284,7 +284,7 @@ function test_logStart_0()
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#DISABLED=0	From libShell variables list.
-	if [ $LOG -eq $DISABLED ] && ! [ -f "${LOGFILE}" ] ; then
+	if [ $logLEVEL -eq $logQUIET ] && [ $logTARGET -eq $logQUIET ] && ! [ -f "${logFILE}" ] ; then
 		return 0
 	else
 		return 1
@@ -298,7 +298,7 @@ function test_logStart_1()
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#SCREEN=10	From libShell variables list.
-	if [ $((LOG - (LOG % $SCREEN))) -eq $SCREEN ] && ! [ -f "${LOGFILE}" ] ; then
+	if [ $logLEVEL -eq $logQUIET ] && [ $logTARGET -eq $logTOSCREEN ] && ! [ -f "${logFILE}" ] ; then
 		return 0
 	else
 		return 1
@@ -312,7 +312,7 @@ function test_logStart_2()
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#FILE=20	From libShell variables list.
-	if [ $((LOG - (LOG % $FILE))) -eq $FILE ] && [ -f "${LOGFILE}" ] ; then
+	if [ $logLEVEL -eq $logQUIET ] && [ $logTARGET -eq $logTOFILE ] && ! [ -f "${logFILE}" ] ; then
 		return 0
 	else
 		return 1
@@ -326,7 +326,7 @@ function test_logStart_3()
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#FULL=30	From libShell variables list.
-	if [ $((LOG - (LOG % $FULL))) -eq $FULL ] && [ -f "${LOGFILE}" ] ; then
+	if [ $logLEVEL -eq $logQUIET ] && [ $logTARGET -eq $((logTOFILE + logTOSCREEN)) ] && ! [ -f "${logFILE}" ] ; then
 		return 0
 	else
 		return 1
