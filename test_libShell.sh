@@ -312,7 +312,7 @@ function test_logStart_2()
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#FILE=20	From libShell variables list.
-	if [ $logLEVEL -eq $logQUIET ] && [ $logTARGET -eq $logTOFILE ] && ! [ -f "${logFILE}" ] ; then
+	if [ $logLEVEL -eq $logQUIET ] && [ $logTARGET -eq $logTOFILE ] && [ -f "${logFILE}" ] ; then
 		return 0
 	else
 		return 1
@@ -326,7 +326,7 @@ function test_logStart_3()
 	$(rm -f "$(getLogFilename)" > /dev/null 2>&1)
 	logBegin
 	#FULL=30	From libShell variables list.
-	if [ $logLEVEL -eq $logQUIET ] && [ $logTARGET -eq $((logTOFILE + logTOSCREEN)) ] && ! [ -f "${logFILE}" ] ; then
+	if [ $logLEVEL -eq $logQUIET ] && [ $logTARGET -eq $((logTOFILE + logTOSCREEN)) ] && [ -f "${logFILE}" ] ; then
 		return 0
 	else
 		return 1
