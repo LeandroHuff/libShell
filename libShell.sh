@@ -3,7 +3,7 @@
 # @file         libShell.sh                                                    #
 # @author       Leandro - leandrohuff@programmer.net                           #
 # @date         2025-09-06                                                     #
-# @version      2.2.0                                                          #
+# @version      2.2.1                                                          #
 # @copyright    CC01 1.0 Universal                                             #
 # @details      Formatted script file to service as a shell function library.  #
 #               Let a rapid shell script development with a list of common and #
@@ -11,7 +11,7 @@
 ################################################################################
 declare -i -r libSTARTIME=$(( $(date +%s%N) / 1000000 ))
 ## @brief	Library Version Number
-declare -a -r libVERSION=(2 2 0)
+declare -a -r libVERSION=(2 2 1)
 ## @brief	Log Levels
 declare -i -r logQUIET=0
 declare -i -r logDEFAULT=1
@@ -68,13 +68,20 @@ function genVersionNum()         { declare -a -i -r vector=(${@}) ; echo -n $(($
 function getLibVersionStr()      { echo -n $(genVersionStr ${libVERSION[@]}) ; }
 function getLibVersionNum()      { echo -n $(genVersionNum ${libVERSION[@]}) ; }
 function getRuntime()            { echo -n $(( $(date +%s%N) / 1000000 )) ; }
-function getLogFilename()        { echo -n "$(getTempDir)/$(basename $0).log" ; }
+function getLogFilename()        { echo -n "$(getTempDir)/$(getScriptName).log" ; }
 function getID()                 { if [ -n "$ID" ] ; then [ -f /etc/os-release ] && . /etc/os-release ; fi ; echo -n "$ID" ; }
 function isFloat()               { if [ -n "$( echo -n "$1" | grep -aoP "^[+-]?[0-9]+\.[0-9]+$" )" ] ; then true ; else false ; fi ; }
 function isInteger()             { [ -n "$(echo "$1" | grep -oP "^[+-]?([0-9]+)$")" ] && true || false ; }
 function isYes()                 { case "$1" in [yY] | [yY][eE][sS]) true ;; *) false ;; esac ; }
 function isNot()                 { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
 function isConnected()           { ping '8.8.8.8' -q -t 30 -c 1 > /dev/null 2>&1 && true || false ; }
+function isGitRepository()       { if $(git -C $PWD rev-parse --git-dir > /dev/null 2>&1) ; then true ; else false ; fi ; }
+function getGitRepositoryName()  { echo -n "$(basename `git rev-parse --show-toplevel`)" ; }
+function getGitBranchName()      { echo -n "$(git branch --show-current)" ; }
+function getGitAddedCounter()    { echo -n "$(git status --porcelain | grep -cF ??)" ; }
+function getGitModifiedCounter() { echo -n "$(git status --porcelain | grep -cF M)"  ; }
+function getGitDeletedCounter()  { echo -n "$(git status --porcelain | grep -cF D)"  ; }
+function isGitChanged()          { if [ $(getGitAddedCounter) -gt 0 ] || [ $(getGitModifiedCounter) -gt 0 ] || [ $(getGitDeletedCounter) -gt 0 ] ; then true ; else false ; fi ; }
 
 # +===========+===============+==============+
 # | Function  | Description   | Flag         |

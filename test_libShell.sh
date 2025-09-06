@@ -66,8 +66,8 @@ declare -a -r testTABLE=(\
 08  "/var/home/$USER/dev/script" 'getPath'            "/var/home/$USER/dev/script/test_libShell.sh" ''    \
 09  1.2.3                        'genVersionStr'      '1 2 3'                                       ''    \
 10  123                          'genVersionNum'      '1 2 3'                                       ''    \
-11  2.2.0                        'getLibVersionStr'   ''                                            ''    \
-12  220                          'getLibVersionNum'   ''                                            ''    \
+11  2.2.1                        'getLibVersionStr'   ''                                            ''    \
+12  221                          'getLibVersionNum'   ''                                            ''    \
 13  0                            'test_getRuntime'    ''                                            ''    \
 14  "/tmp/$(basename $0).log"    'getLogFilename'     ''                                            ''    \
 15  "$ID"                        'getID'              ''                                            ''    \
