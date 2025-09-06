@@ -16,14 +16,9 @@ declare -a -r libVERSION=(2 1 2)
 declare -i -r logQUIET=0
 declare -i -r logDEFAULT=1
 declare -i -r logVERBOSE=2
-## @brief	Log Targets
-declare -i -r logDISABLED=0
-declare -i -r logSCREEN=16
-declare -i -r logFILE=32
-declare -i -r logENABLED=$((logSCREEN + logDEFAULT))
-## @brief	Log File
-declare    -r libTMP="/tmp/$(date '+%Y-%m-%d-%H-%M-%S-%3N')"
-declare    -r libLOGFILE="$libTMP/$(basename $0).log"
+declare -i -r logFULL=3
+declare -i -r logTOSCREEN=16
+declare -i -r logTOFILE=32
 ## @brief	Random types
 declare -a -r typeRANDOM=(alpha digit alnum lowhex uphex mixhex random space date)
 ## @brief	Escape Codes for Colors
@@ -42,160 +37,55 @@ declare -r HBLUE="\033[94m"
 declare -r HMAGENTA="\033[95m"
 declare -r HCYAN="\033[96m"
 declare -r HWHITE="\033[97m"
-# trace messages
-declare -r TC="\033[93;42m"
-## @brief	Variables
+## @brief	Log Variables
 declare    flagDEBUG=false
 declare    flagTRACE=false
-declare -i logLEVEL=$logDEFAULT
-declare -i libLOG=$logENABLED
+declare -i logTARGET=$logQUIET
+declare -i logLEVEL=$logQUIET
+declare libTMP=""
+declare logFILE=""
+## @brief	Timeout
 declare -i libTIMEOUT=10
-
-##
-# @fn		getScriptName( $0 )
-# @brief	Get and return the script filename.
-# @param	$0		Path and script filename
-# @return			Script filename
-function getScriptName() { echo -n "$(basename $0)" ; }
-
-##
-# @fn		getFileName( $1 )
-# @brief	Get filename from parameter.
-# @param	$1		Path and|or filename.
-# @return			Filename.
-function getFileName() { echo -n "$(basename $1)" ; }
-
-##
-# @fn		getName( $1 )
-# @brief	Get and extract the name of a filename.
-# @param	$1		Filename.
-# @return			Name of a filename.
-function getName() { echo -n "${1%.*}" ; }
-
-##
-# @fn		getExt( $1 )
-# @brief	Get and extract the extension of a filename.
-# @param	$1		Filename.
-# @return			Extension.
-function getExt() { echo -n "${1##*.}" ; }
-
-##
-# @fn		getPath( $1 )
-# @brief	Get and extract the path of a path+filename.
-# @param	$1		Path + Filename.
-# @return			Path (folder)
-function getPath() { echo -n "${1%/*}" ; }
-
-function genRandomAlpha()        { tr < /dev/urandom -d -c "[:alpha:]"          | head --bytes=$1 ; }
-function genRandomNumeric()      { tr < /dev/urandom -d -c "[:digit:]"          | head --bytes=$1 ; }
-function genRandomAlphaNumeric() { tr < /dev/urandom -d -c "[:alnum:]"          | head --bytes=$1 ; }
-function genRandomLowHexNumber() { tr < /dev/urandom -d -c "[:digit:]a-f"       | head --bytes=$1 ; }
-function genRandomUpHexNumber()  { tr < /dev/urandom -d -c "[:digit:]A-F"       | head --bytes=$1 ; }
-function genRandomMixHexNumber() { tr < /dev/urandom -d -c "[:xdigit:]"         | head --bytes=$1 ; }
-function genRandomString()       { tr < /dev/urandom -d -c "[:graph:]"          | head --bytes=$1 ; }
+### @brief	Functions Lsit
+function getScriptName()         { echo -n "$(basename $0)" ; }
+function getFileName()           { echo -n "$(basename $1)" ; }
+function getName()               { echo -n "${1%.*}" ; }
+function getExt()                { echo -n "${1##*.}" ; }
+function getPath()               { echo -n "${1%/*}" ; }
+function getTempDir()            { [ -d '/tmp' ] && echo -n '/tmp' || echo "$HOME" ; }
+function genRandomAlpha()        { tr < /dev/urandom -d -c "[:alpha:]" | head --bytes=$1 ; }
+function genRandomNumeric()      { tr < /dev/urandom -d -c "[:digit:]" | head --bytes=$1 ; }
+function genRandomAlphaNumeric() { tr < /dev/urandom -d -c "[:alnum:]" | head --bytes=$1 ; }
+function genRandomLowHexNumber() { tr < /dev/urandom -d -c "[:digit:]a-f" | head --bytes=$1 ; }
+function genRandomUpHexNumber()  { tr < /dev/urandom -d -c "[:digit:]A-F" | head --bytes=$1 ; }
+function genRandomMixHexNumber() { tr < /dev/urandom -d -c "[:xdigit:]" | head --bytes=$1 ; }
+function genRandomString()       { tr < /dev/urandom -d -c "[:graph:]" | head --bytes=$1 ; }
 function genRandomStringSpace()  { tr < /dev/urandom -d -c "[:graph:][:space:]" | head --bytes=$1 ; }
-function genDateTime()           { echo -n $(date '+%Y-%m-%d-%H-%M-%S-%3N')                       ; }
-function getDateTime()           { echo -n $(date '+%Y-%m-%d %H:%M:%S.%3N')                       ; }
-
-##
-# @fn		genVersionStr( $@ )
-# @brief	Generate a version string according to array parameter.
-# @param	(X Y Z)		Version array.
-# @return	'X.Y.Z'		Version string.
-function genVersionStr() { declare -a -r vector=(${@}) ; echo -n "${vector[0]}.${vector[1]}.${vector[2]}" ; }
-
-##
-# @fn		genVersionNum( $@ )
-# @brief	Generate a version integer number according to array parameter.
-# @param	(X Y Z)		Version array.
-# @return	XYZ			Version number.
-function genVersionNum() { declare -a -i -r vector=(${@}) ; echo -n $((${vector[0]}*100 + ${vector[1]}*10 + ${vector[2]})) ; }
-
-##
-# @fn		getLibVersionStr( $@ )
-# @brief	Generate|Get the library version string.
-# @param	none
-# @return	Library version string.
-function getLibVersionStr() { echo -n $(genVersionStr ${libVERSION[@]}) ; }
-
-##
-# @fn		getLibVersionNum( $@ )
-# @brief	Generate|Get the library version number.
-# @param	none
-# @return	Library version number.
-function getLibVersionNum() { echo -n $(genVersionNum ${libVERSION[@]}) ; }
-
-##
-# @fn		getRuntime()
-# @brief	Get the runtime string in seconds.
-# @param	none
-# @return	Runtime string in seconds.
-function getRuntime() { echo -n $(( $(date +%s%N) / 1000000 )) ; }
-
-##
-# @fn		getLogFilename()
-# @brief	Get log path and filename.
-# @param	none
-# @return	Log path + filename.
-function getLogFilename() { echo -n "/tmp/$(basename $0).log" ; }
-
-##
-# @fn		getID()
-# @brief	Get the system ID according to /etc/os-release.
-# @param	none
-# @return	"$ID"	System ID.
-function getID() { if [ -n "$ID" ] ; then [ -f /etc/os-release ] && . /etc/os-release ; fi ; echo -n "$ID" ; }
-
-##
-# @fn		isFloat( $1 )
-# @brief	Check if parameter is a floating point number.
-# @param	$1		Float point number.
-# @return	true	Is float point number.
-#			false	Is not a float point number.
-function isFloat() { if [ -n "$( echo -n "$1" | grep -aoP "^[+-]?[0-9]+\.[0-9]+$" )" ] ; then true ; else false ; fi ; }
-
-##
-# @fn		isInteger( $1 )
-# @brief	Check if parameter is a integer number.
-# @param	$1		Integer number.
-# @return	true	Is an integer number.
-#			false	Is not an integer number.
-function isInteger() { [ -n "$(echo "$1" | grep -oP "^[+-]?([0-9]+)$")" ] && true || false ; }
-
-##
-# @fn		isYes( $1 )
-# @brief	Check if parameter is an affirmative yY|yYeEsS parameter.
-# @param	$1		Word to check.
-# @return	true	Is an affirmative word|letter.
-#			false	Is not an affirmative word|letter.
-function isYes() { case "$1" in [yY] | [yY][eE][sS]) true ;; *) false ;; esac ; }
-
-##
-# @fn		isNot( $1 )
-# @brief	Check if parameter is a negative nN|nNoO|nNoOtT parameter.
-# @param	$1		Word to check.
-# @return	true	Is an negative word|letter.
-#			false	Is not an negative word|letter.
-function isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
-
-##
-# @fn		isConnected()
-# @brief	Check active internet connection sending a request message to an IP and wait for answer.
-# @param	none
-# @return	true	Is connected.
-#			false	Is not connected.
-function isConnected() { ping '8.8.8.8' -q -t 30 -c 1 > /dev/null 2>&1 && true || false ; }
+function genDateTimeAsCode()     { echo -n $(date '+%Y-%m-%d-%H-%M-%S-%3N') ; }
+function getDateTime()           { echo -n "$(date '+%Y-%m-%d %H:%M:%S.%3N')" ; }
+function genVersionStr()         { declare -a -r vector=(${@}) ; echo -n "${vector[0]}.${vector[1]}.${vector[2]}" ; }
+function genVersionNum()         { declare -a -i -r vector=(${@}) ; echo -n $((${vector[0]}*100 + ${vector[1]}*10 + ${vector[2]})) ; }
+function getLibVersionStr()      { echo -n $(genVersionStr ${libVERSION[@]}) ; }
+function getLibVersionNum()      { echo -n $(genVersionNum ${libVERSION[@]}) ; }
+function getRuntime()            { echo -n $(( $(date +%s%N) / 1000000 )) ; }
+function getLogFilename()        { echo -n "$(getTempDir)/$(basename $0).log" ; }
+function getID()                 { if [ -n "$ID" ] ; then [ -f /etc/os-release ] && . /etc/os-release ; fi ; echo -n "$ID" ; }
+function isFloat()               { if [ -n "$( echo -n "$1" | grep -aoP "^[+-]?[0-9]+\.[0-9]+$" )" ] ; then true ; else false ; fi ; }
+function isInteger()             { [ -n "$(echo "$1" | grep -oP "^[+-]?([0-9]+)$")" ] && true || false ; }
+function isYes()                 { case "$1" in [yY] | [yY][eE][sS]) true ;; *) false ;; esac ; }
+function isNot()                 { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
+function isConnected()           { ping '8.8.8.8' -q -t 30 -c 1 > /dev/null 2>&1 && true || false ; }
 
 # +===========+===============+==============+
 # | Function  | Description   | Flag         |
 # +===========+===============+==============+
-# | logIt     | Unconditional | none         |
+# | logU      | Unconditional | none         |
+# +-----------+---------------+--------------+
+# | logIt     | Anything      | enabled      |
 # +-----------+---------------+--------------+
 # | logI      | Info          | normal       |
 # +-----------+---------------+--------------+
 # | logR      | Runtime       | normal       |
-# +-----------+---------------+--------------+
-# | logC      | Connection    | normal       |
 # +-----------+---------------+--------------+
 # | logE      | Error         | normal       |
 # +-----------+---------------+--------------+
@@ -203,7 +93,7 @@ function isConnected() { ping '8.8.8.8' -q -t 30 -c 1 > /dev/null 2>&1 && true |
 # +-----------+---------------+--------------+
 # | logS      | Success       | verbose      |
 # +-----------+---------------+--------------+
-# | logV      | Info          | verbose      |
+# | logV      | Verbose Info  | verbose      |
 # +-----------+---------------+--------------+
 # | logW      | Warning       | verbose      |
 # +-----------+---------------+--------------+
@@ -212,19 +102,9 @@ function isConnected() { ping '8.8.8.8' -q -t 30 -c 1 > /dev/null 2>&1 && true |
 # | logT      | Trace         | trace        |
 # +-----------+---------------+--------------+
 
-function isLogDefault()
-{
-	if [ $((libLOG % logSCREEN)) -ge $logDEFAULT ]
-	then
-		true
-	else
-		false
-	fi
-}
-
 function isLogQuiet()
 {
-	if [ $((libLOG % logSCREEN)) -eq $logQUIET ]
+	if [ $logLEVEL -eq $logQUIET ]
 	then
 		true
 	else
@@ -232,19 +112,18 @@ function isLogQuiet()
 	fi
 }
 
+function isLogDefault()
+{
+	if [ $logLEVEL -ge $logDEFAULT ]
+	then
+		true
+	else
+		false
+	fi
+}
 function isLogVerbose()
 {
-	if [ $((libLOG % logSCREEN)) -ge $logVERBOSE ]
-	then
-		true
-	else
-		false
-	fi
-}
-
-function isLogToFileEnabled()
-{
-	if [ $((libLOG & logFILE)) -gt $logDISABLED ]
+	if [ $logLEVEL -ge $logVERBOSE ]
 	then
 		true
 	else
@@ -254,7 +133,17 @@ function isLogToFileEnabled()
 
 function isLogToScreenEnabled()
 {
-	if [ $((libLOG & logSCREEN)) -gt $logDISABLED ]
+	if [ $((logTARGET & logTOSCREEN)) -eq $logTOSCREEN ]
+	then
+		true
+	else
+		false
+	fi
+}
+
+function isLogToFileEnabled()
+{
+	if [ $((logTARGET & logTOFILE)) -eq $logTOFILE ]
 	then
 		true
 	else
@@ -264,7 +153,7 @@ function isLogToScreenEnabled()
 
 function isLogEnabled()
 {
-	if isLogToScreenEnabled || isLogToFileEnabled && [ $((libLOG % logSCREEN)) -gt $logQUIET ]
+	if [ $logTARGET -gt $logQUIET ] && [ $logLEVEL -gt $logQUIET ]
 	then
 		true
 	else
@@ -272,8 +161,8 @@ function isLogEnabled()
 	fi
 }
 
-## @brief	Log anything to screen and file.
-function logU() { echo -e "$*" | tee -a "${libLOGFILE}" ; }
+## @brief	Log anything unconditional to screen and file.
+function logU() { echo -e "$*" | tee -a "${logFILE}" ; }
 
 ## @brief	Log anything according to log flags.
 function logIt()
@@ -281,9 +170,9 @@ function logIt()
 	if ! isLogEnabled ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "$*" | tee -a "${libLOGFILE}"
+		echo -e "$*" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "$*" >> "${libLOGFILE}"
+		echo -e "$*" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
 		echo -e "$*"
 	fi
@@ -295,9 +184,9 @@ function logI()
 	if ! isLogEnabled ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "${WHITE}   info:${NC} $*" | tee -a "${libLOGFILE}"
+		echo -e "${WHITE}   info:${NC} $*" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "${WHITE}   info:${NC} $*" >> "${libLOGFILE}"
+		echo -e "${WHITE}   info:${NC} $*" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
 		echo -e "${WHITE}   info:${NC} $*"
 	fi
@@ -309,9 +198,9 @@ function logE()
 	if ! isLogEnabled ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "${RED}  error:${NC} $*" | tee -a "${libLOGFILE}"
+		echo -e "${RED}  error:${NC} $*" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "${RED}  error:${NC} $*" >> "${libLOGFILE}"
+		echo -e "${RED}  error:${NC} $*" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
 		echo -e "${RED}  error:${NC} $*"
 	fi
@@ -323,9 +212,9 @@ function logF()
 	if ! isLogEnabled ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "${HRED}failure:${NC} $*" | tee -a "${libLOGFILE}"
+		echo -e "${HRED}failure:${NC} $*" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "${HRED}failure:${NC} $*" >> "${libLOGFILE}"
+		echo -e "${HRED}failure:${NC} $*" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
 		echo -e "${HRED}failure:${NC} $*"
 	fi
@@ -339,9 +228,9 @@ function logR()
 	local runtime="$(getRuntimeStr)"
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "${WHITE}runtime:${NC} ${runtime}s" | tee -a "${libLOGFILE}"
+		echo -e "${WHITE}runtime:${NC} ${runtime}s" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "${WHITE}runtime:${NC} ${runtime}s" >> "${libLOGFILE}"
+		echo -e "${WHITE}runtime:${NC} ${runtime}s" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
 		echo -e "${WHITE}runtime:${NC} ${runtime}s"
 	fi
@@ -353,9 +242,9 @@ function logS()
 	if ! isLogEnabled || ! isLogVerbose ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "${HWHITE}success:${NC} $*" | tee -a "${libLOGFILE}"
+		echo -e "${HWHITE}success:${NC} $*" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "${HWHITE}success:${NC} $*" >> "${libLOGFILE}"
+		echo -e "${HWHITE}success:${NC} $*" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
 		echo -e "${HWHITE}success:${NC} $*"
 	fi
@@ -367,9 +256,9 @@ function logV()
 	if ! isLogEnabled || ! isLogVerbose ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "${WHITE}   info:${NC} $*" | tee -a "${libLOGFILE}"
+		echo -e "${WHITE}   info:${NC} $*" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "${WHITE}   info:${NC} $*" >> "${libLOGFILE}"
+		echo -e "${WHITE}   info:${NC} $*" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
 		echo -e "${WHITE}   info:${NC} $*"
 	fi
@@ -381,9 +270,9 @@ function logW()
 	if ! isLogEnabled || ! isLogVerbose ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "${HCYAN}warning:${NC} $*" | tee -a "${libLOGFILE}"
+		echo -e "${HCYAN}warning:${NC} $*" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "${HCYAN}warning:${NC} $*" >> "${libLOGFILE}"
+		echo -e "${HCYAN}warning:${NC} $*" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
 		echo -e "${HCYAN}warning:${NC} $*"
 	fi
@@ -395,9 +284,9 @@ function logD()
 	if ! $flagDEBUG || ! isLogEnabled ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "${HGREEN}  debug:${NC} $*" | tee -a "${libLOGFILE}"
+		echo -e "${HGREEN}  debug:${NC} $*" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "${HGREEN}  debug:${NC} $*" >> "${libLOGFILE}"
+		echo -e "${HGREEN}  debug:${NC} $*" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
 		echo -e "${HGREEN}  debug:${NC} $*"
 	fi
@@ -409,11 +298,11 @@ function logT()
 	if ! $flagTRACE || ! isLogEnabled ; then return ; fi
 
 	if isLogToFileEnabled && isLogToScreenEnabled ; then
-		echo -e "${TC}  trace:${NC} $*" | tee -a "${libLOGFILE}"
+		echo -e "${HYELLOW}  trace:${NC} $*" | tee -a "${logFILE}"
 	elif isLogToFileEnabled ; then
-		echo -e "${TC}  trace:${NC} $*" >> "${libLOGFILE}"
+		echo -e "${HYELLOW}  trace:${NC} $*" >> "${logFILE}"
 	elif isLogToScreenEnabled ; then
-		echo -e "${TC}  trace:${NC} $*"
+		echo -e "${HYELLOW}  trace:${NC} $*"
 	fi
 }
 
@@ -485,7 +374,7 @@ function unsetLibVars()
 	unset -v flagDEBUG
 	unset -v flagTRACE
 	unset -v logLEVEL
-	unset -v libLOG
+	unset -v lOGTARGET
 	unset -v libTIMEOUT
 	return 0
 }
@@ -523,16 +412,17 @@ Syntax: source $(getScriptName) [parameters]
 Parameters:
  -h|--help           Show this help information.
  -V|--version        Print version number.
- -q|--quiet          Disable all messages.
- -v|--verbose        Set verbose messages.
+ -q|--quiet          Disable all messages (default at startup).
+ -d|--default        Set log to default level.
+ -v|--verbose        Set log to verbose level.
  -g|--debug          Enable debug messages.
  -t|--trace          Enable trace messages.
  -l|--log <0|1|2|3>  Set log target:
-                       0=Disabled
-                       1=Screen only (default, at startup).
-                       2=File only.
+                       0=Disabled (default, at startup)
+                       1=Screen only
+                       2=File only
                        3=Both (default, for empty value).
- -T|--timeout <N>    Set default timeout value >= 0
+ -T|--timeout <N>    Set default timeout value >= 0.
 EOT
 	return 0
 }
@@ -561,7 +451,7 @@ function genRandom()
 		mixhex) str="$(genRandomMixHexNumber $len)" ;;
 		random) str="$(genRandomString       $len)" ;;
 		space)  str="$(genRandomStringSpace  $len)" ;;
-		date)   str="$(genDateTime)"                ;;
+		date)   str="$(genDateTimeAsCode)"          ;;
 		*) err=1 ;;
 		esac
 	else
@@ -653,14 +543,15 @@ function getMountDir()
 #			1	Failure
 function logBegin()
 {
-	[ $libLOG -ge $logFILE ] || return 0
-	touch "${libLOGFILE}"
-	if [ -f "${libLOGFILE}" ]
+	if ! isLogToFileEnabled ; then return 0 ; fi
+
+	touch "${logFILE}"
+	if [ -f "${logFILE}" ]
 	then
-		echo "################################################################################" > "${libLOGFILE}"
-		echo "         Start Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"               >> "${libLOGFILE}"
+		echo "################################################################################" > "${logFILE}"
+		echo "         Start Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"               >> "${logFILE}"
 	else
-		logE "Could not access ${libLOGFILE}"
+		logE "Could not access ${logFILE}"
 		return 1
 	fi
 	return 0
@@ -674,13 +565,14 @@ function logBegin()
 #			1	Failure
 function logEnd()
 {
-	[ $libLOG -ge $logFILE ] || return 0
-	if [ -f "${libLOGFILE}" ]
+	if ! isLogToFileEnabled ; then return 0 ; fi
+
+	if [ -f "${logFILE}" ]
 	then
-		echo "         End Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"                  >> "${libLOGFILE}"
-		echo "################################################################################" >> "${libLOGFILE}"
+		echo "         End Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"                  >> "${logFILE}"
+		echo "################################################################################" >> "${logFILE}"
 	else
-		logE "Could not access ${libLOGFILE}"
+		logE "Could not access ${logFILE}"
 		return 1
 	fi
 	return 0
@@ -813,36 +705,25 @@ function getDistroName()
 #			1..N	Error code.
 function libInit()
 {
-	if ! [ -d $libTMP ]
-	then
-		mkdir $libTMP
-		if [ $? -ne 0 ]
-		then
-			logF "Make dir $libTMP"
-			return 1
-		else
-			logS "Make dir $libTMP"
-		fi
-	else
-		logW "Dir $libTMP alredy exit."
-	fi
+	libTMP="$(getTempDir)"
+	logFILE="$(getLogFilename)"
 
 	while [ -n "$1" ]
 	do
 		case "$1" in
 		-h|--help)    printLibHelp         ; break ;;
 		-V|--version) printLibVersion      ; break ;;
-		-q|--quiet)   logLEVEL=$logQUIET   ; libLOG=$((libLOG & logQUIET)) ;;
-		-v|--verbose) logLEVEL=$logVERBOSE ; libLOG=$(((libLOG & logQUIET) + logLEVEL)) ;;
-		-g|--debug)   flagDEBUG=true       ; logD 'Enabled' ;;
-		-t|--trace)	  flagTRACE=true       ; logT 'Enabled' ;;
+		-q|--quiet)   logLEVEL=$logQUIET   ;;
+		-d|--default) logLEVEL=$logDEFAULT ;;
+		-v|--verbose) logLEVEL=$logVERBOSE ;;
+		-g|--debug)   flagDEBUG=true ;;
+		-t|--trace)	  flagTRACE=true ;;
 		-l|--log)
 			if isArgValue $2 ; then
 				shift
 				if isInteger $1 ; then
-					if [ $1 -ge 0 ] && [ $1 -le 3 ] ; then
-						libLOG=$(($1 * logSCREEN + logLEVEL))
-						logD "Log level set to ($libLOG)."
+					if [ $1 -ge $logQUIET ] && [ $1 -le $logFULL ] ; then
+						logTARGET=$(($1 * logSCREEN))
 					else
 						logF "Value for parameter -l|--log <0|1|2|3> is out of range."
 						return 1
@@ -852,18 +733,20 @@ function libInit()
 					return 1
 				fi
 			else
-				libLOG=$((logSCREEN + logFILE + logLEVEL))
-				logD "Log level set to ($libLOG)."
+				logTARGET=$((logSCREEN + logFILE))
 			fi
+			logD "Log target set to ($logTARGET)"
 			;;
 		-T|--timeout)
 			if isArgValue "$2"
 			then
 				shift
-				if isInteger $1 ; then
-					if [ $1 -ge 0 ] ; then
+				if isInteger $1
+				then
+					if [ $1 -ge 0 ]
+					then
 						libTIMEOUT=$1
-						logD "Timeout set to ($libTIMEOUT)."
+						logD "Timeout set to ($libTIMEOUT)"
 					else
 						logF "Parameter value for -T|--timeout <N> must be greater or equal to 0 (zero)."
 						return 1
