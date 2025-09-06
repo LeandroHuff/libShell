@@ -2,8 +2,8 @@
 # @brief        Shell Script Library.                                          #
 # @file         libShell.sh                                                    #
 # @author       Leandro - leandrohuff@programmer.net                           #
-# @date         2025-09-02                                                     #
-# @version      2.1.2                                                          #
+# @date         2025-09-06                                                     #
+# @version      2.2.0                                                          #
 # @copyright    CC01 1.0 Universal                                             #
 # @details      Formatted script file to service as a shell function library.  #
 #               Let a rapid shell script development with a list of common and #
@@ -11,7 +11,7 @@
 ################################################################################
 declare -i -r libSTARTIME=$(( $(date +%s%N) / 1000000 ))
 ## @brief	Library Version Number
-declare -a -r libVERSION=(2 1 2)
+declare -a -r libVERSION=(2 2 0)
 ## @brief	Log Levels
 declare -i -r logQUIET=0
 declare -i -r logDEFAULT=1
@@ -42,8 +42,8 @@ declare    flagDEBUG=false
 declare    flagTRACE=false
 declare -i logTARGET=$logQUIET
 declare -i logLEVEL=$logQUIET
-declare libTMP=""
-declare logFILE=""
+declare    libTMP=""
+declare    logFILE=""
 ## @brief	Timeout
 declare -i libTIMEOUT=10
 ### @brief	Functions Lsit
@@ -121,6 +121,7 @@ function isLogDefault()
 		false
 	fi
 }
+
 function isLogVerbose()
 {
 	if [ $logLEVEL -ge $logVERBOSE ]
@@ -657,7 +658,6 @@ function wait()
 	echo
 	return 2
 }
-
 
 ##
 # @fn		loadID()
