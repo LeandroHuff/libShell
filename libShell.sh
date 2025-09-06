@@ -133,7 +133,7 @@ function isLogVerbose()
 
 function isLogToScreenEnabled()
 {
-	if [ $((logTARGET & logTOSCREEN)) -eq $logTOSCREEN ]
+	if [ $((logTARGET & logTOSCREEN)) -ne 0 ]
 	then
 		true
 	else
@@ -143,7 +143,7 @@ function isLogToScreenEnabled()
 
 function isLogToFileEnabled()
 {
-	if [ $((logTARGET & logTOFILE)) -eq $logTOFILE ]
+	if [ $((logTARGET & logTOFILE)) -ne 0 ]
 	then
 		true
 	else
@@ -722,8 +722,9 @@ function libInit()
 			if isArgValue $2 ; then
 				shift
 				if isInteger $1 ; then
-					if [ $1 -ge $logQUIET ] && [ $1 -le $logFULL ] ; then
-						logTARGET=$(($1 * logSCREEN))
+					local target=$1
+					if [ $target -ge $logQUIET ] && [ $target -le $logFULL ] ; then
+						logTARGET=$((target * logTOSCREEN))
 					else
 						logF "Value for parameter -l|--log <0|1|2|3> is out of range."
 						return 1
@@ -733,7 +734,7 @@ function libInit()
 					return 1
 				fi
 			else
-				logTARGET=$((logSCREEN + logFILE))
+				logTARGET=$((logTOSCREEN + logTOFILE))
 			fi
 			logD "Log target set to ($logTARGET)"
 			;;
