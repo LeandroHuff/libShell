@@ -120,7 +120,9 @@ function genRandomStringSpace() { [ -n "$1" ] && tr < /dev/urandom -d -c "A-Za-z
 ## @brief   Generate date and time as a code string (without spaces)
 function genDateTimeAsCode() { echo -n $(date '+%Y-%m-%d-%H-%M-%S-%3N') ; return 0 ; }
 ## @brief   Generate date and time string
-function getDateTime() { echo -n "$(date '+%Y-%m-%d %H:%M:%S.%3N')" ; return 0 ; }
+function getDate() { echo -n "$(date '+%Y-%m-%d')" ; }
+function getTime() { echo -n "$(date '+%H:%M:%S.%3N')" ; }
+function getDateTime() { echo -n "$(getDate) $(getTime)" ; }
 ## @brief   Get libShell version number as string
 function getLibVersionStr() { genVersionStr ${libVERSION[@]} ; }
 ## @brief   Get libShell version as a numer
