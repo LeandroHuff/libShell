@@ -43,8 +43,8 @@ declare flagDEBUG=false
 declare flagTRACE=false
 declare -i logTARGET=$logQUIET
 declare -i logLEVEL=$logQUIET
-declare libTMP=""
-declare logFILE=""
+declare libTMP=''
+declare logFILE=''
 ## @brief   Timeout
 declare -i libTIMEOUT=10
 ## @brief   Get script name
