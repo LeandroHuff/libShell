@@ -645,8 +645,8 @@ declare -a -r testTABLE=(\
 \
 41  0 23                           test_genDateTimeAsCode               ''                                                    ''       ''  \
 42  0 23                           test_genDateTimeAsCode               ''                                                    ''       ''  \
-43  0 24                           test_getDateTime                     ''                                                    ''       ''  \
-44  0 24                           test_getDateTime                     ''                                                    ''       ''  \
+43  0 23                           test_getDateTime                     ''                                                    ''       ''  \
+44  0 23                           test_getDateTime                     ''                                                    ''       ''  \
 45  0 2.2.3                        getLibVersionStr                     ''                                                    ''       ''  \
 46  0 223                          getLibVersionNum                     ''                                                    ''       ''  \
 47  0 true                         test_getRuntime                      ''                                                    ''       ''  \
@@ -735,7 +735,7 @@ declare -a -r testTABLE=(\
 122 1 ''                           isUpperHexadecimalNumber             0123456789ABCDEFa                                     ''       ''  \
 123 0 ''                           isAllGraphChar                       "AZaz09'\"\`¹²³£¢¬§ªº°~^?!;:.,@#$%&{[(<>)]}_=+-*/\| " ''       ''  \
 124 0 "$PWD/libShell.sh"           followLink                           testLink                                              ''       ''  \
-125 0 ''                           followLink                           notExist                                              ''       ''  \
+125 1 ''                           followLink                           notExist                                              ''       ''  \
 126 0 0                            strLength                            ''                                                    ''       ''  \
 127 0 32                           strLength                            abcdefghijklmnopfqrstuvwxyz01234                      ''       ''  \
 128 0 10                           strLength                            'A1b4@6^8<0'                                          ''       ''  \
@@ -776,8 +776,8 @@ declare -a -r testTABLE=(\
 160 1 ''                           isGitRepository                      ''                                                    ''       ''  \
 \
 161 0 ''                           isGitRepository                      "$PWD"                                                ''       ''  \
-162 1 ''                           getGitRepositoryName                 /tmp                                                  ''       ''  \
-163 0 libShell                     getGitRepositoryName                 "$PWD"                                                ''       ''  \
+162 1 ''                           gitRepositoryName                    /tmp                                                  ''       ''  \
+163 0 libShell                     gitRepositoryName                    "$PWD"                                                ''       ''  \
 164 0 true                         test_isGitChanged                    "$PWD"                                                ''       ''  \
 165 0 true                         test_isGitChanged                    "$HOME/dev/libShell"                                  ''       ''  \
 166 1 false                        test_isGitChanged                    /tmp                                                  ''       ''  \

@@ -39,14 +39,14 @@ declare -r HMAGENTA="\033[95m"
 declare -r HCYAN="\033[96m"
 declare -r HWHITE="\033[97m"
 ## @brief   Log Variables
-flagDEBUG=false
-flagTRACE=false
-logTARGET=$logQUIET
-logLEVEL=$logQUIET
-libTMP=""
-logFILE=""
+declare flagDEBUG=false
+declare flagTRACE=false
+declare -i logTARGET=$logQUIET
+declare -i logLEVEL=$logQUIET
+declare libTMP=""
+declare logFILE=""
 ## @brief   Timeout
-libTIMEOUT=10
+declare -i libTIMEOUT=10
 ## @brief   Get script name
 function getScriptName() { echo -n "$(basename $0)" ; return 0 ; }
 ## @brief   Get file name from parameter
@@ -286,7 +286,7 @@ function isFloatInRange()
     return $err
 }
 ## @brief   Get git branch name
-function getGitBranchName()
+function gitBranchName()
 {
     local res=''
     local err=1
@@ -304,7 +304,7 @@ function getGitBranchName()
     return $err
 }
 ## @brief   Get git added files counter
-function getGitAddedCounter()
+function gitCountAdded()
 {
     local res=0
     local err=1
@@ -322,7 +322,7 @@ function getGitAddedCounter()
     return $err
 }
 ## @brief   Get git modified files counter
-function getGitModifiedCounter()
+function gitCountModified()
 {
     local res=0
     local err=1
@@ -340,7 +340,7 @@ function getGitModifiedCounter()
     return $err
 }
 ## @brief   Get git deleted files counter
-function getGitDeletedCounter()
+function gitCountDeleted()
 {
     local res=0
     local err=1
@@ -368,10 +368,8 @@ function isGitRepository()
         if isFile "$target" ; then
             target="$(getPath "$1")"
         fi
-    else
-        target="$PWD"
     fi
-    if itExist "$target/.git" ; then
+    if notEmpty "$target" && itExist "$target/.git" ; then
         if $(git -C "$1" rev-parse --git-dir > /dev/null 2>&1)
         then
             true
@@ -383,7 +381,7 @@ function isGitRepository()
     fi
 }
 ## @brief   Get git repository name
-function getGitRepositoryName()
+function gitRepositoryName()
 {
     local res=''
     local err=1
@@ -403,9 +401,9 @@ function getGitRepositoryName()
 ## @brief   Check git files changed
 function isGitChanged()
 {
-    if [ $(getGitAddedCounter "$1") -gt 0 ] || \
-    [ $(getGitModifiedCounter "$1") -gt 0 ] || \
-    [ $(getGitDeletedCounter "$1") -gt 0 ]
+    if [ $(gitCountAdded    "$1") -gt 0 ] || \
+       [ $(gitCountModified "$1") -gt 0 ] || \
+       [ $(gitCountDeleted  "$1") -gt 0 ]
     then
         true
         return 0
@@ -414,6 +412,104 @@ function isGitChanged()
         return 1
     fi
 }
+
+function existBranch()
+{
+    local res
+    [ -n "$1" ] || { logF "Empty parameter for existBranch(\$1)" ; return 1 ; }
+    res=$(git branch | grep -oF "$1" > /dev/null 2>&1)
+    [ $? -eq 0 ] && true || false
+}
+
+function inBranch()
+{
+    local res
+    [ -n "$1" ] || { logF "Empty parameter for inBranch(\$1)" ; return 1 ; }
+    res=$(git branch --show-current | grep -oF "$1" > /dev/null 2>&1)
+    [ $? -eq 0 ] && true || false
+}
+
+function gitAdd()
+{
+    local res
+    [ -n "$1" ] || { logF "Empty parameter for gitAdd(\$1)" ; return 1 ; }
+    res=$(git add "$1" > /dev/null 2>&1)
+    return $?
+}
+
+function gitCommitNotSigned()
+{
+    local res
+    [ -n "$1" ] || { logF "Empty parameter for gitNotSignCommit(\$1)" ; return 1 ; }
+    res=$(git commit -m \""$1"\" > /dev/null 2>&1)
+    return $?
+}
+
+function gitCommitSigned()
+{
+    local res
+    [ -n "$1" ] || { logF "Empty parameter for gitSignCommit(\$1)" ; return 1 ; }
+    res=$(git commit -s -m \""$1"\" > /dev/null 2>&1)
+    return $?
+}
+
+function gitFetch()
+{
+    local res
+    res=$(git fetch origin HEAD > /dev/null 2>&1)
+    return $?
+}
+
+function gitPull()
+{
+    local res
+    res=$(git pull origin HEAD > /dev/null 2>&1)
+    return $?
+}
+
+function gitPush()
+{
+    local res
+    res=$(git push origin HEAD > /dev/null 2>&1)
+    return $?
+}
+
+function gitSetUpstream()
+{
+    local res
+    res=$(git push --set-upstream origin > /dev/null 2>&1)
+    return $?
+}
+
+function newBranch()
+{
+    local res
+    [ -n "$1" ] || { logF "Empty parameter for newBranch(\$1)" ; return 1 ; }
+    res=$(git branch "$1" > /dev/null 2>&1)
+    return $?
+}
+
+function gitSwitch()
+{
+    local res
+    [ -n "$1" ] || { logF "Empty parameter for gitSwitch(\$1)" ; return 1 ; }
+    res=$(git switch "$1" > /dev/null 2>&1)
+    return $?
+}
+
+function createBranch()
+{
+    local res
+    [ -n "$1" ] || { logF "Empty parameter for createBranch(\$1)" ; return 1 ; }
+    res=$(newBranch "$1")
+    [ $? -eq 0 ] || { logF "newBranch($1)" ; return $? ; }
+    res=$(gitSwitch "$1")
+    [ $? -eq 0 ] || { logF "gitSwitch($1)" ; return $? ; }
+    res=$(gitSetUpstream)
+    [ $? -eq 0 ] || { logF "gitSetUpstream()" ; return $? ; }
+    return $?
+}
+
 ## @brief   Check if link referenced exist
 function linkExist()
 {
