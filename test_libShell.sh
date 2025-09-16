@@ -49,6 +49,15 @@ function _unsetVars
     return 0
 }
 
+function _exit()
+{
+    local code=$([ -n "$1" ] && echo -n $1 || echo -n 0)
+    logEnd
+    libStop
+    _unsetVars
+    exit $code
+}
+
 function test_genRandomAlpha()
 {
     local str="$(genRandomAlpha $1)"
@@ -852,7 +861,7 @@ declare -a -r testTABLE=(\
 229 0 128                          test_genRandom                       space                                                 128      ''  \
 230 0 23                           test_genRandom                       date                                                  0        ''  \
 \
-231 0 FAILURE                           genUUID                         ''                                                    ''       ''  \
+231 1 FAILURE                           genUUID                         ''                                                    ''       ''  \
 232 0 8                            test_genUUID                         alpha                                                 8        ''  \
 233 0 13                           test_genUUID                         alpha                                                 8        4   \
 234 0 49                           test_genUUID                         alpha                                                 16       32  \
@@ -951,10 +960,20 @@ declare -a -r testTABLE=(\
 #               Print a bar graph according to its results and
 #               log message about the total of success or errors.
 
-source libShell.sh || { logFail "Load libShell"   ; exit 1 ; }
-libInit            || { logFail "Call libInit()"  ; exit 1 ; }
-libSetup "$@"      ||   logFail "Call libSetup( $@ )"
-logBegin           ||   logFail "Call logBegin()"
+
+source libShell.sh || { logFail "Load libShell"   ; return 1 ; }
+libInit -v -l 3    || { logFail "Call libInit()"  ; return 1 ; }
+
+if [ $# -gt 0 ] ; then
+    while [ -n "$1" ] ; do
+        case "$1" in
+            -h|--help) libSetup $1 ; return $? ;;
+            *) libSetup "$@" || return $? ;;
+        esac
+    done
+fi
+
+logBegin || logFail "Call logBegin()"
 
 LINE=0
 offset=0
@@ -1020,6 +1039,4 @@ if [ $ERR -gt 0 ] ; then logFail "${HRED}$ERR${NC} Test(s)"  ; fi
 
 ########################################
 
-logEnd     || logFail "Call logEnd()"
-libStop    || logFail "Call libStop()"
-_unsetVars || logFail "Call _unsetVars()"
+_exit 0
