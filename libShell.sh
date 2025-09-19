@@ -1,22 +1,27 @@
 ################################################################################
 #/D # libShell
-#/D 
+#/D
 #/D **Description**: Shell Script Library.
 #/D        **File**: libShell.sh
 #/D      **Author**: Leandro - leandrohuff@programmer.net
 #/D        **Date**: 2025-09-10
 #/D     **Version**: 2.2.3
 #/D   **Copyright**: CC01 1.0 Universal
-#/D Formatted script file to service as a shell function library.
-#/D Let a rapid shell script development with a list of common and
-#/D most used functions.
+#/D
+#/D Save formatted markdown lines from source code into destine file.
+#/D Read source code line-by-line and save prefixed lines by "/D" to a file,
+#/D these lines are previously formatted by markdown tags, send each line
+#/D to a documentation file will automatically generate a auto document from
+#/D source code. C/C++ source code lines start with '//D' tag and Shell Script
+#/D lines start with '#/D' tags. Only lines started with apropriate tags are
+#/D sent to respective documentation files.
 ################################################################################
 
 ################################################################################
-#/D 
+#/D
 #/D ## Constants
 
-#/D 
+#/D
 #/D *integer* **libSTARTIME** = *timeseconds*
 declare -i libSTARTIME=$(( $(date +%s%N) / 1000000 ))
 #/D *integer*[] **libVERSION** = *(2 2 3)*
@@ -39,10 +44,10 @@ declare -i    logTOFILE=32
 declare -a    typeRANDOM=(alpha digit alnum lowhex uphex mixhex random space date)
 
 ################################################################################
-#/D 
+#/D
 #/D ## Color Codes
 
-#/D 
+#/D
 #/D *string* **NC** = *'\033[0m'*
 declare NC='\033[0m'
 #/D *string* **BLACK** = *'\033[30m'*
@@ -79,10 +84,10 @@ declare HCYAN='\033[96m'
 declare WHITE='\033[97m'
 
 ################################################################################
-#/D 
+#/D
 #/D ## Variables
 
-#/D 
+#/D
 #/D *boolean* **flagDEBUG** = *false*
 declare flagDEBUG=false
 #/D *boolean* **flagTRACE** = *false*
@@ -99,16 +104,16 @@ declare logFILE=''
 declare libTIMEOUT=10
 
 ################################################################################
-#/D 
+#/D
 #/D ## Functions
 
 ################################################################################
-#/D 
+#/D
 #/D ### Shell
 
-#/D 
+#/D
 #/D #### isYes()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isYes**( *string* ) : *boolean*
 #/D Check for affirmative parameter.
@@ -121,9 +126,9 @@ declare libTIMEOUT=10
 #/D *none*
 function isYes() { case "$1" in [yY] | [yY][eE][sS]) true ;; *) false ;; esac ; }
 
-#/D 
+#/D
 #/D #### isNot()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isNot**( *string* ) : *boolean*
 #/D Check for negative parameter.
@@ -136,9 +141,9 @@ function isYes() { case "$1" in [yY] | [yY][eE][sS]) true ;; *) false ;; esac ; 
 #/D *none*
 function isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
 
-#/D 
+#/D
 #/D #### isEmpty()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isEmpty**( *string* ) : *boolean*
 #/D Check empty parameter.
@@ -151,9 +156,9 @@ function isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false
 #/D *none*
 function isEmpty() { if [ -n "$1" ] ; then false ; else true ; fi ; }
 
-#/D 
+#/D
 #/D #### notEmpty()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **notEmpty**( *string* ) : *boolean*
 #/D Check not empty parameter.
@@ -166,9 +171,9 @@ function isEmpty() { if [ -n "$1" ] ; then false ; else true ; fi ; }
 #/D *none*
 function notEmpty() { if [ -n "$1" ] ; then true ; else false ; fi ; }
 
-#/D 
+#/D
 #/D #### isParameter()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isParameter**( *string* ) : *boolean*
 #/D Check for a valid command line parameter tag.
@@ -193,9 +198,9 @@ function isParameter()
     fi
 }
 
-#/D 
+#/D
 #/D #### isArgValue()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isArgValue**( *string* ) : *boolean*
 #/D Check for a valid command line parameter argument|value.
@@ -220,9 +225,9 @@ function isArgValue()
     fi
 }
 
-#/D 
+#/D
 #/D #### getScriptName()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getScriptName**( *none* ) : *string*
 #/D Get shell script filename.
@@ -234,9 +239,9 @@ function isArgValue()
 #/D *none*
 function getScriptName() { echo -n "$(basename $0)" ; }
 
-#/D 
+#/D
 #/D #### getFileName()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **getFileName**( *string* ) : *string*
 #/D Filter filename from parameter string and return only the filename.
@@ -259,9 +264,9 @@ function getFileName()
     fi
 }
 
-#/D 
+#/D
 #/D #### getName()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **getName**( *string* ) : *string*
 #/D Filter name from filename parameter string and return only the name.
@@ -284,9 +289,9 @@ function getName()
     fi
 }
 
-#/D 
+#/D
 #/D #### getExt()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **getExt**( *string* ) : *string*
 #/D Filter extension from filename parameter string and return only the extension.
@@ -309,9 +314,9 @@ function getExt()
     fi
 }
 
-#/D 
+#/D
 #/D #### getPath()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **getPath**( *string* ) : *string*
 #/D Filter path from filename parameter string and return only the path.
@@ -333,9 +338,9 @@ function getPath()
     fi
 }
 
-#/D 
+#/D
 #/D #### askToContinue()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **askToContinue**( *integer* , *string* ) : *string*
 #/D Print a message and ask user to continue and get the answer.
@@ -385,9 +390,9 @@ function askToContinue()
     return $ret
 }
 
-#/D 
+#/D
 #/D #### wait()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **wait**( *integer* , *string* ) : *string*
 #/D Print a message and wait user to continue.
@@ -420,9 +425,9 @@ function wait()
     return 2
 }
 
-#/D 
+#/D
 #/D #### loadID()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **loadID**( *none* ) : *string*
 #/D Source /etc/os-release file.
@@ -448,9 +453,9 @@ function loadID()
     return 0
 }
 
-#/D 
+#/D
 #/D #### getID()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **getID**( *none* ) : *string*
 #/D Get ID from os-release file.
@@ -481,9 +486,9 @@ function getID()
     return 0
 }
 
-#/D 
+#/D
 #/D #### getDistroName()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **getDistroName**( *none* ) : *string*
 #/D Get Linux distro name.
@@ -509,9 +514,9 @@ function getDistroName()
 #/D
 #/D ### File System
 
-#/D 
+#/D
 #/D #### isLink()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isLink**( *string* ) : *boolean*
 #/D Check if parameter is a link to file or directory.
@@ -524,9 +529,9 @@ function getDistroName()
 #/D *none*
 function isLink() { if [ -L "$1" ] ; then true ; else false ; fi ; }
 
-#/D 
+#/D
 #/D #### isFile()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isFile**( *string* ) : *boolean*
 #/D Check if parameter is a regular file.
@@ -539,9 +544,9 @@ function isLink() { if [ -L "$1" ] ; then true ; else false ; fi ; }
 #/D *none*
 function isFile() { if [ -f "$1" ] ; then true ; else false ; fi ; }
 
-#/D 
+#/D
 #/D #### isDir()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isDir**( *string* ) : *boolean*
 #/D Check if parameter is a directory.
@@ -554,9 +559,9 @@ function isFile() { if [ -f "$1" ] ; then true ; else false ; fi ; }
 #/D *none*
 function isDir() { if [ -d "$1" ] ; then true ; else false ; fi ; }
 
-#/D 
+#/D
 #/D #### isBlockDevice()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isBlockDevice**( *string* ) : *boolean*
 #/D Check if parameter is a block device.
@@ -569,9 +574,9 @@ function isDir() { if [ -d "$1" ] ; then true ; else false ; fi ; }
 #/D *none*
 function isBlockDevice() { if [ -b "$1" ] ; then true ; else false ; fi ; }
 
-#/D 
+#/D
 #/D #### followLink()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **followLink**( *string* ) : *string*
 #/D Follow target from link.
@@ -595,9 +600,9 @@ function followLink()
     return $err
 }
 
-#/D 
+#/D
 #/D #### linkExist()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **linkExist**( *string* ) : *boolean*
 #/D Check if link referenced exist.
@@ -619,9 +624,9 @@ function linkExist()
     fi
 }
 
-#/D 
+#/D
 #/D #### itExist()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **itExist**( *string* ) : *boolean*
 #/D Check if file or directory or link reference exist.
@@ -652,9 +657,9 @@ function itExist()
     fi
 }
 
-#/D 
+#/D
 #/D #### getTempDir()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getTempDir**( *none* ) : *string*
 #/D Get a valid and accessible temporary directory and return it.
@@ -666,9 +671,9 @@ function itExist()
 #/D *none*
 function getTempDir() { [ -d '/tmp' ] && echo -n '/tmp' || echo "$HOME" ; }
 
-#/D 
+#/D
 #/D #### getMountDir()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getMountDir**( *none* ) : *string*
 #/D Get mount directory.
@@ -687,12 +692,12 @@ function getMountDir()
 }
 
 ################################################################################
-#/D 
+#/D
 #/D ### Git
 
-#/D 
+#/D
 #/D #### gitBranchName()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitBranchName**( *string* ) : *string*
 #/D Get current git branch name.
@@ -721,9 +726,9 @@ function gitBranchName()
     return $err
 }
 
-#/D 
+#/D
 #/D #### gitCountAdded()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitCountAdded**( *string* ) : *integer*
 #/D Get git added files counter.
@@ -752,9 +757,9 @@ function gitCountAdded()
     return $err
 }
 
-#/D 
+#/D
 #/D #### gitCountModified()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitCountModified**( *string* ) : *integer*
 #/D Get git modified files counter.
@@ -783,9 +788,9 @@ function gitCountModified()
     return $err
 }
 
-#/D 
+#/D
 #/D #### gitCountDeleted()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitCountDeleted**( *string* ) : *integer*
 #/D Get git deleted files counter.
@@ -814,9 +819,9 @@ function gitCountDeleted()
     return $err
 }
 
-#/D 
+#/D
 #/D #### gitCountDeleted()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isGitRepository**( *string* ) : *boolean*
 #/D Check is a git repository.
@@ -850,9 +855,9 @@ function isGitRepository()
     fi
 }
 
-#/D 
+#/D
 #/D #### gitRepositoryName()
-#/D 
+#/D
 #/D **Function**:
 #/D *inreger* **gitRepositoryName**( *string* ) : *string*
 #/D Get git repository name.
@@ -882,9 +887,9 @@ function gitRepositoryName()
     return $err
 }
 
-#/D 
+#/D
 #/D #### isGitChanged()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isGitChanged**( *string* ) : *boolean*
 #/D Check repository git files changed.
@@ -907,9 +912,9 @@ function isGitChanged()
     fi
 }
 
-#/D 
+#/D
 #/D #### existBranch()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **existBranch**( *string* ) : *boolean*
 #/D Check if branch exist.
@@ -928,9 +933,9 @@ function existBranch()
     [ $? -eq 0 ] && true || false
 }
 
-#/D 
+#/D
 #/D #### inBranch()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **inBranch**( *string* ) : *boolean*
 #/D Check if respository is current branch.
@@ -949,9 +954,9 @@ function inBranch()
     [ $? -eq 0 ] && true || false
 }
 
-#/D 
+#/D
 #/D #### gitAdd()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitAdd**( *string* ) : *none*
 #/D Git add files to repository.
@@ -970,9 +975,9 @@ function gitAdd()
     return $?
 }
 
-#/D 
+#/D
 #/D #### gitCommitNotSigned()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitCommitNotSigned**( *string* ) : *none*
 #/D Not signed commit repository with a message.
@@ -991,9 +996,9 @@ function gitCommitNotSigned()
     return $?
 }
 
-#/D 
+#/D
 #/D #### gitCommitSigned()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitCommitSigned**( *string* ) : *none*
 #/D Signed commit repository with a message.
@@ -1012,9 +1017,9 @@ function gitCommitSigned()
     return $?
 }
 
-#/D 
+#/D
 #/D #### gitFetch()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitFetch**( *none* ) : *none*
 #/D Git fetch current branch.
@@ -1032,9 +1037,9 @@ function gitFetch()
     return $?
 }
 
-#/D 
+#/D
 #/D #### gitPull()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitPull**( *none* ) : *none*
 #/D Git pull current branch.
@@ -1052,9 +1057,9 @@ function gitPull()
     return $?
 }
 
-#/D 
+#/D
 #/D #### gitPush()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitPush**( *none* ) : *none*
 #/D Git push current branch.
@@ -1072,9 +1077,9 @@ function gitPush()
     return $?
 }
 
-#/D 
+#/D
 #/D #### gitSetUpstream()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitSetUpstream**( *none* ) : *none*
 #/D Set branch up stream for push commands.
@@ -1092,9 +1097,9 @@ function gitSetUpstream()
     return $?
 }
 
-#/D 
+#/D
 #/D #### newBranch()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **newBranch**( *string* ) : *none*
 #/D Createt new branch.
@@ -1113,9 +1118,9 @@ function newBranch()
     return $?
 }
 
-#/D 
+#/D
 #/D #### gitSwitch()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **gitSwitch**( *string* ) : *none*
 #/D Switch to branch name.
@@ -1134,9 +1139,9 @@ function gitSwitch()
     return $?
 }
 
-#/D 
+#/D
 #/D #### createBranch()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **createBranch**( *string* ) : *none*
 #/D Create a new git branch and switch to it.
@@ -1161,12 +1166,12 @@ function createBranch()
 }
 
 ################################################################################
-#/D 
+#/D
 #/D ### Math
 
-#/D 
+#/D
 #/D #### compareFloat()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **compareFloat**( *double* , *double* ) : *integer*
 #/D Compare float numbers and return -1, 0, 1
@@ -1193,9 +1198,9 @@ function compareFloat()
     return $err
 }
 
-#/D 
+#/D
 #/D #### addFloat()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **addFloat**( *double* , *double* ) : *double*
 #/D Add 2 float numbers.
@@ -1220,9 +1225,9 @@ function addFloat()
     return $err
 }
 
-#/D 
+#/D
 #/D #### subFloat()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **subFloat**( *double* , *double* ) : *double*
 #/D Subtract 2 floating point numbers.
@@ -1247,9 +1252,9 @@ function subFloat()
     return $err
 }
 
-#/D 
+#/D
 #/D #### multiplyFloat()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **multiplyFloat**( *double* , *double* ) : *double*
 #/D Multiply 2 float numbers.
@@ -1273,9 +1278,9 @@ function multiplyFloat()
     return $err
 }
 
-#/D 
+#/D
 #/D #### divFloat()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **divFloat**( *double* , *double* ) : *double*
 #/D Divide 2 float numbers.
@@ -1299,9 +1304,9 @@ function divFloat()
     return $err
 }
 
-#/D 
+#/D
 #/D #### isFloatInRange()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **isFloatInRange**( *double* value , *double* min , *double* max ) : *boolean*
 #/D Check is float number between 2 float min and max numbers value.
@@ -1324,12 +1329,12 @@ function isFloatInRange()
 }
 
 ################################################################################
-#/D 
+#/D
 #/D ### libShells
 
-#/D 
+#/D
 #/D #### getLibVersionStr()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getLibVersionStr**( *none* ) : *string*
 #/D Get libShell version in string format.
@@ -1341,9 +1346,9 @@ function isFloatInRange()
 #/D *none*
 function getLibVersionStr() { genVersionStr ${libVERSION[@]} ; }
 
-#/D 
+#/D
 #/D #### getLibVersionNum()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getLibVersionNum**( *none* ) : *string*
 #/D Get libShell version in number format.
@@ -1355,9 +1360,9 @@ function getLibVersionStr() { genVersionStr ${libVERSION[@]} ; }
 #/D *none*
 function getLibVersionNum() { echo -n $(genVersionNum ${libVERSION[@]}) ; }
 
-#/D 
+#/D
 #/D #### printLibVersion()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **printLibVersion**( *none* ) : *string*
 #/D Print formatted libShell string version.
@@ -1369,9 +1374,9 @@ function getLibVersionNum() { echo -n $(genVersionNum ${libVERSION[@]}) ; }
 #/D *none*
 function printLibVersion() { echo -e "libShell Version: ${GRAY}$(getLibVersionStr)${NC}" ; }
 
-#/D 
+#/D
 #/D #### getLibDateVersionStr()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getLibDateVersionStr**( *none* ) : *string*
 #/D Get libShell date number as string.
@@ -1383,9 +1388,9 @@ function printLibVersion() { echo -e "libShell Version: ${GRAY}$(getLibVersionSt
 #/D *none*
 function getLibDateVersionStr() { genDateVersionStr ${libDATE[@]} ; }
 
-#/D 
+#/D
 #/D #### getLibDateVersionNum()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getLibDateVersionNum**( *none* ) : *string*
 #/D Get libShell date as a numer.
@@ -1397,9 +1402,9 @@ function getLibDateVersionStr() { genDateVersionStr ${libDATE[@]} ; }
 #/D *none*
 function getLibDateVersionNum() { echo -n $(genDateVersionNum ${libDATE[@]}) ; }
 
-#/D 
+#/D
 #/D #### printLibDate()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **printLibDate**( *none* ) : *string*
 #/D Print formatted libShell string date.
@@ -1411,9 +1416,9 @@ function getLibDateVersionNum() { echo -n $(genDateVersionNum ${libDATE[@]}) ; }
 #/D *none*
 function printLibDate() { echo -e "libShell Date ${GRAY}$(getLibDateVersionStr)${NC}" ; }
 
-#/D 
+#/D
 #/D #### libSetup()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **libSetup**( *string*[] ) : *none*
 #/D Setup libShell.
@@ -1488,9 +1493,9 @@ function libSetup()
     return 0
 }
 
-#/D 
+#/D
 #/D #### libInit()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **libInit**( *string*[] ) : *none*
 #/D Initialize libShell.
@@ -1512,7 +1517,7 @@ function libInit()
 
 #/D
 #/D #### unsetLibVars()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **unsetLibVars**( *none* ) : *none*
 #/D Unset global libShell variables.
@@ -1534,7 +1539,7 @@ function unsetLibVars()
 
 #/D
 #/D #### libStop()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **libStop**( *none* ) : *none*
 #/D Stop|End library execution.
@@ -1550,10 +1555,10 @@ function libStop()
     return 0
 }
 
-#/D 
+#/D
 #/D
 #/D #### printLibHelp()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **printLibHelp**( *none* ) : *string*
 #/D Print library help information.
@@ -1589,12 +1594,12 @@ EOT
 }
 
 ################################################################################
-#/D 
+#/D
 #/D ### Log
 
 #/D
 #/D #### functiongetLogFilename()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getLogFilename**( *none* ) : *string*
 #/D Get log path and filename.
@@ -1608,7 +1613,7 @@ function getLogFilename() { echo -n "$(getTempDir)/$(getScriptName).log" ; }
 
 #/D
 #/D #### logBegin()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **logBegin**( *none* ) : *none*
 #/D Begin|Start log to file.
@@ -1634,7 +1639,7 @@ function logBegin()
 
 #/D
 #/D #### logEnd()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **logEnd**( *none* ) : *none*
 #/D End|Stop log to file.
@@ -1659,7 +1664,7 @@ function logEnd()
 
 #/D
 #/D #### isLogQuiet()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isLogQuiet**( *none* ) : *boolean*
 #/D Check is log quiet enabled.
@@ -1682,7 +1687,7 @@ function isLogQuiet()
 
 #/D
 #/D #### isLogDefault()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isLogDefault**( *none* ) : *boolean*
 #/D Check is log default enabled.
@@ -1705,7 +1710,7 @@ function isLogDefault()
 
 #/D
 #/D #### isLogVerbose()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isLogDefaultVerbose**( *none* ) : *boolean*
 #/D Check is log verbose enabled.
@@ -1728,7 +1733,7 @@ function isLogVerbose()
 
 #/D
 #/D #### isLogToScreenEnabled()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isLogToScreenEnabled**( *none* ) : *boolean*
 #/D Check is log to screen enabled.
@@ -1754,7 +1759,7 @@ function isLogToScreenEnabled()
 
 #/D
 #/D #### isLogToFileEnabled()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isLogToFileEnabled**( *none* ) : *boolean*
 #/D Check is log to file enabled.
@@ -1777,7 +1782,7 @@ function isLogToFileEnabled()
 
 #/D
 #/D #### isLogEnabled()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isLogEnabled**( *none* ) : *boolean*
 #/D Check is log enabled.
@@ -1798,9 +1803,9 @@ function isLogEnabled()
     fi
 }
 
-#/D 
+#/D
 #/D #### Log Functions Table
-#/D 
+#/D
 #/D | Function | Description   | Level   |
 #/D |:--------:|:-------------:|:-------:|
 #/D | logU     | Unconditional | none    |
@@ -1814,11 +1819,11 @@ function isLogEnabled()
 #/D | logW     | Warning       | verbose |
 #/D | logD     | Debug         | debug   |
 #/D | logT     | Trace         | trace   |
-#/D 
+#/D
 
 #/D
 #/D #### logU()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logU**( *string* ) : *string*
 #/D Log anything unconditional to screen and file.
@@ -1832,7 +1837,7 @@ function logU() { echo -e "$*" ; }
 
 #/D
 #/D #### logIt()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logIt**( *string* ) : *string*
 #/D Log anything according to log flags.
@@ -1856,7 +1861,7 @@ function logIt()
 
 #/D
 #/D #### logI()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logI**( *string* ) : *string*
 #/D Log information messages.
@@ -1880,7 +1885,7 @@ function logI()
 
 #/D
 #/D #### logE()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logE**( *string* ) : *string*
 #/D Log error messages.
@@ -1904,7 +1909,7 @@ function logE()
 
 #/D
 #/D #### logF()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logF**( *string* ) : *string*
 #/D Log failure messages.
@@ -1928,7 +1933,7 @@ function logF()
 
 #/D
 #/D #### logR()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logR**( *string* ) : *string*
 #/D Log runtime messages.
@@ -1953,7 +1958,7 @@ function logR()
 
 #/D
 #/D #### logS()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logS**( *string* ) : *string*
 #/D Log success messages.
@@ -1977,7 +1982,7 @@ function logS()
 
 #/D
 #/D #### logV()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logV**( *string* ) : *string*
 #/D Log verbose messages.
@@ -2001,7 +2006,7 @@ function logV()
 
 #/D
 #/D #### logW()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logW**( *string* ) : *string*
 #/D Log warning messages.
@@ -2025,7 +2030,7 @@ function logW()
 
 #/D
 #/D #### logD()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logD**( *string* ) : *string*
 #/D Log debug messages.
@@ -2049,7 +2054,7 @@ function logD()
 
 #/D
 #/D #### logT()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **logT**( *string* ) : *string*
 #/D Log trace messages.
@@ -2073,7 +2078,7 @@ function logT()
 
 #/D
 #/D #### getRuntimeStr()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **getRuntimeStr**( *none* ) : *string*
 #/D Generate|Get runtime string.
@@ -2096,12 +2101,12 @@ function getRuntimeStr()
 }
 
 ################################################################################
-#/D 
+#/D
 #/D ### String
 
-#/D 
+#/D
 #/D #### genRandomAlpha()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genRandomAlpha**( *integer* ) : *string*
 #/D Generate a randomic alphabetic string.
@@ -2114,9 +2119,9 @@ function getRuntimeStr()
 #/D *integer*   **1**: Failure
 function genRandomAlpha() { [ -n "$1" ] && tr < /dev/urandom -d -c "[:alpha:]" | head --bytes=$1 || return 1 ; }
 
-#/D 
+#/D
 #/D #### genRandomNumeric()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genRandomNumeric**( *integer* ) : *string*
 #/D Generate a randomic numeric string.
@@ -2129,9 +2134,9 @@ function genRandomAlpha() { [ -n "$1" ] && tr < /dev/urandom -d -c "[:alpha:]" |
 #/D *integer*   **1**: Failure
 function genRandomNumeric() { [ -n "$1" ] && tr < /dev/urandom -d -c "[:digit:]" | head --bytes=$1 || return 1 ; }
 
-#/D 
+#/D
 #/D #### genRandomAlphaNumeric()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genRandomAlphaNumeric**( *integer* ) : *string*
 #/D Generate a randomic alphanumeric string.
@@ -2144,9 +2149,9 @@ function genRandomNumeric() { [ -n "$1" ] && tr < /dev/urandom -d -c "[:digit:]"
 #/D *integer*   **1**: Failure
 function genRandomAlphaNumeric() { [ -n "$1" ] && tr < /dev/urandom -d -c "[:alnum:]" | head --bytes=$1 || return 1 ; }
 
-#/D 
+#/D
 #/D #### genRandomLowerHexadecimalNumber()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genRandomLowerHexadecimalNumber**( *integer* ) : *string*
 #/D Generate a randomic low case char hexadecimal string.
@@ -2159,9 +2164,9 @@ function genRandomAlphaNumeric() { [ -n "$1" ] && tr < /dev/urandom -d -c "[:aln
 #/D *integer*   **1**: Failure
 function genRandomLowerHexadecimalNumber() { [ -n "$1" ] && tr < /dev/urandom -d -c "[:digit:]a-f" | head --bytes=$1 || return 1 ; }
 
-#/D 
+#/D
 #/D #### genRandomUpperHexadecimalNumber()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genRandomUpperHexadecimalNumber**( *integer* ) : *string*
 #/D Generate a randomic upper case char hexadecimal string.
@@ -2174,9 +2179,9 @@ function genRandomLowerHexadecimalNumber() { [ -n "$1" ] && tr < /dev/urandom -d
 #/D *integer*   **1**: Failure
 function genRandomUpperHexadecimalNumber() { [ -n "$1" ] && tr < /dev/urandom -d -c "[:digit:]A-F" | head --bytes=$1 || return 1 ; }
 
-#/D 
+#/D
 #/D #### genRandomHexadecimalNumber()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genRandomHexadecimalNumber**( *integer* ) : *string*
 #/D Generate a randomic mixed case hexadecimal string.
@@ -2189,9 +2194,9 @@ function genRandomUpperHexadecimalNumber() { [ -n "$1" ] && tr < /dev/urandom -d
 #/D *integer*   **1**: Failure
 function genRandomHexadecimalNumber() { [ -n "$1" ] && tr < /dev/urandom -d -c "[:xdigit:]" | head --bytes=$1 || return 1 ; }
 
-#/D 
+#/D
 #/D #### genRandomString()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genRandomString**( *integer* ) : *string*
 #/D Generate a randomic string with no space.
@@ -2204,9 +2209,9 @@ function genRandomHexadecimalNumber() { [ -n "$1" ] && tr < /dev/urandom -d -c "
 #/D *integer*   **1**: Failure
 function genRandomString() { [ -n "$1" ] && tr < /dev/urandom -d -c "A-Za-z0-9\'\"\`~^?!;:.,@#$%&{[(<>)]}_=\+\-\*/\\|" | head --bytes=$1 || return 1 ; }
 
-#/D 
+#/D
 #/D #### genRandomStringSpace()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genRandomStringSpace**( *integer* ) : *string*
 #/D Generate a randomic string with space.
@@ -2219,9 +2224,9 @@ function genRandomString() { [ -n "$1" ] && tr < /dev/urandom -d -c "A-Za-z0-9\'
 #/D *integer*   **1**: Failure
 function genRandomStringSpace() { [ -n "$1" ] && tr < /dev/urandom -d -c "A-Za-z0-9\'\"\`~^?!;:.,@#$%&{[(<>)]}_=\+\-\*/\\| " | head --bytes=$1 || return 1 ; }
 
-#/D 
+#/D
 #/D #### genDateTimeAsCode()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **genDateTimeAsCode**( *none* ) : *string*
 #/D Generate a date and time as code number.
@@ -2233,9 +2238,9 @@ function genRandomStringSpace() { [ -n "$1" ] && tr < /dev/urandom -d -c "A-Za-z
 #/D *none*
 function genDateTimeAsCode() { echo -n $(date '+%Y-%m-%d-%H-%M-%S-%3N') ; }
 
-#/D 
+#/D
 #/D #### getDate()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getDate**( *none* ) : *string*
 #/D Generate a date string.
@@ -2247,9 +2252,9 @@ function genDateTimeAsCode() { echo -n $(date '+%Y-%m-%d-%H-%M-%S-%3N') ; }
 #/D *none*
 function getDate() { echo -n "$(date '+%Y-%m-%d')" ; }
 
-#/D 
+#/D
 #/D #### getTime()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getTime**( *none* ) : *string*
 #/D Generate a time string.
@@ -2261,9 +2266,9 @@ function getDate() { echo -n "$(date '+%Y-%m-%d')" ; }
 #/D *none*
 function getTime() { echo -n "$(date '+%H:%M:%S.%3N')" ; }
 
-#/D 
+#/D
 #/D #### getDateTime()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getDateTime**( *none* ) : *string*
 #/D Generate a date and time string.
@@ -2277,7 +2282,7 @@ function getDateTime() { echo -n "$(getDate) $(getTime)" ; }
 
 #/D
 #/D #### genRandom()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genRandom**( *string* , *integer* ) : *string*
 #/D Generate an random string according parameter length.
@@ -2314,7 +2319,7 @@ function genRandom()
 
 #/D
 #/D #### genUUID()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genUUID**( *string* , *integer* ) : *string*
 #/D Generate an random UUID string accorgin to type and length|eschema[]=(12 4 4 4 8)
@@ -2357,9 +2362,9 @@ function genUUID()
     return $err
 }
 
-#/D 
+#/D
 #/D #### getRuntime()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **getRuntime**( *none* ) : *string*
 #/D Get instantaneous timestamp in milleseconds.
@@ -2373,7 +2378,7 @@ function getRuntime() { echo -n $(( $(date +%s%N) / 1000000 )) ; }
 
 #/D
 #/D #### isFloat()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isFloat**( *string* ) : *boolean*
 #/D Check parameter is a floating point number.
@@ -2388,7 +2393,7 @@ function isFloat() { if [ -n "$( echo -n "$1" | grep -aoP "^[+-]?[0-9]+\.[0-9]+$
 
 #/D
 #/D #### isInteger()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isInteger**( *string* ) : *boolean*
 #/D Check parameter is an integer number.
@@ -2403,7 +2408,7 @@ function isInteger() { [ -n "$(echo "$1" | grep -oP "^[+-]?([0-9]+)$")" ] && tru
 
 #/D
 #/D #### isAlpha()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isAlpha**( *string* ) : *boolean*
 #/D Check parameter is an alphabetic string only.
@@ -2418,7 +2423,7 @@ function isAlpha() { [ -n "$(echo "$1" | grep -oP "^([A-Za-z]+)$")" ] && true ||
 
 #/D
 #/D #### isDigit()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isDigit**( *string* ) : *boolean*
 #/D Check parameter is a digit string only.
@@ -2433,7 +2438,7 @@ function isDigit() { [ -n "$(echo "$1" | grep -oP "^([0-9]+)$")" ] && true || fa
 
 #/D
 #/D #### isAlphaNumeric()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isAlphaNumeric**( *string* ) : *boolean*
 #/D Check parameter is an alphanumeric string only.
@@ -2448,7 +2453,7 @@ function isAlphaNumeric() { [ -n "$(echo "$1" | grep -oP "^([A-Za-z0-9]+)$")" ] 
 
 #/D
 #/D #### isHexadecimalNumber()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isHexadecimalNumber**( *string* ) : *boolean*
 #/D Check parameter is an hexadecimal string only.
@@ -2463,7 +2468,7 @@ function isHexadecimalNumber() { [ -n "$(echo "$1" | grep -oP "^([0-9A-Fa-f]+)$"
 
 #/D
 #/D #### isLowerHexadecimalNumber()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isLowerHexadecimalNumber**( *string* ) : *boolean*
 #/D Check parameter is a low case hexadecimal string only.
@@ -2478,7 +2483,7 @@ function isLowerHexadecimalNumber() { [ -n "$(echo "$1" | grep -oP "^([0-9a-f]+)
 
 #/D
 #/D #### isUpperHexadecimalNumber()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isUpperHexadecimalNumber**( *string* ) : *boolean*
 #/D Check parameter is an upper case hexadecimal string only.
@@ -2493,7 +2498,7 @@ function isUpperHexadecimalNumber() { [ -n "$(echo "$1" | grep -oP "^([0-9A-F]+)
 
 #/D
 #/D #### isGraphString()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isGraphString**( *string* ) : *boolean*
 #/D Check parameter is a graph char string.
@@ -2516,7 +2521,7 @@ function isGraphString()
 
 #/D
 #/D #### strLength()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **strLength**( *string* ) : *integer*
 #/D Get string length.
@@ -2537,7 +2542,7 @@ function strLength()
 
 #/D
 #/D #### strCompare()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **strCompare**( *string* , *string* ) : *integer*
 #/D Compare string and return -N, 0 , +N
@@ -2561,7 +2566,7 @@ function strCompare()
 
 #/D
 #/D #### genVersionStr()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genVersionStr**( *integer*[] ) : *string*
 #/D Generate version string from parameter.
@@ -2586,7 +2591,7 @@ function genVersionStr()
 
 #/D
 #/D #### genVersionNum()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genVersionNum**( *integer*[] ) : *ingeter*
 #/D Generate version number from parameter.
@@ -2611,7 +2616,7 @@ function genVersionNum()
 
 #/D
 #/D #### genDateVersionStr()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genDateVersionStr**( *integer*[] ) : *string*
 #/D Generate date version string from parameter.
@@ -2635,7 +2640,7 @@ function genDateVersionStr()
 
 #/D
 #/D #### genDateVersionNum()
-#/D 
+#/D
 #/D **Function**:
 #/D *integer* **genDateVersionNum**( *integer*[] ) : *integer*
 #/D Generate date version number from parameter.
@@ -2658,12 +2663,12 @@ function genDateVersionNum()
 }
 
 ################################################################################
-#/D 
+#/D
 #/D ### Connection
 
 #/D
 #/D #### isConnected()
-#/D 
+#/D
 #/D **Function**:
 #/D *none* **isConnected**( *none* ) : *boolean*
 #/D Check internet connecton available and ative.
