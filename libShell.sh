@@ -112,6 +112,31 @@ declare libTIMEOUT=10
 #/D ### Shell
 
 #/D
+#/D #### kbHit()
+#/D
+#/D **Function**:
+#/D *char* **kbHit**( *none* ) : *boolean*
+#/D Check for keyboard pressed key.
+#/D **Parameter**:
+#/D *none*
+#/D **Result**:
+#/D *boolean*    **true**:  Keyboard key was pressed.
+#/D *boolean*   **false**:  Keyboard key was not pressed.
+#/D **Return**:
+#/D *char*      'key'       Pressed Ansi keycode.
+function kbHit()
+{
+    local
+    if key=$(bin/kbhit)
+    then
+        echo -n ${key}
+        true
+    else
+       false
+    fi
+}
+
+#/D
 #/D #### isYes()
 #/D
 #/D **Function**:
