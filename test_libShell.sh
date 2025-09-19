@@ -1,45 +1,114 @@
 #!/usr/bin/env bash
+#/D test_libShell
+#/D 
+#/D **Description**: Shell script to test libShell Library
+#/D        **file**: test_libShell.sh
+#/D      **Author**: Leandro - leandrohuff@programmer.net
+#/D        **Date**: 2025-09-10
+#/D     **Version**: 2.0.3
+#/D   **Copyright**: CC01 1.0 Universal
+#/D     **Details**: Run a set of tests stored in a tatble to call libShell functions and pass some parameters to check its results.
+#/D      **Syntax**: test_libShell.sh -v -l 1
+#/D       **Where**: -v  show more verbose message about test results.
+#/D All command line parameters will be passed to libShell.
+#/D Functions or variables started with underline char (_) is a
+#/D local name and the underline is to avoid conflict with the
+#/D libShell name's.
 
-##
-# @brief        Shell script to test libShell Library                          #
-# @file         test_libShell.sh                                               #
-# @author       Leandro - leandrohuff@programmer.net                           #
-# @date         2025-09-10                                                     #
-# @version      2.0.2                                                          #
-# @copyright    CC01 1.0 Universal                                             #
-# @details      Run a set of tests stored in a tatble to call libShell         #
-#               functions and pass some parameters to check its results.       #
-#               Syntax: test_libShell.sh -v -l 1                               #
-#               Where: -v  show more verbose message about test results        #
-#               All command line parameters will be passed to libShell.        #
-#               Functions or variables started with underline char (_) is a    #
-#               local name and the underline is to avoid conflict with the     #
-#               libShell name's.
-
-declare -a -i -r testVERSION=(2 0 2)
-declare -a -i -r testDATE=(2025 9 10)
-
-# @brief    Local and unconditional log functions.
-declare -i testDEBUG=0
-function logOk()   { echo -e "\033[37mSuccess:\033[0m $*" ; }
-function logFail() { echo -e "\033[31mFailure:\033[0m $*" ; }
-function logDebug { [ $testDEBUG -eq 0 ] || echo -e "\033[32mDebug:\033[0m $*" ; }
-
+#/D 
+#/D ## Constants
+#/D 
+#/D *integer*[] **testVERSION**: Test version number.
+declare -a -i -r testVERSION=(2 0 3)
+#/D *integer*[] **testDATE**: Test version date.
+declare -a -i -r testDATE=(2025 9 18)
 ## @brief	Set global variables for local use.
+#/D *integer* **iLINE**: Index line value in testTABLE.
 declare -i -r iLINE=0
+#/D *integer* **iRET**: Index ret value in testTABLE.
 declare -i -r iRET=1
+#/D *integer* **iRES**: Index res value in testTABLE.
 declare -i -r iRES=2
+#/D *integer* **iFUNC**: Index func value in testTABLE.
 declare -i -r iFUNC=3
+#/D *integer* **iPARAM1**: Index 1st testTABLE parameter.
 declare -i -r iPARAM1=4
+#/D *integer* **iLINE**: Index 2nd testTABLE parameter.
 declare -i -r iPARAM2=5
+#/D *integer* **iLINE**: Index 3rd testTABLE parameter.
 declare -i -r iPARAM3=6
+#/D *integer* **iLINE**: Maximum index testTABLE items.
 declare -i -r iMAX=7
+
+#/D 
+#/D ## Variables
+#/D 
+# @brief    Local and unconditional log functions.
+#/D *integer* **testDEBUG**: Enable internal debug messages.
+declare -i testDEBUG=0
+#/D *integer* **OK**: Success counter.
 declare -i    OK=0
+#/D *integer* **ERR**: Error counter.
 declare -i    ERR=0
+#/D *integer* **RES**: Store results from testTABLE function.
 declare       RES
+#/D *integer* **RET**: Store return values from testTABLE function.
 declare       RET
 
-## @brief   Unset global test variables, not in libShell, for libShell call libEnd() function.
+#/D 
+#/D ## Functions
+#/D 
+#/D ### logOk()
+#/D 
+#/D Function:
+#/D *none* **logOk**() : *string*
+#/D Send success messages to screen.
+#/D Parameter:
+#/D *string* **message**    String message to sendo as success.
+#/D Result:
+#/D *string* **message**    Formatted message to send to screen.
+#/D Return:
+#/D *none*
+function logOk()   { echo -e "\033[37mSuccess:\033[0m $*" ; }
+#/D 
+#/D ### logFail()
+#/D 
+#/D Function:
+#/D *none* **logFail**() : *string*
+#/D Send failure messages to screen.
+#/D Parameter:
+#/D *string* **message**    String message to sendo as failure.
+#/D Result:
+#/D *string* **message**    Formatted message to send to failure.
+#/D Return:
+#/D *none*
+function logFail() { echo -e "\033[31mFailure:\033[0m $*" ; }
+#/D 
+#/D ### logDebug()
+#/D 
+#/D Function:
+#/D *none* **logDebug**() : *string*
+#/D Send debug messages to screen.
+#/D Parameter:
+#/D *string* **message**    String message to sendo as debug.
+#/D Result:
+#/D *string* **message**    Formatted message to send to screen.
+#/D Return:
+#/D *none*
+function logDebug { [ $testDEBUG -eq 0 ] || echo -e "\033[32mDebug:\033[0m $*" ; }
+
+#/D 
+#/D ### _unsetVars()
+#/D 
+#/D Function:
+#/D *integer* **_unsetVars**( *none* ) : *none*
+#/D Unset global test variables, not in libShell, for libShell call libEnd() function.
+#/D Parameter:
+#/D *none* **none**
+#/D Result:
+#/D *none*
+#/D Return:
+#/D *integer* **0** Success
 function _unsetVars
 {
     unset -v OK
@@ -49,6 +118,19 @@ function _unsetVars
     return 0
 }
 
+#/D 
+#/D ### _exit()
+#/D 
+#/D Function:
+#/D *integer* **_exit**( *integer* **code** ) : *none*
+#/D End program and exit code to system.
+#/D Parameter:
+#/D *integer* **code** Code number to exit it to system.
+#/D Result:
+#/D *none*
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function _exit()
 {
     local code=$([ -n "$1" ] && echo -n $1 || echo -n 0)
@@ -58,6 +140,19 @@ function _exit()
     exit $code
 }
 
+#/D 
+#/D ### test_genRandomAlpha()
+#/D 
+#/D Function:
+#/D *integer* **test_genRandomAlpha**( *integer* **length** ) : *integer*
+#/D Test genRandomAlpha() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genRandomAlpha()
 {
     local str="$(genRandomAlpha $1)"
@@ -71,6 +166,19 @@ function test_genRandomAlpha()
     fi
 }
 
+#/D 
+#/D ### test_genRandomNumeric()
+#/D 
+#/D Function:
+#/D *integer* **test_genRandomNumeric**( *integer* **length** ) : *integer*
+#/D Test genRandomNumeric() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genRandomNumeric()
 {
     local str="$(genRandomNumeric $1)"
@@ -84,6 +192,19 @@ function test_genRandomNumeric()
     fi
 }
 
+#/D 
+#/D ### test_genRandomAlphaNumeric()
+#/D 
+#/D Function:
+#/D *integer* **test_genRandomAlphaNumeric**( *integer* **length** ) : *integer*
+#/D Test genRandomAlphaNumeric() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genRandomAlphaNumeric()
 {
     local str="$(genRandomAlphaNumeric $1)"
@@ -97,6 +218,19 @@ function test_genRandomAlphaNumeric()
     fi
 }
 
+#/D 
+#/D ### test_genRandomHexadecimalNumber()
+#/D 
+#/D Function:
+#/D *integer* **test_genRandomHexadecimalNumber**( *integer* **length** ) : *integer*
+#/D Test genRandomHexadecimalNumber() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genRandomHexadecimalNumber()
 {
     local str="$(genRandomHexadecimalNumber $1)"
@@ -110,6 +244,19 @@ function test_genRandomHexadecimalNumber()
     fi
 }
 
+#/D 
+#/D ### test_genRandomLowerHexadecimalNumber()
+#/D 
+#/D Function:
+#/D *integer* **genRandomLowerHexadecimalNumber**( *integer* **length** ) : *integer*
+#/D Test genRandomLowerHexadecimalNumber() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genRandomLowerHexadecimalNumber()
 {
     local str="$(genRandomLowerHexadecimalNumber $1)"
@@ -123,6 +270,19 @@ function test_genRandomLowerHexadecimalNumber()
     fi
 }
 
+#/D 
+#/D ### test_genRandomUpperHexadecimalNumber()
+#/D 
+#/D Function:
+#/D *integer* **genRandomUpperHexadecimalNumber**( *integer* **length** ) : *integer*
+#/D Test genRandomUpperHexadecimalNumber() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genRandomUpperHexadecimalNumber()
 {
     local str="$(genRandomLowerHexadecimalNumber $1)"
@@ -136,12 +296,25 @@ function test_genRandomUpperHexadecimalNumber()
     fi
 }
 
+#/D 
+#/D ### test_genRandomString()
+#/D 
+#/D Function:
+#/D *integer* **genRandomString**( *integer* **length** ) : *integer*
+#/D Test genRandomString() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genRandomString()
 {
     local str="$(genRandomString $1)"
     local len=$(strLength "$str")
     echo -n $len
-    if isAllGraphChar "$str"
+    if isGraphString "$str"
     then
         return 0
     else
@@ -149,12 +322,25 @@ function test_genRandomString()
     fi
 }
 
+#/D 
+#/D ### test_genRandomStringSpace()
+#/D 
+#/D Function:
+#/D *integer* **genRandomStringSpace**( *integer* **length** ) : *integer*
+#/D Test genRandomStringSpace() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genRandomStringSpace()
 {
     local str="$(genRandomStringSpace $1)"
     local len=$(strLength "$str")
     echo -n $len
-    if isAllGraphChar "$str"
+    if isGraphString "$str"
     then
         return 0
     else
@@ -162,6 +348,19 @@ function test_genRandomStringSpace()
     fi
 }
 
+#/D 
+#/D ### test_genDateTimeAsCode()
+#/D 
+#/D Function:
+#/D *integer* **genDateTimeAsCode**( *integer* **length** ) : *integer*
+#/D Test genDateTimeAsCode() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genDateTimeAsCode()
 {
     local str="$(genDateTimeAsCode)"
@@ -175,11 +374,24 @@ function test_genDateTimeAsCode()
     fi
 }
 
+#/D 
+#/D ### test_genRandom()
+#/D 
+#/D Function:
+#/D *integer* **genRandom**( *integer* **length** ) : *integer*
+#/D Test genRandom() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_genRandom()
 {
     local str="$(genRandom $*)"
     echo -n $(strLength "$str")
-    if isAllGraphChar "$str"
+    if isGraphString "$str"
     then
         return 0
     else
@@ -187,6 +399,19 @@ function test_genRandom()
     fi
 }
 
+#/D 
+#/D ### test_getDateTime()
+#/D 
+#/D Function:
+#/D *integer* **getDateTime**( *integer* **length** ) : *integer*
+#/D Test getDateTime() function and return its result.
+#/D Parameter:
+#/D *integer* **length** Length parameter passed to tested function.
+#/D Result:
+#/D *integer* **length** String length returned from tested function.
+#/D Return:
+#/D *integer* **0**    Success
+#/D *integer* **1..N** Error code.
 function test_getDateTime()
 {
     local str="$(getDateTime)"
@@ -200,6 +425,18 @@ function test_getDateTime()
     fi
 }
 
+#/D 
+#/D ### test_printLibVersion()
+#/D 
+#/D Function:
+#/D *none* **printLibVersion**( *none* ) : *string*
+#/D Test printLibVersion() function and return its result.
+#/D Parameter:
+#/D *none*
+#/D Result:
+#/D *string* **message** Debug string messages.
+#/D Return:
+#/D *none*
 function test_printLibVersion()
 {
     local str="$(printLibVersion)"
@@ -557,7 +794,7 @@ function test_genUUID()
 {
     local str="$(genUUID $*)"
     echo -n $(strLength "$str")
-    if isAllGraphChar "$str"
+    if isGraphString "$str"
     then
         return 0
     else
@@ -656,8 +893,8 @@ declare -a -r testTABLE=(\
 42  0 23                           test_genDateTimeAsCode               ''                                                    ''       ''  \
 43  0 23                           test_getDateTime                     ''                                                    ''       ''  \
 44  0 23                           test_getDateTime                     ''                                                    ''       ''  \
-45  0 2.2.3                        getLibVersionStr                     ''                                                    ''       ''  \
-46  0 223                          getLibVersionNum                     ''                                                    ''       ''  \
+45  0 2.2.4                        getLibVersionStr                     ''                                                    ''       ''  \
+46  0 224                          getLibVersionNum                     ''                                                    ''       ''  \
 47  0 true                         test_getRuntime                      ''                                                    ''       ''  \
 48  0 "/tmp/$(basename $0).log"    getLogFilename                       ''                                                    ''       ''  \
 49  0 true                         test_isConnected                     ''                                                    ''       ''  \
@@ -742,7 +979,7 @@ declare -a -r testTABLE=(\
 \
 121 1 ''                           isUpperHexadecimalNumber             ABCDEFa                                               ''       ''  \
 122 1 ''                           isUpperHexadecimalNumber             0123456789ABCDEFa                                     ''       ''  \
-123 0 ''                           isAllGraphChar                       "AZaz09'\"\`¹²³£¢¬§ªº°~^?!;:.,@#$%&{[(<>)]}_=+-*/\| " ''       ''  \
+123 0 ''                           isGraphString                        "AZaz09'\"\`¹²³£¢¬§ªº°~^?!;:.,@#$%&{[(<>)]}_=+-*/\| " ''       ''  \
 124 0 "$PWD/libShell.sh"           followLink                           testLink                                              ''       ''  \
 125 1 ''                           followLink                           notExist                                              ''       ''  \
 126 0 0                            strLength                            ''                                                    ''       ''  \
@@ -940,10 +1177,10 @@ declare -a -r testTABLE=(\
 \
 301 1 ''                           libSetup                             -T                                                    1.0      ''  \
 302 1 ''                           libSetup                             -T                                                    -q       ''  \
-303 0 1234.56.78                   genDateVersionStr                    '1234 56 78'                                           ''      ''  \
+303 0 1234-56-78                   genDateVersionStr                    '1234 56 78'                                           ''      ''  \
 304 0 8765043021                   genDateVersionNum                    '8765 43 21'                                           ''      ''  \
-305 0 2025.09.10                   getLibDateVersionStr                 ''                                                     ''      ''  \
-306 0 2025009010                   getLibDateVersionNum                 ''                                                     ''      ''  \
+305 0 2025-09-18                   getLibDateVersionStr                 ''                                                     ''      ''  \
+306 0 2025009018                   getLibDateVersionNum                 ''                                                     ''      ''  \
 307 0 silverblue                   getDistroName                        ''                                                     ''      ''  \
 308 0 ''                           libInit                              ''                                                     ''      ''  \
 )
@@ -965,12 +1202,10 @@ source libShell.sh || { logFail "Load libShell"   ; return 1 ; }
 libInit -v -l 3    || { logFail "Call libInit()"  ; return 1 ; }
 
 if [ $# -gt 0 ] ; then
-    while [ -n "$1" ] ; do
-        case "$1" in
-            -h|--help) libSetup $1 ; return $? ;;
-            *) libSetup "$@" || return $? ;;
-        esac
-    done
+    case "$1" in
+        -h|--help) libSetup $1 ; return $? ;;
+        *) libSetup "$@" || return $? ;;
+    esac
 fi
 
 logBegin || logFail "Call logBegin()"
