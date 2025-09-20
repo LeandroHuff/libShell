@@ -112,31 +112,6 @@ declare libTIMEOUT=10
 #/D ### Shell
 
 #/D
-#/D #### kbHit()
-#/D
-#/D **Function**:
-#/D *char* **kbHit**( *none* ) : *boolean*
-#/D Check for keyboard pressed key.
-#/D **Parameter**:
-#/D *none*
-#/D **Result**:
-#/D *boolean*    **true**:  Keyboard key was pressed.
-#/D *boolean*   **false**:  Keyboard key was not pressed.
-#/D **Return**:
-#/D *char*      'key'       Pressed Ansi keycode.
-function kbHit()
-{
-    local
-    if key=$(bin/kbhit)
-    then
-        echo -n ${key}
-        true
-    else
-       false
-    fi
-}
-
-#/D
 #/D #### isYes()
 #/D
 #/D **Function**:
@@ -1193,6 +1168,53 @@ function createBranch()
 ################################################################################
 #/D
 #/D ### Math
+
+#/D
+#/D #### kbHit()
+#/D
+#/D **Function**:
+#/D *integer* **kbHit**( *none* ) : *none*
+#/D Check for keyboard pressed key.
+#/D **Parameter**:
+#/D *none*
+#/D **Result**:
+#/D *none*
+#/D **Return**:
+#/D *integer*   0   Keyboard key was pressed.
+#/D *integer*   1   Keyboard key was not pressed.
+function kbHit()
+{
+    if $(bin/kbhit)
+    then
+        true
+    else
+       false
+    fi
+}
+
+#/D
+#/D #### getChar()
+#/D
+#/D **Function**:
+#/D *integer* **getChar**( *none* ) : *char*
+#/D Get char from keyboard if pressed key.
+#/D **Parameter**:
+#/D *none*
+#/D **Result**:
+#/D *char*      'key'   Pressed Ansi keycode.
+#/D **Return**:
+#/D *integer*   0       Keyboard key was pressed.
+#/D *integer*   1       Keyboard key was not pressed.
+function getChar()
+{
+    if key=$(bin/getchar)
+    then
+        echo -n "$key"
+        true
+    else
+       false
+    fi
+}
 
 #/D
 #/D #### compareFloat()
