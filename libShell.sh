@@ -1858,6 +1858,7 @@ function isLogEnabled()
 #/D | logU     | Unconditional | none    |
 #/D | logIt    | Anything      | enabled |
 #/D | logI     | Info          | normal  |
+#/D | logNLF   | No line feed  | normal  |
 #/D | logR     | Runtime       | normal  |
 #/D | logE     | Error         | normal  |
 #/D | logF     | Failure       | normal  |
@@ -1975,6 +1976,26 @@ function logF()
         echo -e "${HRED}failure:${NC} $*" >> "${logFILE}"
     elif isLogToScreenEnabled ; then
         echo -e "${HRED}failure:${NC} $*"
+    fi
+}
+
+#/D
+#/D #### logNLF()
+#/D
+#/D **Function**:
+#/D *none* **logNLF**( *string* ) : *string*
+#/D Log anything according to log flags.
+#/D **Parameter**:
+#/D *string*    Send unformatted messages to screen and|or file.
+#/D **Result**:
+#/D *none*
+#/D **Return**:
+#/D *none*
+function logNLF()
+{
+    if ! isLogEnabled ; then return ; fi
+     if isLogToScreenEnabled ; then
+        echo -e -n "$*"
     fi
 }
 
