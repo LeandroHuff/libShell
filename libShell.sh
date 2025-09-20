@@ -1858,10 +1858,10 @@ function isLogEnabled()
 #/D | logU     | Unconditional | none    |
 #/D | logIt    | Anything      | enabled |
 #/D | logI     | Info          | normal  |
-#/D | logNLF   | No line feed  | normal  |
 #/D | logR     | Runtime       | normal  |
 #/D | logE     | Error         | normal  |
 #/D | logF     | Failure       | normal  |
+#/D | logNLF   | No line feed  | normal  |
 #/D | logS     | Success       | verbose |
 #/D | logV     | Verbose Info  | verbose |
 #/D | logW     | Warning       | verbose |
@@ -1995,7 +1995,7 @@ function logNLF()
 {
     if ! isLogEnabled ; then return ; fi
      if isLogToScreenEnabled ; then
-        echo -e -n "$*"
+        printf "\r$*"
     fi
 }
 
