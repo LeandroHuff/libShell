@@ -33,12 +33,12 @@ shell scripts.
 5. [test_libEscCodes](test/test_libEscCodes.sh)
 6. [test_libFile](test/test_libFile.sh)
 7. [test_libGit](test/test_libGit.sh)
-8. [test_libLog]](test/test_libLog.sh)
+8. [test_libLog](test/test_libLog.sh)
 9. [test_Math](test/test_libMath.sh)
 10. [test_libRandom](test/test_libRandom.sh)
 11. [test_libRegex](test/test_libRegex.sh)
 12. [test_libString](test/test_libString.sh)
-13. [test_libTemplate]](test/test_libTemplate.sh)
+13. [test_libTemplate](test/test_libTemplate.sh)
 14. [test_libTime](test/test_libTime.sh)
 
 
