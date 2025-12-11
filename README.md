@@ -1,14 +1,14 @@
 # libShell
 
-Shell script library is a script file that service as a functions and variables library,
-this file help to develop shell script programs without to re-write source code again.
+Shell script library is a pool of bash script files to service as a resource library,
+these files help developers to write bash script programs without to re-write source
+code again.
 
-The purpose is to avoid re-write|re-invent the most used source code for shell scripts,
-this approach accelerate the development of many common tasks for write script programs.
+The purpose is to resource most common variables and functions to avoid re-write|re-invent
+the most used source code for shell scripts, this approach accelerate the development of
+shell scripts.
 
-Most used functions are ready to use and the developer do not need to re-write it.
-
-## Libs
+## Libraries List
 
 1. [libConfig](libConfig.sh)
 2. [libConn](libConn.sh)
@@ -24,8 +24,22 @@ Most used functions are ready to use and the developer do not need to re-write i
 13. [libTemplate](libTemplate.sh)
 14. [libTime](libTime.sh)
 
-## Tests
+## Tests List
 
-[start_libTest](test/start_libTest.sh)
+1. [start_libTest](test/start_libTest.sh)
+2. [test_kbhit](test/test_kbhit.sh)
+3. [test_libConfig](test/test_libConfig.sh)
+4. [test_libConn](test/test_libConn.sh)
+5. [test_libEscCodes](test/test_libEscCodes.sh)
+6. [test_libFile](test/test_libFile.sh)
+7. [test_libGit](test/test_libGit.sh)
+8. [test_libLog]](test/test_libLog.sh)
+9. [test_Math](test/test_libMath.sh)
+10. [test_libRandom](test/test_libRandom.sh)
+11. [test_libRegex](test/test_libRegex.sh)
+12. [test_libString](test/test_libString.sh)
+13. [test_libTemplate]](test/test_libTemplate.sh)
+14. [test_libTime](test/test_libTime.sh)
+
 
 
