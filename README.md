@@ -34,7 +34,7 @@ shell scripts.
 6. [test_libFile](test/test_libFile.sh)
 7. [test_libGit](test/test_libGit.sh)
 8. [test_libLog](test/test_libLog.sh)
-9. [test_Math](test/test_libMath.sh)
+9. [test_libMath](test/test_libMath.sh)
 10. [test_libRandom](test/test_libRandom.sh)
 11. [test_libRegex](test/test_libRegex.sh)
 12. [test_libString](test/test_libString.sh)
