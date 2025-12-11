@@ -15,7 +15,7 @@ shell scripts.
 3. [libEscCodes](libEscCodes.sh)
 4. [libFile](libFile.sh)
 5. [libGit](libGit.sh)
-6. [libKbHit](ligKbHit.sh)
+6. [libKbHit](libKbHit.sh)
 7. [libLog](libLog.sh)
 8. [libMath](libmath.sh)
 9. [libRandom](libRandom.sh)
