@@ -67,6 +67,51 @@ function getMountDir()
     fi
 }
 
+function tryRun()
+{
+    local res=''
+    declare -i err=1
+    declare -i try=1
+    declare -i debugEn=0
+    declare -i traceEn=0
+    declare -i resultEn=0
+    function _isInt() { if echo -n "$1" | grep -aoP '^\d$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
+    function _error() { if [ $debugEn  -ne 0 ] ; then echo -e "\033[31m  error\033[0m: $*" >&2 ; fi ; }
+    function _debug() { if [ $debugEn  -ne 0 ] ; then echo -e "\033[32m  debug\033[0m: $*" >&2 ; fi ; }
+    function _result(){ if [ $resultEn -ne 0 ] ; then echo -n "$*" ; fi ; }
+    while [ -n "$1" ]
+    do
+        case "$1" in
+        -g|--debug) debugEn=1 ;;
+        -r|--res|--result) resultEn=1 ;;
+        -c|--retry)
+            shift
+            if _isInt "$1"
+            then
+                try=$1
+            else
+                _error "Invalid ($1) for option -c|--retry <number>"
+                break
+            fi
+            ;;
+        -*) _error "Invalid parameter ($1)" ; break ;;
+        *)  while [ $try -gt 0 ] && [ $err -ne 0 ]
+            do
+                _debug "eval $* 2> /dev/null"
+                res="$(eval "$* 2> /dev/null")"
+                err=$?
+                let try--
+            done
+            break
+            ;;
+        esac
+        shift
+    done
+    _debug "res: '${res}'"
+    _result "${res}"
+    return $err
+}
+
 function libFileExit()
 {
     unset -f getScriptName
@@ -83,6 +128,7 @@ function libFileExit()
     unset -f linkTargetExist
     unset -f itExist
     unset -f getMountDir
+    unset -f tryRun
     unset -f libFileExit
     return 0
 }

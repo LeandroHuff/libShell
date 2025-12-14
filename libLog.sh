@@ -163,7 +163,7 @@ Options:
   -f|--file [name]    Enable log to file as '/tmp/name.log',
                       [name] is an optional argument,
                       if empty, assume default as '/tmp/scriptname.log'.
-     --               Let follow parameter to next application.
+     --               Let next parameter to other application.
 EOT
     return $?
 }
@@ -181,7 +181,9 @@ EOT
 # parse and setup log from command line parameters.
 function logSetup()
 {
+    # is (I)nteger
     #function isI() { if echo -n "$1" | grep -aoP '^[+-]?[0-9]+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
+    # is (V)alue|Arg
     function isV() { case "$1" in --*|-*|'') false ;; *) true ;; esac ; }
     while [ -n "$1" ]
     do

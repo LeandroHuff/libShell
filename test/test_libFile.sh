@@ -216,7 +216,7 @@ declare -a testTABLE=(\
 \
 24      1       ''                  followLink          ''          ''          ''          '' \
 25      1       ''                  followLink          'linkNotExist' ''       ''          '' \
-26      0       'start_libTest.sh'  followLink          'linkExist' ''          ''          '' \
+26      0 "${PWD}/start_libTest.sh" followLink          'linkExist' ''          ''          '' \
 \
 27      1       ''                  linkTargetExist     ''          ''          ''          '' \
 28      1       ''                  linkTargetExist     'linkNotExist' ''       ''          '' \
@@ -231,7 +231,21 @@ declare -a testTABLE=(\
 \
 36      0       '/media'            getMountDir         ''          ''          ''          '' \
 \
-37      0       ''                  libFileExit         ''          ''          ''          '' \
+37      1       ''                  tryRun              ''          ''          ''          '' \
+38      1       ''                  tryRun              '-x'        ''          ''          '' \
+39      1       ''                  tryRun              '-c'        ''          ''          '' \
+40      1       ''                  tryRun              '-c'        'x'         ''          '' \
+41      1       ''                  tryRun              '-c'        '3'         ''          '' \
+42      1       ''                  tryRun              '-r'        ''          ''          '' \
+43      1       ''                  tryRun              '-c'        '3'         '-r'        '' \
+44      2       ''                  tryRun              'type -k git' ''        ''          '' \
+\
+45      0       ''                  tryRun              '-c' '3'              'type -t git' '' \
+46      0       'file'              tryRun              '-r'        'type -t git' ''        '' \
+47      0       'file'              tryRun              '-c' '3'    '-r'      'type -t git'    \
+48      0       ''                  tryRun              'type -t git' ''        ''          '' \
+\
+49      0       ''                  libFileExit         ''          ''          ''          '' \
 \
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4\
 )
@@ -343,7 +357,7 @@ do
             shift
         else
             logFail "Empty or wrong argument for -t|--timeout <time> option."
-            exit 9
+            _exit 9
         fi
         ;;
     --) shift
