@@ -26,6 +26,8 @@ declare regexDATETIME12='^\d{4}[-\.\/]((0?\d)|(1[0-2]))[-\.\/]((0?[1-9])|([1-2]\
 declare regexDATETIME24='^\d{4}[-\.\/]((0?\d)|(1[0-2]))[-\.\/]((0?[1-9])|([1-2]\d)|(3[0-1])) ((0?\d)|(1\d)|(2[0-3])):([0-5]\d):([0-5]\d)$'
 declare regexDATETIME124='^\d{4}[-\.\/]((0?\d)|(1[0-2]))[-\.\/]((0?[1-9])|([1-2]\d)|(3[0-1])) (((?:(1[0-2]|0?[1-9]):(?:[0-5][0-9])(:(?:[0-5]\d))? ?([AaPp][Mm])))|((?:[01]\d|2[0-3]):(?:[0-5]\d)(:(?:[0-5]\d))?))$'
 declare regexDATETIMEASCODE='^\d{4}-((0[1-9])|(1[0-2]))-(([0-2]\d)|(3[0-1]))-(([0-1]\d)|(2[0-3]))-([0-5]\d)-([0-5]\d)-(\d{3})$'
+declare regexCompressFile='[\w-]+\.((txz|tgz|tbz2|z|zip|7z|7zip|gz|gzip|xz|xzip|bz|bz2|bzip|bzip2){1}|(tar\.(gz|gzip|xz|xzip|bz|bz2|bzip|bzip2)){1})?$'
+declare regexCompressExt='(txz|tbz2|tgz|tar|z|zip|7z|7zip|gz|gzip|xz|xzip|bz|bz2|bzip|bzip2){1}|(tar\.(gz|gzip|xz|xzip|bz|bz2|bzip|bzip2){1})?$'
 
 # functions
 function regexIt()
