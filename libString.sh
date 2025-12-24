@@ -10,13 +10,13 @@
 function genVersionStr() { local vector=("${@}") ; echo -n "${vector[0]}.${vector[1]}.${vector[2]}" ; }
 function genVersionNum() { local vector=("${@}") ; echo -n $((vector[0]*100 + vector[1]*10 + vector[2])) ; }
 function genDateVersionStr() { local vector=("${@}") ; printf "%04d-%02d-%02d" ${vector[0]} ${vector[1]} ${vector[2]} ; }
-function genDateVersionNum() { local vector=("${@}") ;  echo -n $((vector[0]*1000000 + vector[1]*1000 + vector[2])) ; }
+function genDateVersionNum() { local vector=("${@}") ; echo -n $((vector[0]*1000000 + vector[1]*1000 + vector[2])) ; }
 function isYes() { case "$1" in [yY] | [yY][eE][sS]) true ;; *) false ;; esac ; }
 function isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
 function isEmpty()  { if [ -n "$1" ] ; then false ; else true  ; fi ; }
 function notEmpty() { if [ -n "$1" ] ; then true  ; else false ; fi ; }
-function isParam()  { if [ -z "$1" ] ; then false ; else { case "$1" in --*) true ;; -[0-9]) false ;; -*) true ;; *) false ;; esac ; } ; fi ; }
-function isArg()    { if [ -z "$1" ] ; then false ; else { case "$1" in --*) false ;; -*) false ;; *) true ;; esac ; } ; fi ; }
+function isParam()  { if [ -z "$1" ] ; then false ; else { case "$1" in --*) true  ;; -*) true  ;; *) false ;; esac ; } ; fi ; }
+function isArg()    { if [ -z "$1" ] ; then false ; else { case "$1" in --*) false ;; -*) false ;; *) true  ;; esac ; } ; fi ; }
 function getDate() { echo -n "$(date '+%Y-%m-%d')" ; }
 function getTime() { echo -n "$(date '+%H:%M:%S')" ; }
 function getDateTime() { echo -n "$(getDate) $(getTime)" ; }
