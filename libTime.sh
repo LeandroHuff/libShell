@@ -14,72 +14,22 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
 function _isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
 function _isYes() { case "$1" in [yY] | [yY][eE][sS])            true ;; *) false ;; esac ; }
-
-function wait() {
-    local _time=$(if _isInt $1 ; then echo -n $1 ; else echo -n $libTimeout ; fi)
-    local ans=''
-    if [ $_time -gt 0 ]; then
-        while true; do
-            echo -e -n "\rWait ($_time)? [n]: "
-            read -n 1 -N 1 -t 1 ans
-            _time=$((_time - 1))
-            if _isNot $ans || [ $_time -le 0 ]; then
-                echo
-                break
-            fi
-        done
-    else
-        read -n 1 -N 1 -p "Press any key to continue... "
-        echo
-    fi
-    return 0
+function ask()
+{
+    local ret ans=''
+    read -r -s -N 1 -n 1 $([ $1 -gt 0 ] && echo -n "-t $1") -p "${2}" ans
+    ret=$?
+    echo -n "${ans}"
+    return $ret
 }
 
-function askToContinue() {
-    local count=0
-    local err=2
-    if _isInt $1
-    then
-        count=$1
-        if [ $count -gt 0 ]
-        then
-            while [ $count -gt 0 ]
-            do
-                printf "\rContinue [y|n] ($count): "
-                read -t 1 -n 1 -N 1 answer
-                res=$?
-                if [ $res -eq 0 ]
-                then
-                    if _isYes $answer
-                    then
-                        echo
-                        err=0
-                        break
-                    elif _isNot $answer
-                    then
-                        echo
-                        err=1
-                        break
-                    fi
-                fi
-                count=$((count - 1))
-            done
-        elif [ $count -eq 0 ]
-        then
-            read -n 1 -N 1 -p "Continue [y|n]? : " answer
-            if [ $res -eq 0 ]
-            then
-                echo
-                err=0
-            elif _isNot $answers
-            then
-                echo
-                err=1
-            fi
-        fi
-    else
-        err=3
-    fi
+function askToContinue()
+{
+    local ret answer err=1
+    answer=$(ask $1 "$2")
+    ret=$?
+    echo
+    if [ $ret -eq 0 ] && _isYes $answer ; then err=0 ; fi
     return $err
 }
 

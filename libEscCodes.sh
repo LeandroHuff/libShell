@@ -141,9 +141,9 @@ function fullReset()
 
 function _kbhit()
 {
-    local wait=$([ -n "$2" ] && echo -n "$2" || echo -n '1.0')
+    local wait=$([ -n "$1" ] && echo -n "$1a" || echo -n '1.0')
     local ans=''
-    read -s -n 1 -t ${wait} ans && { echo -n "${ans}" ; return 0 ; }
+    read -r -s -n 1 -t ${wait} ans && { echo -n "${ans}" ; return 0 ; }
     return 1
 }
 
