@@ -260,7 +260,7 @@ declare -a testTABLE=(\
 46      1       ''              isParam             'a'                 ''          ''          '' \
 47      1       ''              isParam             '1'                 ''          ''          '' \
 48      0       ''              isParam             '-a'                ''          ''          '' \
-49      1       ''              isParam             '-2'                ''          ''          '' \
+49      0       ''              isParam             '-2'                ''          ''          '' \
 50      0       ''              isParam             '-a1'               ''          ''          '' \
 51      0       ''              isParam             '-a'                '1'         ''          '' \
 \

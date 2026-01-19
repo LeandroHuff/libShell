@@ -83,17 +83,25 @@ function logCRNLF() { echo -e -n "\r$*" ; }
 # log unconditional
 function logU() { if $flagFILE ; then echo -e "$*" | tee -a "${logFILE}" ; else echo -e "$*" ; fi ; }
 
-# log any message, check flags.
+# log any message
 function log()
 {
-    if ! $flagQUIET
+    if $flagFILE
     then
-        if $flagFILE
+        if $flagQUIET
         then
-            echo -e "$*" | tee -a "${logFILE}"
+            # only to file
+            echo -e "$*" >> "${logFILE}"
         else
-            echo -e "$*"
+            # to screen and file
+            echo -e "$*" | tee -a "${logFILE}"
         fi
+    elif ! $flagQUIET
+    then
+        # only to screen
+        echo -e "$*"
+    #else
+        # neither screen nor to file
     fi
 }
 
@@ -163,7 +171,7 @@ Options:
   -f|--file [name]    Enable log to file as '/tmp/name.log',
                       [name] is an optional argument,
                       if empty, assume default as '/tmp/scriptname.log'.
-     --               Let next parameter to other application.
+     --               Let next parameter to another application.
 EOT
     return $?
 }
@@ -207,25 +215,19 @@ function logSetup()
                 if [[ "${logFILE}" != "/tmp/$(basename ${1}).log" ]]
                 then
                     "${logFILE}"="/tmp/$(basename ${1}).log"
-                    logBegin
                     logD "New log to file ${logFILE}"
-                else
-                    logW "Log to file ${logFILE} was previously settled."
                 fi
             else
-                if [[ "${logFILE}" != "/tmp/$(basename ${0}).log" ]]
+                if [[ "${logFILE}" != "/tmp/$(basename "${0}").log" ]]
                 then
-                    "${logFILE}"="/tmp/$(basename ${0}).log"
-                    logBegin
+                    logFILE="/tmp/$(basename "${0}").log"
                     logD "New log to file ${logFILE}"
-                else
-                    logW "Log to file ${logFILE} was previously settled."
                 fi
             fi
             ;;
         --) shift ; break ;;
         -*) logU "${ERROR} Unknown parameter $1" ; return 1 ;;
-         *) logU "${ERROR} Unknown value $1"     ; return 1 ;;
+         *) logU "${ERROR} Unknown value $1"     ; return 2 ;;
         esac
         shift
     done
@@ -236,10 +238,8 @@ function logSetup()
 function logInit()
 {
     local err=0
-    [ $# -eq 0 ] || logSetup "$@"
-    err=$((err+$?))
-    if [ -z "${logFILE}" ] ; then logFILE="/tmp/$(basename "$0").log" ; fi
-    err=$((err+$?))
+    [ $# -eq 0 ] || logSetup "$@" || err=$((err+1))
+    [ -n "${logFILE}" ] || logFILE="/tmp/$(basename "$0").log"
     return $err
 }
 

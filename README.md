@@ -1,8 +1,8 @@
 # libShell
 
 Shell script library is a pool of bash script files to service as a resource library,
-these files help developers to write bash script programs without to re-write source
-code again.
+these files help developers to write bash script programs without to re-write most of
+source code again.
 
 The purpose is to resource most common variables and functions to avoid re-write|re-invent
 the most used source code for shell scripts, this approach accelerate the development of
