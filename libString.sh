@@ -1,11 +1,13 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libString.sh
 # @brief        Source variables and functions to treat and validate strings.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libString.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 function genVersionStr() { local vector=("${@}") ; echo -n "${vector[0]}.${vector[1]}.${vector[2]}" ; }
 function genVersionNum() { local vector=("${@}") ; echo -n $((vector[0]*100 + vector[1]*10 + vector[2])) ; }
@@ -45,5 +47,6 @@ function libStringExit()
     unset -f getDateTime
     unset -f strLen
     unset -f cmpStr
+    unset -f libStringExit
     return 0
 }

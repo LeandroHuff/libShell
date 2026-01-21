@@ -1,11 +1,13 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libKbHit.sh
 # @brief        Source variables and functions to detect keyboard key pressed.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libKbHit.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 function kbhit()
 {

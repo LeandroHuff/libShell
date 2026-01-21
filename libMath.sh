@@ -1,12 +1,14 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libLog.sh
 # @brief        Source variables and functions to calculate most common mathematics
 #               espressions.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libMath.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 function isNumber()
 {

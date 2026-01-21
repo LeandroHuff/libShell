@@ -1,11 +1,13 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libRandom.sh
 # @brief        Source variables and functions to generate randomic strings.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libRandom.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 declare -a typeRANDOM=(alpha digit alnum lowhex uphex mixhex graph space date)
 

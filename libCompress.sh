@@ -1,11 +1,13 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libCompress.sh
 # @brief        Source variables and functions to compress/uncompress files.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libCompress.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 function unCompress()
 {
@@ -65,4 +67,6 @@ function libCompressExit()
 {
     unset -f compress
     unset -f unCompress
+    unset -f libCompressExit
+    return 0
 }

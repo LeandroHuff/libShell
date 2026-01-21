@@ -1,12 +1,14 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libConfig.sh
 # @brief        Source variables and functions to save and load user configuration
 #               in/from local files.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libConfig.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 function getTag(){ echo -n "${1%=*}" ; }
 function getValue() { echo -n "${1##*=}" ; }

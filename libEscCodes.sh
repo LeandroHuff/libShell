@@ -1,11 +1,13 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libEscCodes.sh
 # @brief        Source variables and functions to resource escape codes for colors and fonts.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libEscCodes.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 # Variables
 

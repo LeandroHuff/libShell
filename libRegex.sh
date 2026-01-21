@@ -1,13 +1,17 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libRegex.sh
 # @brief        Source variables and functions to validate strings by regex string.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libRegex.sh
 ################################################################################
 
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
+
 # constants
+declare regexTAG='^\w+'
+declare regexVALUE='\w+$'
 declare regexFLOAT='^[-+]?(\d+\.?\d*|\d*\.\d+)([eE][+-]0*[1-9]+\d*)?$'
 declare regexINTEGER='^[+-]?\d+$'
 declare regexALPHA='^[[:alpha:]]+$'
@@ -48,6 +52,9 @@ function regexIt()
     fi
 }
 
+function getStr()             { echo -n "${1}" | grep -aoP "${2}"         ; return $?; }
+function getTag()             { echo -n "${1}" | grep -aoP "${regexTAG}"  ; return $?; }
+function getValue()           { echo -n "${1}" | grep -aoP "${regexVALUE}"; return $?; }
 function isFloat()            { regexIt "${1}" "${regexFLOAT}"          ; }
 function isInteger()          { regexIt "${1}" "${regexINTEGER}"        ; }
 function isAlpha()            { regexIt "${1}" "${regexALPHA}"          ; }
@@ -66,10 +73,11 @@ function isDateTime12()       { regexIt "${1}" "${regexDATETIME12}"     ; }
 function isDateTime24()       { regexIt "${1}" "${regexDATETIME24}"     ; }
 function isDateTime124()      { regexIt "${1}" "${regexDATETIME124}"    ; }
 function isDateTimeAsCode()   { regexIt "${1}" "${regexDATETIMEASCODE}" ; }
-
 function libRegexExit()
 {
     # unset variables
+    unset -v regexTAG
+    unset -v regexVALUE
     unset -v regexFLOAT
     unset -v regexINTEGER
     unset -v regexALPHA
@@ -89,6 +97,9 @@ function libRegexExit()
     unset -v regexDATETIME124
     unset -v regexDATETIMEASCODE
     # unset functions
+    unset -f getStr
+    unset -f getTag
+    unset -f getValue
     unset -f regexIt
     unset -f isFloat
     unset -f isInteger

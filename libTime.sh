@@ -1,12 +1,14 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libTemplate.sh
 # @brief        Source variables and functions to add wait states and ask for user
 #               confirmation in a bash source code.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libTime.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 declare -i libTimeout=10
 
@@ -81,9 +83,9 @@ function libTimeExit()
     unset -f _isYes
     unset -f wait
     unset -f askToContinue
-    unset -f libTimeExit
     unset -f libTimeSetup
     unset -f libTimeUsage
     unset -f libTimeIsArg
+    unset -f libTimeExit
     return 0
 }
