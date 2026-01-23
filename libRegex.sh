@@ -52,27 +52,27 @@ function regexIt()
     fi
 }
 
-function getStr()             { echo -n "${1}" | grep -aoP "${2}"         ; return $?; }
-function getTag()             { echo -n "${1}" | grep -aoP "${regexTAG}"  ; return $?; }
-function getValue()           { echo -n "${1}" | grep -aoP "${regexVALUE}"; return $?; }
-function isFloat()            { regexIt "${1}" "${regexFLOAT}"          ; }
-function isInteger()          { regexIt "${1}" "${regexINTEGER}"        ; }
-function isAlpha()            { regexIt "${1}" "${regexALPHA}"          ; }
-function isDigit()            { regexIt "${1}" "${regexDIGIT}"          ; }
-function isAlphaNumeric()     { regexIt "${1}" "${regexALPHADIGIT}"     ; }
-function isHexadecimal()      { regexIt "${1}" "${regexHEXA}"           ; }
-function isLowerHexadecimal() { regexIt "${1}" "${regexLOHEXA}"         ; }
-function isUpperHexadecimal() { regexIt "${1}" "${regexUPHEXA}"         ; }
-function isGraph()            { regexIt "${1}" "${regexGRAPH}"          ; }
-function isGraphSpace()       { regexIt "${1}" "${regexGRAPHSPACE}"     ; }
-function isDate()             { regexIt "${1}" "${regexDATE}"           ; }
-function isTime12()           { regexIt "${1}" "${regexTIME12}"         ; }
-function isTime24()           { regexIt "${1}" "${regexTIME24}"         ; }
-function isTime124()          { regexIt "${1}" "${regexTIME124}"        ; }
-function isDateTime12()       { regexIt "${1}" "${regexDATETIME12}"     ; }
-function isDateTime24()       { regexIt "${1}" "${regexDATETIME24}"     ; }
-function isDateTime124()      { regexIt "${1}" "${regexDATETIME124}"    ; }
-function isDateTimeAsCode()   { regexIt "${1}" "${regexDATETIMEASCODE}" ; }
+function reGetStr()             { echo -n "${1}" | grep -aoP "${2}"         ; return $?; }
+function reGetTag()             { echo -n "${1}" | grep -aoP "${regexTAG}"  ; return $?; }
+function reGetValue()           { echo -n "${1}" | grep -aoP "${regexVALUE}"; return $?; }
+function reIsFloat()            { regexIt "${1}" "${regexFLOAT}"          ; }
+function reIsInteger()          { regexIt "${1}" "${regexINTEGER}"        ; }
+function reIsAlpha()            { regexIt "${1}" "${regexALPHA}"          ; }
+function reIsDigit()            { regexIt "${1}" "${regexDIGIT}"          ; }
+function reIsAlphaNumeric()     { regexIt "${1}" "${regexALPHADIGIT}"     ; }
+function reIsHexadecimal()      { regexIt "${1}" "${regexHEXA}"           ; }
+function reIsLowerHexadecimal() { regexIt "${1}" "${regexLOHEXA}"         ; }
+function reIsUpperHexadecimal() { regexIt "${1}" "${regexUPHEXA}"         ; }
+function reIsGraph()            { regexIt "${1}" "${regexGRAPH}"          ; }
+function reIsGraphSpace()       { regexIt "${1}" "${regexGRAPHSPACE}"     ; }
+function reIsDate()             { regexIt "${1}" "${regexDATE}"           ; }
+function reIsTime12()           { regexIt "${1}" "${regexTIME12}"         ; }
+function reIsTime24()           { regexIt "${1}" "${regexTIME24}"         ; }
+function reIsTime124()          { regexIt "${1}" "${regexTIME124}"        ; }
+function reIsDateTime12()       { regexIt "${1}" "${regexDATETIME12}"     ; }
+function reIsDateTime24()       { regexIt "${1}" "${regexDATETIME24}"     ; }
+function reIsDateTime124()      { regexIt "${1}" "${regexDATETIME124}"    ; }
+function reIsDateTimeAsCode()   { regexIt "${1}" "${regexDATETIMEASCODE}" ; }
 function libRegexExit()
 {
     # unset variables
@@ -96,22 +96,32 @@ function libRegexExit()
     unset -v regexDATETIME24
     unset -v regexDATETIME124
     unset -v regexDATETIMEASCODE
+    unset -v regexCompressFile
+    unset -v regexCompressExt
     # unset functions
-    unset -f getStr
-    unset -f getTag
-    unset -f getValue
     unset -f regexIt
-    unset -f isFloat
-    unset -f isInteger
-    unset -f isAlpha
-    unset -f isDigit
-    unset -f isAlphaNumeric
-    unset -f isHexadecimal
-    unset -f isLowerHexadecimal
-    unset -f isUpperHexadecimal
-    unset -f isGraph
-    unset -f isGraphSpace
-    unset -f libRegexExit
+    unset -f reGetStr
+    unset -f reGetTag
+    unset -f reGetValue
+    unset -f reIsFloat
+    unset -f reIsInteger
+    unset -f reIsAlpha
+    unset -f reIsDigit
+    unset -f reIsAlphaNumeric
+    unset -f reIsHexadecimal
+    unset -f reIsLowerHexadecimal
+    unset -f reIsUpperHexadecimal
+    unset -f reIsGraph
+    unset -f reIsGraphSpace
+    unset -f reIsDate
+    unset -f reIsTime12
+    unset -f reIsTime24
+    unset -f reIsTime124
+    unset -f reIsDateTime12
+    unset -f reIsDateTime24
+    unset -f reIsDateTime124
+    unset -f reIsDateTimeAsCode
+    unset -f reIibRegexExit
     # return code
     return 0
 }

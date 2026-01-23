@@ -9,6 +9,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare     reFS='(ext2|ext3|ext4|btrfs|vfat|exfat|ntfs)'
+declare     reCryptFS='(crypto_LUKS)'
 declare     distroNAME=''
 declare     sourceFILE=''
 declare     flagFORCE=false
@@ -65,6 +67,7 @@ function isFile()        { if [ -f "$1" ] ; then true ; else false ; fi ; }
 function isDir()         { if [ -d "$1" ] ; then true ; else false ; fi ; }
 function isBlockDevice() { if [ -b "$1" ] ; then true ; else false ; fi ; }
 function getTempDir()    { [ -d '/tmp' ] && echo -n '/tmp' || echo "$HOME/tmp" ; }
+
 function followLink()
 {
     local target=''
@@ -77,6 +80,7 @@ function followLink()
     echo -n "${target}"
     return $err
 }
+
 function linkTargetExist()
 {
     local target
@@ -88,6 +92,7 @@ function linkTargetExist()
         false
     fi
 }
+
 function itExist()
 {
     if [ -e "$1" ]
@@ -107,6 +112,7 @@ function itExist()
         false
     fi
 }
+
 function getMountDir()
 {
     if   [ -d /media     ] ; then echo -n "/media"
@@ -115,19 +121,65 @@ function getMountDir()
     fi
 }
 
+function isLuksFS() { if cryptsetup isLuks ${1}; then true; else false; fi; }
+
+function getFS()
+{
+    if [ -b "${1}" ]
+    then
+        echo -n $(lsblk -o FSTYPE "${1}" 2> /dev/null | grep -aoP "${reFS}")
+    else
+        echo -n $(df --output=fstype "${1}" 2> /dev/null | grep -aoP "${reFS}")
+    fi
+}
+
+function getCryptFS()
+{
+    if [ -b "${1}" ]
+    then
+        echo -n $(lsblk -o FSTYPE "${1}" 2> /dev/null | grep -aoP "${reCryptFS}")
+    else
+        echo -n $(df --output=fstype "${1}" 2> /dev/null | grep -aoP "${reCryptFS}")
+    fi
+}
+
+function hasFS()
+{
+    local re="$([ -n "$2" ] && echo -n "${2}" || echo -n "${reFS}")"
+
+    if [ -b "${1}" ]
+    then
+        if lsblk -f "${1}" 2> /dev/null | grep -aoP "${re}" > /dev/null 1> /dev/null
+        then
+            true
+        else
+            false
+        fi
+    else
+        if df --output=fstype "${1}" 2> /dev/null | grep -aoP "${re}" > /dev/null 1> /dev/null
+        then
+            true
+        else
+            false
+        fi
+    fi
+}
+
 function tryRun()
 {
     local res=''
     declare -i err=1
     declare -i try=1
-    declare    _debug=false
-    function tryDebug() { if $_debug; then echo -e "\033[32m  debug\033[0m: $*"; fi; }
+    declare    enTryDebug=false
+    declare    enPrintRes=false
+    function tryDebug() { if $enTryDebug; then echo -e "\033[32m  debug\033[0m: $*"; fi; }
     while [ -n "$1" ]
     do
         case "$1" in
         -r|--retry) shift; try=$1 ;;
-        -g|--debug) _debug=true ;;
-        -*) _error "Invalid parameter ($1)"; break ;;
+        -v|--verbose) enPrintRes=true ;;
+        -g|--debug) enTryDebug=true ;;
+        -*) res=''; err=1; break ;;
          *) while [ $try -gt 0 ] && [ $err -ne 0 ]
             do
                 tryDebug "eval $* 2> /dev/null"
@@ -141,6 +193,7 @@ function tryRun()
         shift
     done
     tryDebug "${res}"
+    if $enPrintRes ; then echo "${res}" ; fi
     return $err
 }
 

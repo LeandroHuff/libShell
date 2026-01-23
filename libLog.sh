@@ -11,25 +11,39 @@
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 # Constants
-declare -i  logSTARTIME
-            logSTARTIME=$(( $(date +%s%N) / 1000000 ))
-declare     logFILE
-            logFILE="/tmp/$(basename "$0").log"
+declare -i  logSTARTIME=$(( $(date +%s%N) / 1000000 ))
+declare     logFILE="/tmp/$(basename "$0").log"
 # log message and colors
-declare   ERROR='\033[91m  error\033[0m:'
+declare   ERROR='\033[31m  error\033[0m:'
 declare    FAIL='\033[91mfailure\033[0m:'
-declare   DEBUG='\033[92m  debug\033[0m:'
-declare   TRACE='\033[93m  trace\033[0m:'
-declare    WARN='\033[96mwarning\033[0m:'
+declare   DEBUG='\033[32m  debug\033[0m:'
+declare   TRACE='\033[92m  trace\033[0m:'
+declare    WARN='\033[93mwarning\033[0m:'
 declare SUCCESS='\033[97msuccess\033[0m:'
 declare RUNTIME='\033[97mruntime\033[0m:'
 declare    INFO='\033[98m   info\033[0m:'
 # Variables
-declare flagQUIET=false
-declare flagVERBOSE=false
-declare flagDEBUG=false
-declare flagTRACE=false
-declare flagFILE=false
+declare     flagQUIET=false
+declare     flagVERBOSE=false
+declare     flagDEBUG=false
+declare     flagTRACE=false
+declare     flagFILE=false
+declare -i  logFULL=0
+declare -i  logVERBOSE=1
+declare -i  logINFO=2
+declare -i  logSUCCESS=3
+declare -i  logRUNTIME=4
+declare -i  logWARNING=5
+declare -i  logERROR=6
+declare -i  logFAILURE=7
+declare -i  logDEBUG=8
+declare -i  logTRACE=9
+declare -i  logNONE=10
+declare -i  logDISABLE=10
+declare -i -a levelLIST=($logFULL $logVERBOSE $logINFO $logSUCCESS $logRUNTIME $logWARNING $logERROR $logFAILURE $logDEBUG $logTRACE $logNONE)
+declare    -a logLevelNamesLIST=(logFULL logVERBOSE logINFO logSUCCESS logRUNTIME logWARNING logERROR logFAILURE logDEBUG logTRACE logNONE)
+declare -i  logLevel=$logNONE
+
 # Functions
 
 # begin logs.
@@ -83,7 +97,7 @@ function getRuntime()
 function logCRNLF() { echo -e -n "\r$*" ; }
 
 # log unconditional
-function logU() { if $flagFILE ; then echo -e "$*" | tee -a "${logFILE}" ; else echo -e "$*" ; fi ; }
+function logU() { if $flagFILE; then echo -e "$*" | tee -a "${logFILE}"; else echo -e "$*"; fi; }
 
 # log any message
 function log()
@@ -108,33 +122,34 @@ function log()
 }
 
 # log info messages
-function logI() { log "${INFO} $*"; }
-
-# log error messagges
-function logE() { log "${ERROR} $*"; }
-
-# log failure messages
-function logF() { log "${FAIL} $*" ; }
+function logI() { if [ $logLevel -le $logINFO ]; then log "${INFO} $*"; fi; }
 
 # log success messages
-function logS() { log "${SUCCESS} $*" ; }
-
-# log warning messages
-function logW() { log "${WARN} $*" ; }
-
-# log verbose messages
-function logV() { if $flagVERBOSE ; then [ $flagFILE ] && echo -e "${INFO} $*" | tee -a || echo -e "${INFO} $*" ; fi ; }
-
-# log debug messages
-function logD() { if $flagDEBUG ; then logU "${DEBUG} $*" ; fi ; }
-
-# log trace messages
-function logT() { if $flagTRACE ; then logU "${TRACE} $*" ; fi ; }
+function logS() { if [ $logLevel -le $logSUCCESS ]; then log "${SUCCESS} $*"; fi; }
 
 # log runtime messages
-function logR() { log "${RUNTIME} $(getRuntime)" ; }
+function logR() { if [ $logLevel -le $logRUNTIME ]; then log "${RUNTIME} $(getRuntime)"; fi; }
 
-# on error log trace message and exit from program.
+# log verbose messages
+function logV() { if $flagVERBOSE && [ $logLevel -le $logVERBOSE ]; then [ $flagFILE ] && echo -e "${INFO} $*" | tee -a || echo -e "${INFO} $*"; fi; }
+
+# log warning messages
+function logW() { if [ $logLevel -le $logWARNING ]; then log "${WARN} $*"; fi; }
+
+# log error messagges
+function logE() { if [ $logLevel -le $logERROR ]; then log "${ERROR} $*"; fi; }
+
+# log failure messages
+function logF() { if [ $logLevel -le $logFAILURE ]; then log "${FAIL} $*"; fi; }
+
+# log debug messages
+function logD() { if $flagDEBUG && [ $logLevel -le $logDEBUG ]; then logU "${DEBUG} $*"; fi; }
+
+# log trace messages
+function logT() { if $flagTRACE && [ $logLevel -le $logTRACE ]; then logU "${TRACE} $*"; fi; }
+
+# on error log trace message and return the error code to exit from program.
+# usage: onErrorTraceAndExit $errCode "trace message" || _exit $?
 function onErrorTraceAndExit()
 {
     local err
@@ -146,20 +161,20 @@ function onErrorTraceAndExit()
         logU "${TRACE} $*"
         logStop
         libLogExit
-        exit $err
+        return $err
     fi
 }
 
 # on error log message
-function logOnE() { if [ $1 -ne 0 ] ; then shift ; log "${ERROR} $*" ; fi ; }
+function logOnE() { if [ $1 -ne 0 ] && [ $logLevel -le $logERROR ]; then shift; log "${ERROR} $*"; fi; }
 
 # on empty string log message
-function logOnZ() { if [ -z "$1"  ] ; then shift ; log "${ERROR} $*" ; fi ; }
+function logOnZ() { if [ -z "$1"  ] && [ $logLevel -le $logERROR ]; then shift; log "${ERROR} $*"; fi; }
 
 # print help for log messages
 function logHelp()
 {
-    cat << EOT
+    printf "\
 Lib log messages.
 Syntax: source libLog.sh [options]
                logInit   [options]
@@ -173,42 +188,67 @@ Options:
   -f|--file [name]    Enable log to file as '/tmp/name.log',
                       [name] is an optional argument,
                       if empty, assume default as '/tmp/scriptname.log'.
-     --               Let next parameter to another application.
-EOT
-    return $?
-}
+  -l|--level <level>  Set log level:
+                        0|${logLevelNamesLIST[0]}:\tFull
+                        1|${logLevelNamesLIST[1]}:\tVerbose
+                        2|${logLevelNamesLIST[2]}:\tInfo
+                        3|${logLevelNamesLIST[3]}:\tSuccess
+                        4|${logLevelNamesLIST[4]}:\tRuntime
+                        5|${logLevelNamesLIST[5]}:\tWarning
+                        6|${logLevelNamesLIST[6]}:\tError
+                        7|${logLevelNamesLIST[7]}:\tFailure
+                        8|${logLevelNamesLIST[8]}:\tDebug
+                        9|${logLevelNamesLIST[9]}:\tTrace
+                       10|${logLevelNamesLIST[10]}:\tNone|Disable (default)
 
-# print version for log
-function logVersion()
-{
-    cat << EOT
-Bash script libLog.sh
-Version: 2.2.4
-EOT
-    return $?
+     --               Let next parameter to another application.
+"
+    return 0
 }
 
 # parse and setup log from command line parameters.
 function logSetup()
 {
     # is (I)nteger
-    #function isI() { if echo -n "$1" | grep -aoP '^[+-]?[0-9]+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
+    function isI() { if echo -n "$1" | grep -aoP '^[+-]?[0-9]+$' > /dev/null 2>&1; then true; else false; fi; }
     # is (V)alue|Arg
-    function isV() { case "$1" in --*|-*|'') false ;; *) true ;; esac ; }
+    function isV() { case "$1" in --*|-*|'') false;; *) true;; esac; }
     while [ -n "$1" ]
     do
         case "$1" in
-        -V|--version) logVersion      ; exit 0            ;;
-        -h|--help)    logHelp         ; exit 0            ;;
-        -q|--quiet)   flagQUIET=true  ; flagVERBOSE=false ;;
-        -v|--verbose) flagQUIET=false ; flagVERBOSE=true  ;;
-        -g|--debug)   flagDEBUG=true  ; logD "Enabled"    ;;
-        -t|--trace)   flagTRACE=true  ; logT "Enabled"    ;;
-        -d|--default) flagQUIET=false
+        -h|--help)    logHelp   ; return 1;;
+        -q|--quiet)   logLevel=$logNONE   ; flagQUIET=true ; flagVERBOSE=false ;;
+        -v|--verbose) logLevel=$logVERBOSE; flagQUIET=false; flagVERBOSE=true  ;;
+        -g|--debug)   [ $logLevel -le $logDEBUG ] || logLevel=$logDEBUG; flagDEBUG=true; logD "Enabled" ;;
+        -t|--trace)   [ $logLevel -le $logTRACE ] || logLevel=$logTRACE; flagTRACE=true; logT "Enabled" ;;
+        -d|--default) [ $logLevel -le $logINFO  ] || logLevel=$logINFO
+                      flagQUIET=false
                       flagVERBOSE=false
                       flagDEBUG=false
                       flagTRACE=false
                       flagFILE=true ;;
+        -l|--level)
+            if isV "$2"
+            then
+                shift
+                if isI "$1"
+                then
+                    if [[ ${levelLIST[@]} =~ $1 ]]
+                    then
+                        logLevel=$1
+                    else
+                        logF "Level out of range [0..10]"
+                        return 3
+                    fi
+                else
+                    logF "Level must be an integer value."
+                    return 4
+                fi
+            else
+                logF "Empty level value for parameter -l|--level <level>"
+                return 5
+            fi
+            ;;
         -f|--file)
             flagFILE=true
             if isV "$2"
@@ -228,8 +268,8 @@ function logSetup()
             fi
             ;;
         --) shift ; break ;;
-        -*) logU "${ERROR} Unknown parameter $1" ; return 1 ;;
-         *) logU "${ERROR} Unknown value $1"     ; return 2 ;;
+        -*) logE "Unknown parameter $1"; return 1 ;;
+         *) logE "Unknown value $1"    ; return 2 ;;
         esac
         shift
     done
@@ -246,7 +286,7 @@ function logInit()
 }
 
 # Stop or disable log messages.
-function logStop() { logEnd; flagQUIET=true; flagVERBOSE=false; flagDEBUG=false; flagTRACE=false; flagFILE=false; }
+function logStop() { logEnd; logLevel=$logNONE; flagQUIET=true; flagVERBOSE=false; flagDEBUG=false; flagTRACE=false; flagFILE=false; }
 
 # exit from lib log.
 function libLogExit()
@@ -259,6 +299,8 @@ function libLogExit()
     unset -v flagVERBOSE
     unset -v flagQUIET
     unset -v flagFILE
+    unset -v levelLIST
+    unset -v logLevelNamesLIST
     unset -v ERROR
     unset -v FAIL
     unset -v DEBUG
@@ -267,6 +309,18 @@ function libLogExit()
     unset -v SUCCESS
     unset -v RUNTIME
     unset -v INFO
+    unset -v logFULL
+    unset -v logVERBOSE
+    unset -v logINFO
+    unset -v logSUCCESS
+    unset -v logRUNTIME
+    unset -v logWARNING
+    unset -v logERROR
+    unset -v logFAILURE
+    unset -v logDEBUG
+    unset -v logTRACE
+    unset -v logNONE
+    unset -v logLevel
     # unset functions
     unset -f logBegin
     unset -f logEnd

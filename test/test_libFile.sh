@@ -196,56 +196,57 @@ declare -a testTABLE=(\
 9       0       "${PWD}"            getPath             "${PWD}/test_libFile.sh" '' ''      '' \
 \
 10      1       ''                  isLink              ''          ''          ''          '' \
-11      0       ''                  isLink              'linkExist' ''          ''          '' \
+11      0       ''                  isLink              'linkToFile' ''         ''          '' \
 12      0       ''                  isLink              'linkNotExist' ''       ''          '' \
 \
 13      1       ''                  isFile              ''          ''          ''          '' \
 14      1       ''                  isFile              '/tmp'      ''          ''          '' \
 15      0       ''                  isFile              "${PWD}/test_libFile.sh" '' ''      '' \
+16      0       ''                  isFile              'linkToFile' ''         ''          '' \
+17      1       ''                  isFile              'linkToDir' ''          ''          '' \
 \
-16      1       ''                  isDir               ''          ''          ''          '' \
-17      1       ''                  isDir               "${PWD}/test_libFile.sh" '' ''      '' \
-18      0       ''                  isDir               '/tmp'      ''          ''          '' \
+18      1       ''                  isDir               ''          ''          ''          '' \
+19      1       ''                  isDir               "${PWD}/test_libFile.sh" '' ''      '' \
+20      0       ''                  isDir               '/tmp'      ''          ''          '' \
+21      1       ''                  isDir               'linkToFile' ''         ''          '' \
+22      0       ''                  isDir               'linkToDir' ''          ''          '' \
 \
-19      1       ''                  isBlockDevice       ''          ''          ''          '' \
-20      1       ''                  isBlockDevice       "${PWD}/test_libFile.sh" '' ''      '' \
-21      1       ''                  isBlockDevice       '/tmp'      ''          ''          '' \
-22      0       ''                  isBlockDevice       '/dev/sda'  ''          ''          '' \
+23      1       ''                  isBlockDevice       ''          ''          ''          '' \
+24      1       ''                  isBlockDevice       "${PWD}/test_libFile.sh" '' ''      '' \
+25      1       ''                  isBlockDevice       '/tmp'      ''          ''          '' \
+26      0       ''                  isBlockDevice       '/dev/sda'  ''          ''          '' \
 \
-23      0       '/tmp'              getTempDir          ''          ''          ''          '' \
+27      0       '/tmp'              getTempDir          ''          ''          ''          '' \
 \
-24      1       ''                  followLink          ''          ''          ''          '' \
-25      1       ''                  followLink          'linkNotExist' ''       ''          '' \
-26      0 "${PWD}/start_libTest.sh" followLink          'linkExist' ''          ''          '' \
+28      1       ''                  followLink          ''          ''          ''          '' \
+29      1       ''                  followLink          'linkNotExist' ''       ''          '' \
+30      0       '/tmp/File'         followLink          'linkToFile' ''         ''          '' \
+31      0       '/tmp'              followLink          'linkToDir' ''          ''          '' \
 \
-27      1       ''                  linkTargetExist     ''          ''          ''          '' \
-28      1       ''                  linkTargetExist     'linkNotExist' ''       ''          '' \
-29      0       ''                  linkTargetExist     'linkExist' ''          ''          '' \
+32      1       ''                  linkTargetExist     ''          ''          ''          '' \
+33      1       ''                  linkTargetExist     'linkNotExist' ''       ''          '' \
+34      0       ''                  linkTargetExist     'linkToFile' ''         ''          '' \
+35      0       ''                  linkTargetExist     'linkToDir' ''          ''          '' \
 \
-30      1       ''                  itExist             ''          ''          ''          '' \
-31      1       ''                  itExist             'linkNotExist' ''       ''          '' \
-32      1       ''                  itExist             'empty'     ''          ''          '' \
-33      0       ''                  itExist             '/tmp'      ''          ''          '' \
-34      0       ''                  itExist             "${PWD}/test_libFile.sh" '' ''      '' \
-35      0       ''                  itExist             '/dev/sda'  ''          ''          '' \
+36      1       ''                  itExist             ''          ''          ''          '' \
+37      1       ''                  itExist             'linkNotExist' ''       ''          '' \
+38      1       ''                  itExist             'empty'     ''          ''          '' \
+39      0       ''                  itExist             '/tmp'      ''          ''          '' \
+40      0       ''                  itExist             "${PWD}/test_libFile.sh" '' ''      '' \
+41      0       ''                  itExist             '/dev/sda'  ''          ''          '' \
 \
-36      0       '/media'            getMountDir         ''          ''          ''          '' \
+42      0       '/media'            getMountDir         ''          ''          ''          '' \
 \
-37      1       ''                  tryRun              ''          ''          ''          '' \
-38      1       ''                  tryRun              '-x'        ''          ''          '' \
-39      1       ''                  tryRun              '-c'        ''          ''          '' \
-40      1       ''                  tryRun              '-c'        'x'         ''          '' \
-41      1       ''                  tryRun              '-c'        '3'         ''          '' \
-42      1       ''                  tryRun              '-r'        ''          ''          '' \
-43      1       ''                  tryRun              '-c'        '3'         '-r'        '' \
-44      2       ''                  tryRun              'type -k git' ''        ''          '' \
+43      1       ''                  tryRun              ''          ''          ''          '' \
+44      1       ''                  tryRun              '-x'        ''          ''          '' \
+45      1       ''                  tryRun              '-r'        '3'         '-x'        '' \
+46      1       ''                  tryRun              '-c'        '-r'        '3'         '' \
+47      0       ''                  tryRun              '-r'        '1' 'type -t git'       '' \
+48      0       'file'              tryRun              '-r'        '1'         '-v'        'type -t git' \
+49      0       'file'              tryRun              '-r'        '3'         '-v'        'type -t git' \
+50      0       ''                  tryRun              'type -t git' ''        ''          '' \
 \
-45      0       ''                  tryRun              '-c' '3'              'type -t git' '' \
-46      0       'file'              tryRun              '-r'        'type -t git' ''        '' \
-47      0       'file'              tryRun              '-c' '3'    '-r'      'type -t git'    \
-48      0       ''                  tryRun              'type -t git' ''        ''          '' \
-\
-49      0       ''                  libFileExit         ''          ''          ''          '' \
+51      0       ''                  libFileExit         ''          ''          ''          '' \
 \
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4\
 )
@@ -383,7 +384,7 @@ LINE=0
 idxID=$columnID
 # Calculate the first function column OFFSET.
 idxFUNC=$((idxID+columnFILE))
-
+touch /tmp/File || _exit 13
 # while not empty function name
 if [ $testTYPE -gt 0 ]
 then

@@ -194,15 +194,15 @@ function test_genRandom_asType()
     if [[ "${typeRANDOM[*]}" =~ "${_type}" ]]
     then
         case ${_type} in
-        alpha)  isAlpha            "${str}" || return 3 ;;
-        digit)  isDigit            "${str}" || return 3 ;;
-        alnum)  isAlphaNumeric     "${str}" || return 3 ;;
-        lowhex) isLowerHexadecimal "${str}" || return 3 ;;
-        uphex)  isUpperHexadecimal "${str}" || return 3 ;;
-        mixhex) isHexadecimal      "${str}" || return 3 ;;
-        graph)  isGraph            "${str}" || return 3 ;;
-        space)  isGraphSpace       "${str}" || return 3 ;;
-        date)   isDateTimeAsCode   "${str}" || return 3 ;;
+        alpha)  reIsAlpha            "${str}" || return 3 ;;
+        digit)  reIsDigit            "${str}" || return 3 ;;
+        alnum)  reIsAlphaNumeric     "${str}" || return 3 ;;
+        lowhex) reIsLowerHexadecimal "${str}" || return 3 ;;
+        uphex)  reIsUpperHexadecimal "${str}" || return 3 ;;
+        mixhex) reIsHexadecimal      "${str}" || return 3 ;;
+        graph)  reIsGraph            "${str}" || return 3 ;;
+        space)  reIsGraphSpace       "${str}" || return 3 ;;
+        date)   reIsDateTimeAsCode   "${str}" || return 3 ;;
         esac
     else
         return 4
