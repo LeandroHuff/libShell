@@ -10,6 +10,8 @@
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
 # constants
+declare regexFS='(btrfs|exfat|ext2|ext3|ext4|fat16|fat32|hfs|hfsplus|jfs|ntfs|reiser|reiser4|ufs|xfs|zfs)'
+declare regexCryptFS='(crypto_LUKS)'
 declare regexTAG='^\w+'
 declare regexVALUE='\w+$'
 declare regexFLOAT='^[-+]?(\d+\.?\d*|\d*\.\d+)([eE][+-]0*[1-9]+\d*)?$'

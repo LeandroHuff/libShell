@@ -9,18 +9,29 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+# A Added
+# C Copied
+# D Deleted
+# M Modified
+# R Renamed
+# T Type changed
+# U Unmerged
+# ? Untracked
+# ! Ignored
+declare -a StatusLetters=('A' 'C' 'D' 'M' 'R' 'T' 'U' '?' '!')
+
 function isGitRepository()
 {
     local target="$1"
     local err=1
-    if notEmpty "${target}" ; then
-        if isLink "${target}" ; then
-            target="$(followLink "${target}")"
+    if [ -n "${target}" ] ; then
+        if [ -L "${target}" ] ; then
+            target="$(readlink -e "${target}")"
         fi
-        if isFile "${target}" ; then
-            target="$(getPath "${target}")"
+        if [ -f "${target}" ] ; then
+            target="$(basedir "${target}")"
         fi
-        if itExist "${target}/.git"
+        if [ -d "${target}/.git" ]
         then
             git -C "${target}" rev-parse --git-dir > /dev/null 2>&1
             err=$?
@@ -31,19 +42,18 @@ function isGitRepository()
     fi
     return $err
 }
-function isBranchCurrent()  { local err ; git branch -q --show-current | grep -oF "$1" > /dev/null 2>&1 ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
+function isBranchCurrent()  { local err ; local b="^${1:-'nil'}$"; git branch -q --show-current | grep -aoP "${b}" > /dev/null 2>&1 ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
 function isBranchAhead()    { local err ; git status | grep -qoE ' ahead ' ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
 function isBranchBehind()   { local err ; git status | grep -qoE ' behind ' ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
 function isBranchUpToDate() { local err ; git status | grep -qoE ' up to date ' ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
-function isGitChanged()
+function isRepositoryChanged()
 {
     declare -i err=0
     declare -i count=0
     declare -i acc=0
-    declare -i index
-    for ((index = 0 ; index < libGitMAXTABLELETTERS ; index++))
+    for letter in ${StatusLetters[@]}
     do
-        count=$(gitCountChanges ${libGitTABLELETTERS[$index]}) || err=$?
+        count=$(gitCountChanges ${letter}) || err=$?
         acc=$((acc + count))
     done
     if [ $acc -gt 0 ]
@@ -84,10 +94,9 @@ function gitAnyChanges()
     local err=0
     declare -i count=0
     declare -i acc=0
-    declare -i index
-    for ((index = 0 ; index < libGitMAXTABLELETTERS ; index++))
+    for letter in ${StatusLetters[@]}
     do
-        count=$(gitCountChanges ${libGitTABLELETTERS[$index]}) || err=$?
+        count=$(gitCountChanges ${letter}) || err=$?
         acc=$((acc + count))
     done
     echo -n $acc

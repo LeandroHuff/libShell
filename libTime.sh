@@ -18,8 +18,10 @@ function _isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) fals
 function _isYes() { case "$1" in [yY] | [yY][eE][sS])            true ;; *) false ;; esac ; }
 function ask()
 {
+    local tout="${1:-0}"
+    local msg="${2:-'Continue [y|Y]? '}"
     local ret ans=''
-    read -r -s -N 1 -n 1 $([ $1 -gt 0 ] && echo -n "-t $1") -p "${2}" ans
+    read -r -s -N 1 -n 1 $([ $tout -gt 0 ] && echo -n "-t $1") -p "${msg}" ans
     ret=$?
     echo -n "${ans}"
     return $ret
@@ -27,8 +29,10 @@ function ask()
 
 function askToContinue()
 {
+    local tout="${1:-0}"
+    local msg="${2:-'Continue [y|Y]? '}"
     local ret answer err=1
-    answer=$(ask $1 "$2")
+    answer=$(ask $tout "${msg}")
     ret=$?
     echo
     if [ $ret -eq 0 ] && _isYes $answer ; then err=0 ; fi

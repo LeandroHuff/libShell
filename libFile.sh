@@ -9,7 +9,7 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
-declare     reFS='(ext2|ext3|ext4|btrfs|vfat|exfat|ntfs)'
+declare     reFS='(btrfs|exfat|ext2|ext3|ext4|fat16|fat32)'
 declare     reCryptFS='(crypto_LUKS)'
 declare     distroNAME=''
 declare     sourceFILE=''
@@ -49,8 +49,8 @@ function getIDNumber()
     echo -n $distro
     return $err
 }
-function _debug() { if $flagDEBUG; then echo -e "\033[32m  debug\033[0m: $*"; fi; }
-function _error() { echo -e "\033[31m  error\033[0m: $*" >&2; }
+function _debug() { if $flagDEBUG; then echo -e "\033[32mdebug\033[0m  : $*"; fi; }
+function _error() { echo -e "\033[31merror\033[0m  : $*" >&2; }
 function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
 function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
 function _isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
@@ -115,11 +115,13 @@ function itExist()
 
 function getMountDir()
 {
-    if   [ -d /media     ] ; then echo -n "/media"
-    elif [ -d /run/media ] ; then echo -n "/run/media"
-    else                          echo -n "/mnt"
+    if   [ -d /media     ] ; then echo -n '/media'
+    elif [ -d /run/media ] ; then echo -n '/run/media'
+    else                          echo -n '/mnt'
     fi
 }
+
+function getMapperDir() { echo -n '/dev/mapper' ; }
 
 function isLuksFS() { if cryptsetup isLuks ${1}; then true; else false; fi; }
 
@@ -142,6 +144,8 @@ function getCryptFS()
         echo -n $(df --output=fstype "${1}" 2> /dev/null | grep -aoP "${reCryptFS}")
     fi
 }
+
+function isFsValid() { if echo -n "${1}" | grep -aoP "${reFS}" > /dev/null 2>&1; then true; else false; fi; }
 
 function hasFS()
 {
@@ -199,52 +203,58 @@ function tryRun()
 
 ################################################################################
 
-function ask()
+function libFileAsk()
 {
+    local tout="${1:-0}"
+    local msg="${2:-'Continue [y|Y]? '}"
     local ret ans=''
-    read -r -s -N 1 -n 1 $([ $1 -gt 0 ] && echo -n "-t $1") -p "${2}" ans
+    read -r -s -N 1 -n 1 $([ $tout -gt 0 ] && echo -n "-t $1") -p "${msg}" ans
     ret=$?
     echo -n "${ans}"
     return $ret
 }
 
-function libInstallAskToContinue()
+function libFileAskToContinue()
 {
+    local tout="${1:-0}"
+    local msg="${2:-'Continue [y|Y]? '}"
     local ret answer err=1
-    answer=$(ask $1 "$2")
+    answer=$(libFileAsk $tout "${msg}")
     ret=$?
     echo
     if [ $ret -eq 0 ] && _isYes $answer ; then err=0 ; fi
     return $err
 }
 
-function libInstallHelp()
+function helpInstall()
 {
-cat << EOT
+    printf "\
 Tweaks adjusts for user profile.
-Syntax: ${WHITE}$(basename $0)${NC} [${CYAN}-h | --help${NC}]
-        ${WHITE}$(basename $0)${NC} [${CYAN}options${NC}]
+Syntax:
+  $(basename $0) [-h | --help]
+  $(basename $0) [options]
 Options:
- -d | --distro <NAME>   Set distro ID Name.
- -y | --force           Assume yes for any question.
- -i | --input           Source file to run install from.
- --                     Separate parameters to others.
-EOT
+  -d | --distro <NAME>  Set distro ID Name.
+  -y | --force          Assume yes for any question.
+  -i | --input          Source file to run install from.
+       --               Separate parameters to others.
+"
+    return 0
 }
 
-function libInstallSetup()
+function setupInstall()
 {
     while [ -n "$1" ]
     do
         case "$1" in
-            -h|--help) printHelp ; return 0 ;;
+            -h|--help) helpInstall ; return 0 ;;
             -y|--force) flagFORCE=true ;;
             -d|--distro) shift ; distroNAME="$1";;
             -i|--input) shift ; sourceFILE="$1" ;;
             -g|--debug) flagDEBUG=true ;;
             --) break ;;
-            -*) _error "libInstall invalid option ($1)."; return 1 ;;
-             *) _error "libInstall invalid value ($1)." ; return 2 ;;
+            -*) _error "Invalid option ($1)."; return 1 ;;
+             *) _error "Invalid value ($1)." ; return 2 ;;
         esac
         shift
     done
@@ -454,10 +464,11 @@ function libFileExit()
     unset -f _error
     unset -f _debug
     unset -f wait
-    unset -f libInstallAskToContinue
-    unset -f libInstallExit
-    unset -f libInstallSetup
-    unset -f libInstallUsage
+    unset -f libFileAsk
+    unset -f libFileAskToContinue
+    unset -f setupInstall
+    unset -f helpInstall
+    unset -f installFromFile
     unset -f getScriptName
     unset -f getFileName
     unset -f getName

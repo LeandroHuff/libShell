@@ -226,7 +226,10 @@ function logSetup()
                       flagVERBOSE=false
                       flagDEBUG=false
                       flagTRACE=false
-                      flagFILE=true ;;
+                      local oldFlagFILE=$flagFILE
+                      flagFILE=true
+                      if ! $oldFlagFILE && $flagFILE ; then logBegin ; fi
+                      ;;
         -l|--level)
             if isV "$2"
             then
@@ -250,6 +253,7 @@ function logSetup()
             fi
             ;;
         -f|--file)
+            local oldFlagFILE=$flagFILE
             flagFILE=true
             if isV "$2"
             then
@@ -266,6 +270,7 @@ function logSetup()
                     logD "New log to file ${logFILE}"
                 fi
             fi
+            if ! $oldFlagFILE && $flagFILE ; then logBegin ; fi
             ;;
         --) shift ; break ;;
         -*) logE "Unknown parameter $1"; return 1 ;;
