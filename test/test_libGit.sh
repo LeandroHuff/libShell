@@ -173,61 +173,61 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 declare -a testTABLE=(\
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4 \
 \
-0       1      ''                  isGitRepository     ''          ''          ''          '' \
+01      1      ''                  isGitRepository     ''          ''          ''          '' \
 \
-0       1      ''                  isBranchCurrent     ''          ''          ''          '' \
+02      1      ''                  isBranchCurrent     ''          ''          ''          '' \
 \
-0       1      ''                  isBranchAhead       ''          ''          ''          '' \
+03      1      ''                  isBranchAhead       ''          ''          ''          '' \
 \
-0       1      ''                  isBranchBehind      ''          ''          ''          '' \
+04      1      ''                  isBranchBehind      ''          ''          ''          '' \
 \
-0       1      ''                  isBranchUpToDate    ''          ''          ''          '' \
+05      1      ''                  isBranchUpToDate    ''          ''          ''          '' \
 \
-0       1      ''                  isGitChanged        ''          ''          ''          '' \
+06      1      ''                  isGitChanged        ''          ''          ''          '' \
 \
-0       1       ''                  existBranch         ''          ''          ''          '' \
+07      1       ''                  existBranch         ''          ''          ''          '' \
 \
-0       1       ''                  newBranch           ''          ''          ''          '' \
+08      1       ''                  newBranch           ''          ''          ''          '' \
 \
-0       1       ''                  createBranch        ''          ''          ''          '' \
+09      1       ''                  createBranch        ''          ''          ''          '' \
 \
-0       1       ''                  gitRebase           ''          ''          ''          '' \
+10      1       ''                  gitRebase           ''          ''          ''          '' \
 \
-0       1       ''                  gitSetupRebase      ''          ''          ''          '' \
+11      1       ''                  gitSetupRebase      ''          ''          ''          '' \
 \
-0       1       ''                  gitConfigBranchMerge ''         ''          ''          '' \
+12      1       ''                  gitConfigBranchMerge ''         ''          ''          '' \
 \
-0       1       ''                  gitConfigBranchPushRemote ''    ''          ''          '' \
+13      1       ''                  gitConfigBranchPushRemote ''    ''          ''          '' \
 \
-0       1       ''                  gitConfigAutoSetupMerge   ''    ''          ''          '' \
+14      1       ''                  gitConfigAutoSetupMerge   ''    ''          ''          '' \
 \
-0       1       ''                  gitSetLocalPushUpstream   ''    ''          ''          '' \
+15      1       ''                  gitSetLocalPushUpstream   ''    ''          ''          '' \
 \
-0       1       ''                  gitBranchName       ''          ''          ''          '' \
+16      1       ''                  gitBranchName       ''          ''          ''          '' \
 \
-0       1       ''                  gitRepositoryName   ''          ''          ''          '' \
+17      1       ''                  gitRepositoryName   ''          ''          ''          '' \
 \
-0       1       ''                  gitCountChanges     ''          ''          ''          '' \
+18      1       ''                  gitCountChanges     ''          ''          ''          '' \
 \
-0       1       ''                  gitAnyChanges       ''          ''          ''          '' \
+19      1       ''                  gitAnyChanges       ''          ''          ''          '' \
 \
-0       1       ''                  gitCommitCounter    ''          ''          ''          '' \
+20      1       ''                  gitCommitCounter    ''          ''          ''          '' \
 \
-0       1       ''                  gitAdd              ''          ''          ''          '' \
+21      1       ''                  gitAdd              ''          ''          ''          '' \
 \
-0       1       ''                  gitCommitNotSigned  ''          ''          ''          '' \
+22      1       ''                  gitCommitNotSigned  ''          ''          ''          '' \
 \
-0       1       ''                  gitCommitSigned     ''          ''          ''          '' \
+23      1       ''                  gitCommitSigned     ''          ''          ''          '' \
 \
-0       1       ''                  gitFetch            ''          ''          ''          '' \
+24      1       ''                  gitFetch            ''          ''          ''          '' \
 \
-0       1       ''                  gitPull             ''          ''          ''          '' \
+25      1       ''                  gitPull             ''          ''          ''          '' \
 \
-0       1       ''                  gitPush             ''          ''          ''          '' \
+26      1       ''                  gitPush             ''          ''          ''          '' \
 \
-0       1       ''                  gitSwitch           ''          ''          ''          '' \
+27      1       ''                  gitSwitch           ''          ''          ''          '' \
 \
-0       1       ''                  libGitExit          ''          ''          ''          '' \
+28      1       ''                  libGitExit          ''          ''          ''          '' \
 \
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4\
 )
