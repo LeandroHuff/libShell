@@ -51,9 +51,9 @@ function isRepositoryChanged()
     declare -i err=0
     declare -i count=0
     declare -i acc=0
-    for letter in ${StatusLetters[@]}
+    for letter in "${StatusLetters[@]}"
     do
-        count=$(gitCountChanges ${letter}) || err=$?
+        count=$(gitCountChanges "${letter}") || err=$?
         acc=$((acc + count))
     done
     if [ $acc -gt 0 ]
@@ -94,9 +94,9 @@ function gitAnyChanges()
     local err=0
     declare -i count=0
     declare -i acc=0
-    for letter in ${StatusLetters[@]}
+    for letter in "${StatusLetters[@]}"
     do
-        count=$(gitCountChanges ${letter}) || err=$?
+        count=$(gitCountChanges "${letter}") || err=$?
         acc=$((acc + count))
     done
     echo -n $acc
@@ -134,7 +134,7 @@ function libGitExit()
     unset -f isBranchAhead
     unset -f isBranchBehind
     unset -f isBranchUpToDate
-    unset -f isGitChanged
+    unset -f isRepositoryChanged
     unset -f existBranch
     unset -f newBranch
     unset -f createBranch
