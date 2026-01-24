@@ -183,7 +183,7 @@ declare -a testTABLE=(\
 \
 05      1      ''                  isBranchUpToDate    ''          ''          ''          '' \
 \
-06      1      ''                  isGitChanged        ''          ''          ''          '' \
+06      0      ''                  isRepositoryChanged ''          ''          ''          '' \
 \
 07      1       ''                  existBranch         ''          ''          ''          '' \
 \
