@@ -10,6 +10,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libTime=''
+
 declare -i libTimeout=10
 
 function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
@@ -80,6 +82,7 @@ function libTimeSetup()
 
 function libTimeExit()
 {
+    unset -v libTime
     unset -v libTimeout
     unset -f _isNum
     unset -f _isInt
@@ -93,3 +96,5 @@ function libTimeExit()
     unset -f libTimeExit
     return 0
 }
+
+libTime='loaded'

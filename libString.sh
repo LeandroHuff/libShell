@@ -9,6 +9,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libString=''
+
 function genVersionStr() { local vector=("${@}") ; echo -n "${vector[0]}.${vector[1]}.${vector[2]}" ; }
 function genVersionNum() { local vector=("${@}") ; echo -n $((vector[0]*100 + vector[1]*10 + vector[2])) ; }
 function genDateVersionStr() { local vector=("${@}") ; printf "%04d-%02d-%02d" ${vector[0]} ${vector[1]} ${vector[2]} ; }
@@ -32,6 +34,7 @@ function cmpStr()
 }
 function libStringExit()
 {
+    unset -v libString
     unset -f genVersionStr
     unset -f genVersionNum
     unset -f genDateVersionStr
@@ -50,3 +53,5 @@ function libStringExit()
     unset -f libStringExit
     return 0
 }
+
+libString='loaded'

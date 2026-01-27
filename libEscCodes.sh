@@ -9,6 +9,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libEscCodes=''
+
 # Variables
 
 # Escape Styles Fonts
@@ -164,6 +166,7 @@ function escScreenFlashes()
 function libEscCodesExit()
 {
     # Unset Variables
+    unset -v libEscCodes
     unset -v STOFF
     unset -v DEFAULT
     unset -v CLEAR
@@ -252,3 +255,5 @@ function libEscCodesExit()
     # Return Code
     return 0
 }
+
+libEscCodes='loaded'

@@ -9,6 +9,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libConn=''
+
 function isConnected()
 {
     local time=$([ -n "$1" ] && echo -n $1 || echo -n 30)
@@ -30,7 +32,10 @@ function isConnected()
 
 function libConnExit()
 {
+    unset -v libConn
     unset -f isConnected
     unset -f libConnExit
     return 0
 }
+
+libConn='loaded'

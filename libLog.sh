@@ -10,6 +10,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libLog=''
+
 # Constants
 declare -i  logSTARTIME=$(( $(date +%s%N) / 1000000 ))
 declare     logFILE="/tmp/$(basename "$0").log"
@@ -43,7 +45,6 @@ declare -i  logDISABLE=10
 declare -i -a levelLIST=($logFULL $logVERBOSE $logINFO $logSUCCESS $logRUNTIME $logWARNING $logERROR $logFAILURE $logDEBUG $logTRACE $logNONE)
 declare    -a logLevelNamesLIST=(logFULL logVERBOSE logINFO logSUCCESS logRUNTIME logWARNING logERROR logFAILURE logDEBUG logTRACE logNONE)
 declare -i  logLevel=$logNONE
-
 # Functions
 
 # begin logs.
@@ -297,6 +298,7 @@ function logStop() { logEnd; logLevel=$logNONE; flagQUIET=true; flagVERBOSE=fals
 function libLogExit()
 {
     # unset variables
+    unset -v libLog
     unset -v logSTARTIME
     unset -v logFILE
     unset -v flagDEBUG
@@ -326,6 +328,7 @@ function libLogExit()
     unset -v logTRACE
     unset -v logNONE
     unset -v logLevel
+    unset -v libLogLoaded
     # unset functions
     unset -f logBegin
     unset -f logEnd
@@ -357,3 +360,5 @@ function libLogExit()
     unset -f libLogExit
     return 0
 }
+
+libLog='loaded'

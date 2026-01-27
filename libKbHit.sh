@@ -9,6 +9,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libKbHit=''
+
 function kbhit()
 {
     local wait=$([ -n "$2" ] && echo -n "$2" || echo -n '1.0')
@@ -18,9 +20,12 @@ function kbhit()
 
 function libKbHitExit()
 {
+    unset -v libKbHit
     # Unset Functions
     unset -f kbhit
     unset -f libKbHitExit
     # Return Code
     return 0
 }
+
+libKbHit='loaded'

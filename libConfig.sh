@@ -10,6 +10,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libConfig=''
+
 function getTag(){ echo -n "${1%=*}" ; }
 function getValue() { echo -n "${1##*=}" ; }
 
@@ -175,6 +177,7 @@ function loadConfigFromFile()
 
 function libConfigExit()
 {
+    unset -v libConfig
     unset -f getTag
     unset -f getValue
     unset -f saveConfigToFile
@@ -184,3 +187,5 @@ function libConfigExit()
     unset -f libConfigExit
     return 0
 }
+
+libConfig='loaded'

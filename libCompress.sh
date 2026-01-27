@@ -9,6 +9,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libCompress=''
+
 function unCompress()
 {
     local err=0
@@ -65,8 +67,11 @@ function compress()
 
 function libCompressExit()
 {
+    unset -v libCompress
     unset -f compress
     unset -f unCompress
     unset -f libCompressExit
     return 0
 }
+
+libCompress='loaded'

@@ -9,6 +9,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libGit=''
+
 # A Added
 # C Copied
 # D Deleted
@@ -129,6 +131,8 @@ function gitSwitch()         { local err ; git switch -q "$1" > /dev/null 2>&1 ;
 
 function libGitExit()
 {
+    unset -v libGit
+
     unset -f isGitRepository
     unset -f isBranchCurrent
     unset -f isBranchAhead
@@ -159,3 +163,5 @@ function libGitExit()
     unset -f libGitExit
     return 0
 }
+
+libGit='loaded'

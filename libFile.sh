@@ -9,30 +9,10 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
-declare     reFS='(btrfs|exfat|ext2|ext3|ext4|fat16|fat32)'
+declare     libFile=''
+
+declare     reFS='(btrfs|ext2|ext3|ext4)'
 declare     reCryptFS='(crypto_LUKS)'
-declare     distroNAME=''
-declare     sourceFILE=''
-declare     flagFORCE=false
-declare     flagDEBUG=false
-
-declare -i  iGROUP=0
-declare -i  iINSTALL=1
-declare -i  iCHECK=2
-declare -i  iUPDATE=3
-declare -i  iUPGRADE=4
-declare -i  iRPM=5
-declare -i  iDEB=6
-declare -i  iMAX_CMD=7
-
-declare -a  installTABLE=(\
-'dnf group install -y' 'dnf install -y' 'dnf info' 'dnf upgdate' 'dnf upgrade' 'rpm -i' 'dpkg -i' \
-'' 'rpm-ostree install -y' 'rpm-ostree status -b | grep -c -F' 'rpm-ostree update' 'rpm-ostree upgrade' 'rpm-ostree install -y' 'rpm-ostree install -y' \
-'' 'apt-get install -y' 'apt-get show' 'apt-get update' 'apt-get upgrade' 'rmp -i' 'dpkg -i' \
-'' '' '' '' '' '' '' \
-'' '' '' '' '' '' '' \
-'' '' '' '' '' '' ''\
-)
 
 function getIDNumber()
 {
@@ -49,8 +29,7 @@ function getIDNumber()
     echo -n $distro
     return $err
 }
-function _debug() { if $flagDEBUG; then echo -e "\033[32mdebug\033[0m  : $*"; fi; }
-function _error() { echo -e "\033[31merror\033[0m  : $*" >&2; }
+
 function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
 function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
 function _isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
@@ -115,15 +94,15 @@ function itExist()
 
 function getMountDir()
 {
-    if   [ -d /media     ] ; then echo -n '/media'
-    elif [ -d /run/media ] ; then echo -n '/run/media'
+    if   [ -d /media     ] ; then echo -n "/media/${USER}"
+    elif [ -d /run/media ] ; then echo -n "/run/media/${USER}"
     else                          echo -n '/mnt'
     fi
 }
 
 function getMapperDir() { echo -n '/dev/mapper' ; }
 
-function isLuksFS() { if cryptsetup isLuks ${1}; then true; else false; fi; }
+function isLuksFS() { if sudo cryptsetup isLuks "${1}"; then true; else false; fi; }
 
 function getFS()
 {
@@ -201,67 +180,55 @@ function tryRun()
     return $err
 }
 
-################################################################################
-
-function libFileAsk()
+function _askToContinue()
 {
-    local tout="${1:-0}"
-    local msg="${2:-'Continue [y|Y]? '}"
-    local ret ans=''
-    read -r -s -N 1 -n 1 $([ $tout -gt 0 ] && echo -n "-t $1") -p "${msg}" ans
-    ret=$?
-    echo -n "${ans}"
-    return $ret
-}
-
-function libFileAskToContinue()
-{
-    local tout="${1:-0}"
-    local msg="${2:-'Continue [y|Y]? '}"
-    local ret answer err=1
-    answer=$(libFileAsk $tout "${msg}")
-    ret=$?
-    echo
-    if [ $ret -eq 0 ] && _isYes $answer ; then err=0 ; fi
-    return $err
-}
-
-function helpInstall()
-{
-    printf "\
-Tweaks adjusts for user profile.
-Syntax:
-  $(basename $0) [-h | --help]
-  $(basename $0) [options]
-Options:
-  -d | --distro <NAME>  Set distro ID Name.
-  -y | --force          Assume yes for any question.
-  -i | --input          Source file to run install from.
-       --               Separate parameters to others.
-"
-    return 0
-}
-
-function setupInstall()
-{
-    while [ -n "$1" ]
-    do
-        case "$1" in
-            -h|--help) helpInstall ; return 0 ;;
-            -y|--force) flagFORCE=true ;;
-            -d|--distro) shift ; distroNAME="$1";;
-            -i|--input) shift ; sourceFILE="$1" ;;
-            -g|--debug) flagDEBUG=true ;;
-            --) break ;;
-            -*) _error "Invalid option ($1)."; return 1 ;;
-             *) _error "Invalid value ($1)." ; return 2 ;;
-        esac
-        shift
-    done
+    local ans=''
+    read -r -s -N 1 -n 1 $([ ${1:-0} -gt 0 ] && echo -n "-t ${1}") -p "${2:-'Continue [y|Y]? '}" ans
+    if _isYes "${ans}" ; then return 0 ; else return 1 ; fi
 }
 
 function installFromFile()
 {
+    function _usage()
+    {
+        printf "\
+    Tweaks adjusts for user profile.
+    Syntax:
+    $(basename $0) [-h | --help]
+    $(basename $0) [options]
+    Options:
+    -d | --distro <NAME>  Set distro ID Name.
+    -y | --force          Assume yes for any question.
+    -i | --input          Source file to run install from.
+        --               Separate parameters to others.
+    "
+    }
+
+    function _error()       { echo -e "\033[31merror\033[0m  : $*" >&2; }
+    function hasCommentIn() { if echo -n "$1" | grep -aoP '^ *#' > /dev/null 2>&1; then true; else false; fi; }
+    function _isConnected() { if ping '8.8.8.8' -q -t $1 -c $2   > /dev/null 2>&1; then true; else false; fi; }
+
+    declare     distroNAME=''
+    declare     sourceFILE=''
+    declare     flagFORCE=false
+
+    declare -i  iGROUP=0
+    declare -i  iINSTALL=1
+    declare -i  iCHECK=2
+    declare -i  iUPDATE=3
+    declare -i  iUPGRADE=4
+    declare -i  iRPM=5
+    declare -i  iDEB=6
+    declare -i  iMAX_CMD=7
+
+    declare -a  installTABLE=(\
+'dnf group install -y' 'dnf install -y' 'dnf info' 'dnf upgdate' 'dnf upgrade' 'rpm -i' 'dpkg -i' \
+'' 'rpm-ostree install -y' 'rpm-ostree status -b | grep -c -F' 'rpm-ostree update' 'rpm-ostree upgrade' 'rpm-ostree install -y' 'rpm-ostree install -y' \
+'' 'apt-get install -y' 'apt-get show' 'apt-get update' 'apt-get upgrade' 'rmp -i' 'dpkg -i' \
+'' '' '' '' '' '' '' \
+'' '' '' '' '' '' '' \
+'' '' '' '' '' '' '')
+
     local line tag err distroName count sourceFile cmdInstall cmdCheck cmdUpdate cmdUpgrade cmdRPM cmdDEB distroIndex id
 
     [ -f /etc/os-release ] && . /etc/os-release || return 1
@@ -280,20 +247,50 @@ function installFromFile()
         cmdRPM="${installTABLE[$id+$iRPM    ]}"
         cmdDEB="${installTABLE[$id+$iDEB    ]}"
 
-    _debug "Distro : ${distroName}"
-    _debug "Index  : ${distroIndex}"
-    _debug "ID     : ${id}"
-    _debug "File   : ${sourceFile}"
-    _debug "Group  : ${cmdGroup}"
-    _debug "Install: ${cmdInstall}"
-    _debug "Check  : ${cmdCheck}"
-    _debug "Update : ${cmdUpdate}"
-    _debug "Upgrade: ${cmdUpgrade}"
-    _debug "RPM    : ${cmdRPM}"
-    _debug "DEB    : ${cmdDEB}"
+    # variables
+    declare -a libLIST=(Log Regex Time)
+    declare -a libLOADED=()
+    declare    libDIR='~/dev/libShell'
 
-    function hasCommentIn() { if echo -n "$1" | grep -aoP '^ *#' > /dev/null 2>&1; then true; else false; fi; }
-    function _isConnected() { if ping '8.8.8.8' -q -t $1 -c $2   > /dev/null 2>&1; then true; else false; fi; }
+    for file in "${libLIST[@]}"
+    do
+        source "${libDIR}/lib${file}.sh"
+        if [ $? -eq 0 ]
+        then
+            libLOADED+=(${file})
+        else
+            _error "Load lib${file}.sh"
+            return 3
+        fi
+    done
+
+    logInit -d -f
+
+    while [ -n "$1" ]
+    do
+        case "$1" in
+            -h|--help) _usage ; return 0 ;;
+            -y|--force) flagFORCE=true ;;
+            -d|--distro) shift ; distroNAME="$1";;
+            -i|--input) shift ; sourceFILE="$1" ;;
+            --) break ;;
+            -*) logSetup "$1" ;;
+             *) logE "Invalid value ($1)." ; return 4 ;;
+        esac
+        shift
+    done
+
+    logD "Distro : ${distroName}"
+    logD "Index  : ${distroIndex}"
+    logD "ID     : ${id}"
+    logD "File   : ${sourceFile}"
+    logD "Group  : ${cmdGroup}"
+    logD "Install: ${cmdInstall}"
+    logD "Check  : ${cmdCheck}"
+    logD "Update : ${cmdUpdate}"
+    logD "Upgrade: ${cmdUpgrade}"
+    logD "RPM    : ${cmdRPM}"
+    logD "DEB    : ${cmdDEB}"
 
     while read -e line
     do
@@ -321,7 +318,7 @@ function installFromFile()
             update)
                 if _isConnected
                 then
-                    _debug "sudo ${cmdUpdate}"
+                    logD "sudo ${cmdUpdate}"
                     tryRun sudo "${cmdUpdate}"
                 else
                     tag=nothing
@@ -330,7 +327,7 @@ function installFromFile()
             upgrade)
                 if _isConnected
                 then
-                    _debug "sudo ${cmdUpgrade}"
+                    logD "sudo ${cmdUpgrade}"
                     tryRun sudo "${cmdUpgrade}"
                 else
                     tag=nothing
@@ -340,9 +337,9 @@ function installFromFile()
                 [ -n "${cmdGroup}" ] || continue
                 if _isConnected
                 then
-                    #_debug "sudo ${cmdCheck} ${line}"
+                    #logD "sudo ${cmdCheck} ${line}"
                     #tryRun sudo "${cmdCheck}" "${line}"
-                    _debug "sudo ${cmdGroup} ${line}"
+                    logD "sudo ${cmdGroup} ${line}"
                     tryRun sudo "${cmdGroup}" "${line}"
                     ret=$?
                     if [ $ret -ne 0 ]
@@ -356,9 +353,9 @@ function installFromFile()
             install)
                 if _isConnected
                 then
-                    #_debug "sudo ${cmdCheck} ${line}"
+                    #logD "sudo ${cmdCheck} ${line}"
                     #tryRun sudo "${cmdCheck}" "${line}"
-                    _debug "sudo ${cmdInstall} ${line}"
+                    logD "sudo ${cmdInstall} ${line}"
                     tryRun sudo "${cmdInstall}" "${line}"
                     ret=$?
                     if [ $ret -ne 0 ]
@@ -375,9 +372,9 @@ function installFromFile()
                     local wgetFile="/tmp/$(basename ${line})"
                     if [ -f "${wgetFile}" ]
                     then
-                        _debug "WGET file ( ${wgetFile} ) already exist."
+                        logD "WGET file ( ${wgetFile} ) already exist."
                     else
-                        _debug "eval wget ${line} -O ${wgetFile}"
+                        logD "eval wget ${line} -O ${wgetFile}"
                         $(tryRun wget "${line}" -O "${wgetFile}") || err=$?
                     fi
                 else
@@ -391,19 +388,19 @@ function installFromFile()
                     case "${packageFile}" in
                     # DEB
                     *.deb)
-                        _debug "eval ${cmdDEB} ${packageFile}"
+                        logD "eval ${cmdDEB} ${packageFile}"
                         $(tryRun "${cmdDEB}" "${packageFile}") || err=$?
                         ;;
                     # RPM
                     *.rpm)
-                        _debug "eval ${cmdRPM} ${packageFile}"
+                        logD "eval ${cmdRPM} ${packageFile}"
                         $(tryRun "${cmdRPM}" "${packageFile}") || err=$?
                         ;;
                     # SH
                     *.sh)
-                        _debug "chmod u+x ${packageFile}"
+                        logD "chmod u+x ${packageFile}"
                         chmod u+x "${packageFile}"
-                        _debug "eval ${packageFile}"
+                        logD "eval ${packageFile}"
                         tryRun "${packageFile}"
                         ;;
                     # UNKNOWN
@@ -414,7 +411,7 @@ function installFromFile()
                 fi
                 ;;
             run)
-                _debug "eval ${line}"
+                logD "eval ${line}"
                 tryRun "${line}"
                 err=$?
                 if [ $err -ne 0 ] ; then
@@ -433,42 +430,236 @@ function installFromFile()
 
     local message="Install Softwares from file ( $sourceFile )"
     [ $err -eq 0 ] && logS "${message}" || _error "${message}"
-    unset -v sourceFile
-    unset -v tag
-    unset -v line
-    unset -v count
+
+    logR
+    logStop
+    for file in "${libLOADED[@]}"; do "lib${file}Exit" || _error "Call lib${file}Exit()"; done
 
     return $err
 }
 
-################################################################################
+function cryptCreate()
+{
+    function _usage()
+    {
+        printf "\
+Create or open and mount an encrypted Luks2 device.
+Usage:
+$(basename $0) -h|--help
+$(basename $0) </path/drive> ['key filename']
+$(basename $0) -i|--drive </path/drive> [-k|--key 'key filename'] [--fs <btrfs|ext3|ext4(default)>] [-y|--force]
+Options:
+-h|--help                   Show help information.
+-i|--drive </path/drive>    Drive to encrypt|open|mount.
+                                Ex.: /dev/sd[a-z]
+                            Device's name as 'luks_drive'
+   --fs <format>            File system to format.
+                                btrfs
+                                ext3
+                                ext4 (default)
+-k|--key <'key filename'>   Read the key for a new slot from a file.
+-y|--force                  Force run each erase|encrypt|format command without ask to confirm.
+-g|--debug                  Enable debug messages.
+
+\033[93mATTENTION\033[0m: Parameter -y|--force will let \033[93m erase \033[0mall data stored in device and can not be rescued later.
+"
+    }
+
+    function _error() { echo -e "\033[31merror\033[0m  : $*" >&2; }
+
+    # variables
+    declare -a libLIST=(Log Regex Time)
+    declare -a libLOADED=()
+    declare    libDIR='~/dev/libShell'
+
+    for file in "${libLIST[@]}"
+    do
+        source "${libDIR}/lib${file}.sh"
+        if [ $? -eq 0 ]
+        then
+            libLOADED+=(${file})
+        else
+            _error "Load lib${file}.sh"
+            return 1
+        fi
+    done
+
+    unset -v file
+
+    logInit -d -f
+
+    declare -a fsLIST=(btrfs ext3 ext4)
+    declare keyfile=''
+    declare drive=''
+    declare device=''
+    declare fsTYPE='ext4'
+    declare force=false
+    declare mapperDIR=$(getMapperDir)
+    declare mountDIR=$(getMountDir)
+
+    declare -a listCMD=(\
+"if [ -b ${drive} ] && ! isLuksFS ${drive} || $force ; then sudo cryptsetup --type=luks2 --verify-passphrase luksFormat ${keyfile} ${drive} ; else echo -e \"\033[37m   info\033[0m: Drive ${drive} already encrypted.\" ; fi" \
+"if ! [ -b ${mapperDIR}/${device} ] ; then sudo cryptsetup luksOpen ${keyfile} ${drive} ${device} ; else echo -e \"\033[37minfo\033[0m   : Device '${mapperDIR}/${device}' already opened.\" ; fi" \
+"if ! hasFS ${mapperDIR}/${device} || $force ; then sudo mkfs.${fsTYPE} ${mapperDIR}/${device} ; else echo -e \"Device ${mapperDIR}/${device} already has a FS(`getFS ${mapperDIR}/${device}`).\" ; fi" \
+"if ! [ -d ${mountDIR}/${device}/${USER}_success ] && ! hasFS ${mountDIR}/${device} ${fsTYPE} ; then sudo mount -m -i -n --onlyonce --make-private ${mapperDIR}/${device} ${mountDIR}/${device} ; else echo -e \"\033[31merror\033[0m  : Mount block device ${device} from ${mapperDIR}/${device} on ${mountDIR}/${device}\" ; fi" \
+"if [ -d ${mountDIR}/${device} ] && hasFS ${mountDIR}/${device} ; then sudo chown -R $USER:$USER ${mountDIR}/${device} ; else false ; fi" \
+"if ! [ -d ${mountDIR}/${device}/${USER}_success ] ; then mkdir ${mountDIR}/${device}/${USER}_success ; fi" \
+"if [ -d ${mountDIR}/${device}/${USER}_success ] ; then echo '1' > ${mountDIR}/${device}/${USER}_success/ok ; else false ; fi")
+
+    declare -a listERR=(\
+"Create encrypted device ${drive}." \
+"Open encrypted device ${drive} as ${device}" \
+"Create fs ${fsTYPE} on device ${device}" \
+"Mount ${device} from ${mapperDIR}/${device} into ${mountDIR}/${device}" \
+"Change owner of ${mountDIR}/${device}" \
+"Make directory ${mountDIR}/${device}/${USER}_success" \
+"Access ${mountDIR}/${device}/${USER}_success not available.")
+
+    declare -i listLEN=${#listCMD[@]}
+    declare -i err=0
+    declare    run=true
+
+    while [ $err -eq 0 ] && $run
+    do
+        # parse command line parameters and arguments.
+        while [ $# -gt 0 ] && [ -n "$1" ] && [ $err -eq 0 ] && $run
+        do
+            case "$1" in
+            -h|--help)
+                _usage
+                run=false
+                break
+                ;;
+            -i|--drive)
+                shift
+                if [ -b "$1" ] || [ -f "$1" ]
+                then
+                    drive="$1"
+                    device="luks_$(basename "${1}")"
+                else
+                    logE "Invalid drive option ($1)."
+                    err=1
+                    break
+                fi
+                ;;
+            --fs)
+                shift
+                if [[ "${fsLIST[@]}" =~ "$1" ]]
+                then
+                    fsTYPE="$1"
+                else
+                    logE "Invalid file system option ($1)."
+                    err=2
+                    break
+                fi
+                ;;
+            -y|--force)
+                logW "Force to erase, encrypt and format device data [y|Y]? "
+                if askToContinue
+                then
+                    force=true
+                fi
+                ;;
+            -k|--key)
+                if isArg "${2}"
+                then
+                    shift
+                    if [ -f "${1}" ]
+                    then
+                        keyfile="--key-file=${1}"
+                    else
+                        logE "Invalid key file ($1) or not found."
+                        err=1
+                        break
+                    fi
+                else
+                    logE "Empty value for parameter -k|--key <keyfile>"
+                    err=1
+                    break
+                fi
+                ;;
+            -*) logSetup "$1" ;;
+             *)
+                if [ -z "${drive}" ]
+                then
+                    if [ -b "$1" ] || [ -f "$1" ]
+                    then
+                        drive="$1"
+                        device="luks_$(basename "${1}")"
+                    else
+                        logE "Invalid command line argument ($1)."
+                        err=4
+                        break
+                    fi
+                elif [ -z "$keyfile" ]
+                then
+                    if [ -f "$1" ]
+                    then
+                        keyfile="--key-file=${1}"
+                    else
+                        logE "Invalid filename for command line -k|--key $1"
+                        err=5
+                        break
+                    fi
+                else
+                    logE "Invalid value [$1]."
+                    err=6
+                    break
+                fi
+                ;;
+            esac
+            shift
+        done
+
+        [ $err -eq 0 ] || break
+
+        # check empty parameters from command line.
+        if [ -z "${drive}" ] || [ -z "${device}" ]
+        then
+            logE "Empty drive parameter from command line."
+            err=7
+            break
+        fi
+
+        for ((i=0 ; i < listLEN; i++))
+        do
+            logD "${listCMD[$i]}"
+            eval "${listCMD[$i]}"
+            err=$?
+            if [ $err -ne 0 ]
+            then
+                logE "${listERR[$i]}"
+                break
+            fi
+        done
+
+        # format and show a message for success or error
+        msg="Encrypt drive '${drive}' as luks2"
+        if [ $err -eq 0 ]; then logS "${msg}"; else logE "${msg}"; fi
+
+        run=false
+    done
+
+    logR
+    logStop
+    for file in "${libLOADED[@]}"; do "lib${file}Exit" || _error "Call lib${file}Exit()"; done
+
+    return $err
+}
 
 function libFileExit()
 {
     # unset variables
-    unset -v distroNAME
-    unset -v iGROUP
-    unset -v iINSTALL
-    unset -v iCHECK
-    unset -v iUPDATE
-    unset -v iUPGRADE
-    unset -v iRPM
-    unset -v iDEB
-    unset -v iMAX_CMD
+    unset -v libFile
+    unset -v reFS
+    unset -v reCryptFS
     # unset functions
+    unset -f getIDNumber
     unset -f _isNum
     unset -f _isInt
     unset -f _isNot
     unset -f _isYes
     unset -f _isArg
-    unset -f _error
-    unset -f _debug
-    unset -f wait
-    unset -f libFileAsk
-    unset -f libFileAskToContinue
-    unset -f setupInstall
-    unset -f helpInstall
-    unset -f installFromFile
     unset -f getScriptName
     unset -f getFileName
     unset -f getName
@@ -483,7 +674,18 @@ function libFileExit()
     unset -f linkTargetExist
     unset -f itExist
     unset -f getMountDir
+    unset -f getMapperDir
+    unset -f isLuksFS
+    unset -f getFS
+    unset -f getCryptFS
+    unset -f isFsValid
+    unset -f hasFS
     unset -f tryRun
-    unset -f libFileExit
+    unset -f _askToContinue
+    unset -f installFromFile
+    unset -f cryptCreate
+    unset -v libFileExit
     return 0
 }
+
+libFile='loaded'

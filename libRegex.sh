@@ -9,6 +9,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libRegex=''
+
 # constants
 declare regexFS='(btrfs|exfat|ext2|ext3|ext4|fat16|fat32|hfs|hfsplus|jfs|ntfs|reiser|reiser4|ufs|xfs|zfs)'
 declare regexCryptFS='(crypto_LUKS)'
@@ -78,6 +80,7 @@ function reIsDateTimeAsCode()   { regexIt "${1}" "${regexDATETIMEASCODE}" ; }
 function libRegexExit()
 {
     # unset variables
+    unset -v libRegex
     unset -v regexTAG
     unset -v regexVALUE
     unset -v regexFLOAT
@@ -127,3 +130,5 @@ function libRegexExit()
     # return code
     return 0
 }
+
+libRegex='loaded'

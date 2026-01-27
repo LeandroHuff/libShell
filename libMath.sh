@@ -10,6 +10,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libMath=''
+
 function isNumber()
 {
     local regexDouble='^[+-]?(\d+\.?\d*|\d*\.?\d+)$'
@@ -193,6 +195,7 @@ function calcNumber()
 function libMathExit()
 {
     # unset variables
+    unset -v libMath
     unset -v regexDouble
     unset -v regexZero
     # unset functions
@@ -206,3 +209,5 @@ function libMathExit()
     unset -f libMathExit
     return 0
 }
+
+libMath='loaded'

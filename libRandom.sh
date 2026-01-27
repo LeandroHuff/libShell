@@ -9,6 +9,8 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
+declare libRandom=''
+
 declare -a typeRANDOM=(alpha digit alnum lowhex uphex mixhex graph space date)
 
 # Functions
@@ -115,6 +117,7 @@ function genUUID()
 function libRandomExit()
 {
     # local variables
+    unset -v libRandom
     unset -v typeRANDOM
     # local functions
     unset -f _isInt
@@ -133,3 +136,5 @@ function libRandomExit()
     unset -f libRandomExit
     return 0
 }
+
+libRandom='loaded'

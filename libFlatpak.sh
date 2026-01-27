@@ -9,11 +9,14 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
-
+declare libFlatpak=''
 
 function libFlatpakExit()
 {
+    unset -v libFlatpak
 
     unset -f libFlatpakExit
     return 0
 }
+
+libFlatpak='loaded'
