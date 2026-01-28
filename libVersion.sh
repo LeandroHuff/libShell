@@ -9,12 +9,10 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
 
-declare libVersion=''
+declare -a -i libVERSION=(2 2 4 3)
 
-declare -a -i libVersion=(2 2 4 2)
-
-function libVersionStr() { printf "%d.%d.%d.%03d" ${libVersion[0]} ${libVersion[1]} ${libVersion[2]} ${libVersion[3]}; }
-function libVersionNum() { echo -n $(( libVersion[0] * 1000000000 + libVersion[1] * 1000000 + libVersion[2] * 1000 + libVersion[3] )); }
+function libVersionStr() { printf "%d.%d.%d.%03d" ${libVERSION[0]} ${libVERSION[1]} ${libVERSION[2]} ${libVERSION[3]} ; }
+function libVersionNum() { echo -n $(( libVERSION[0]*1000000000 + libVERSION[1]*1000000 + libVERSION[2]*1000 + libVERSION[3])) ; }
 
 function libVersionExit()
 {
