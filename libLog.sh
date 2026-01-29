@@ -105,9 +105,6 @@ function logCRNLF() { echo -e -n "\r$*" ; }
 # log unconditional
 function logU() { if $flagFILE ; then echo -e "$*" | tee -a "${logFILE}" ; else echo -e "$*" ; fi ; }
 
-# log unconditional
-function logScreen() { echo -e "$*" ; }
-
 # log any message
 function log()
 {
@@ -162,11 +159,11 @@ function logT() { if $flagTRACE && [ $logLevel -le $logTRACE ] ; then logU "${TR
 function onErrorTraceAndExit()
 {
     local err=$1
-    if [ $err -ne 0 ]
+    if (( $err != 0 ))
     then
         shift
         logR
-        logScreen "${TRACE} $*"
+        logU "${TRACE} $*"
         logStop
         libLogExit
     fi
@@ -174,7 +171,7 @@ function onErrorTraceAndExit()
 }
 
 # on error log message
-function logOnE() { if [ $1 -ne 0 ] && [ $logLevel -le $logERROR ] ; then shift ; log "${ERROR} $*" ; fi ; }
+function logOnE() { if (( $1 != 0 )) && [ $logLevel -le $logERROR ] ; then shift ; log "${ERROR} $*" ; fi ; }
 
 # on empty string log message
 function logOnZ() { if [ -z "$1"  ] && [ $logLevel -le $logERROR ] ; then shift ; log "${ERROR} $*" ; fi ; }
@@ -188,14 +185,11 @@ Syntax: source libLog.sh [options]
                logInit   [options]
                logSetup  [options]
 Options:
-  -q|--quiet                Disable all messages (default at startup).
-  -g|--debug                Enable debug messages.
-  -t|--trace                Enable trace messages.
-  -v|--verbose              Enable verbose level.
   -d|--default              Set log to default level.
   -f|--file [name]          Enable log to file as '/tmp/name.log',
                             [name] is an optional argument,
                             if empty, assume default as '/tmp/scriptname.log'.
+  -g|--debug                Enable debug messages.
   -l|--level <level>        Set log level:
                               0|${logLevelNamesLIST[0]}:\tFull
                               1|${logLevelNamesLIST[1]}:\tVerbose
@@ -208,7 +202,12 @@ Options:
                               8|${logLevelNamesLIST[8]}:\tDebug
                               9|${logLevelNamesLIST[9]}:\tTrace
                               10|${logLevelNamesLIST[10]}:\tNone|Disable (default)
+  -q|--quiet                Disable all messages (default at startup).
      --ram [name] [size]    Set ramdrive name and size.
+     --ramName <name>       Set ramdrive name.
+     --ramSize <size>       Set ramdrive size.
+  -t|--trace                Enable trace messages.
+  -v|--verbose              Enable verbose level.
      --                     Let next parameter to another application.
 "
     return 0
@@ -227,7 +226,7 @@ function openRamdrive()
     fi
     printf -v cmd "sudo mount -m -i -n --onlyonce --make-private --make-unbindable -t tmpfs -o rw,owner,noatime,nodev,nofail,user=%s,size=%d tmpfs %s" "$USER" ${size} "${dir}"
     eval "${cmd}" || err=$?
-    if [ $err -ne 0 ]
+    if (( $err != 0 ))
     then
         flagRAM=false
         logE "Run mount command line."
@@ -239,8 +238,9 @@ function openRamdrive()
         logF "ramDrive folder ${dir} not found."
         return 1
     fi
-    sudo chown -R $USER:$USER "${dir}" || err=$?
-    if [ $err -ne 0 ]
+    printf -v cmd "sudo chown -R %s:%s %s" $USER $USER "${dir}"
+    eval "${cmd}" || err=$?
+    if (( $err != 0 ))
     then
         flagRAM=false
         logF "Change device owner to $USER"
@@ -248,16 +248,16 @@ function openRamdrive()
     fi
     if ! [ -f "${dir}"/success ]
     then
-        echo 1 > "${dir}"/success
-        err=$?
-        if [ $err -ne 0 ]
+        printf -v cmd "echo 1 > %s" "${dir}/success"
+        eval "${cmd}" || err=$?
+        if (( $err != 0 ))
         then
             flagRAM=false
             logF "ramDrive file access."
             return $err
         fi
     fi
-    if [ $err -eq 0 ]
+    if (( $err == 0 ))
     then
         logTmpDIR="${dir}"
     fi
@@ -270,11 +270,11 @@ function closeRamdrive()
     local err=0
     local dir="${1:-$logRamDIR}"
     printf -v cmd "sudo umount -l %s" "${dir}"
-    eval "${cmd}" || err=$?
+    eval "${cmd}" || err=$((err+$?))
     logOnE $err "Unmount ${dir} RAM drive."
     sleep 1
     printf -v cmd "sudo rmdir %s" "${dir}"
-    eval "${cmd}" || err=$?
+    eval "${cmd}" || err=$((err+$?))
     logOnE $err "Umount and remove directory ${dir}"
     return $err
 }
@@ -282,7 +282,7 @@ function closeRamdrive()
 # parse and setup log from command line parameters.
 function logSetup()
 {
-    [ $# -gt 0 ] || return 0
+    (( $# > 0 )) || return 0
     local err=0
     # is (I)nteger
     function isI() { if echo -n "$1" | grep -aoP '^[+-]?[0-9]+$' > /dev/null 2>&1; then true; else false; fi; }
@@ -294,8 +294,8 @@ function logSetup()
         -h|--help)    logHelp ; err=$((err+1)) ; break ;;
         -q|--quiet)   logLevel=$logNONE   ; flagQUIET=true ; flagVERBOSE=false ;;
         -v|--verbose) logLevel=$logVERBOSE; flagQUIET=false; flagVERBOSE=true  ;;
-        -g|--debug)   [ $logLevel -le $logDEBUG ] || logLevel=$logDEBUG; flagDEBUG=true; logScreen "${DEBUG} Enabled" ;;
-        -t|--trace)   [ $logLevel -le $logTRACE ] || logLevel=$logTRACE; flagTRACE=true; logScreen "${TRACE} Enabled" ;;
+        -g|--debug)   [ $logLevel -le $logDEBUG ] || logLevel=$logDEBUG; flagDEBUG=true; logU "${DEBUG} Enabled" ;;
+        -t|--trace)   [ $logLevel -le $logTRACE ] || logLevel=$logTRACE; flagTRACE=true; logU "${TRACE} Enabled" ;;
         -d|--default) [ $logLevel -le $logINFO  ] || logLevel=$logINFO
                       flagQUIET=false
                       flagVERBOSE=false
@@ -331,7 +331,7 @@ function logSetup()
         --ram)
             flagRAM=true
             local maxparam=2
-            while [ -n "$2" ] && [ $maxparam -gt 0 ]
+            while [ -n "$2" ] && (( $maxparam > 0 ))
             do
                 case "$2" in
                 -*) break ;;
@@ -412,7 +412,7 @@ function logStop()
 {
     local code=${1:-0}
     logEnd
-    if [ $code -eq 0 ] ; then closeRamdrive || logF "Close ramdrive ${logRamDIR}" ; fi
+    if (( $code == 0 )) ; then closeRamdrive || logF "Close ramdrive ${logRamDIR}" ; fi
     if [ -f "${logRamDIR}"/success ] ; then logW "Ram drive ${logFILE} for log are opened and must be closed manually." ; fi
     logLevel=$logNONE
     flagQUIET=true

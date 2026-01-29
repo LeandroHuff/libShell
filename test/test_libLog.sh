@@ -65,4 +65,4 @@ logF "message failure"
 logE "message error"
 logI "message info"
 
-_exit 1
+_exit 0
