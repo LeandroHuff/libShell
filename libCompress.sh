@@ -7,10 +7,19 @@
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
 declare libCompress=''
 
+##
+# @brief    unCompress files.
+# @param    $1          Crompressed filename.
+#           $2..$10     Extra parameters to uncompressor program.
+# @return   0           Success
+#           1..99       Uncompressor error code.
+#           101         Empty parameter.
+#           102         File not found.
+#           103         Unknown compressed method by file extension.
 function unCompress()
 {
     local err=0
@@ -26,18 +35,27 @@ function unCompress()
             *.gz) gzip -d -f -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
             *.bz2) bzip2 -d -f -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
             *.xz) xz -d -T 0 -f -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *) err=3 ;;
+            *) err=103 ;;
             esac
         else
-            err=2
+            err=102
         fi
     else
-        err=1
+        err=101
     fi
 
     return $err
 }
 
+##
+# @brief    Compress files.
+# @param    $1          Crompress filename.
+#           $2..$10     Extra parameters to compressor program.
+# @return   0           Success
+#           1..99       Compressor error code.
+#           101         Empty parameter.
+#           102         File not found.
+#           103         Unknown compressed method by file extension.
 function compress()
 {
     local err=0
@@ -53,18 +71,22 @@ function compress()
             *.gz|*.gzip) gzip -d -f -k -q -9 "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
             *.bz2) bzip2 -z -k -9 -f -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
             *.xz) xz -z -k -f -9 -e -T 0 -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *) err=3 ;;
+            *) err=103 ;;
             esac
         else
-            err=2
+            err=102
         fi
     else
-        err=1
+        err=101
     fi
 
     return $err
 }
 
+##
+# @brief    Exit from Compress program.
+# @param    none
+# @return   0       Success
 function libCompressExit()
 {
     unset -v libCompress

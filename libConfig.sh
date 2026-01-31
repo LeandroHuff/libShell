@@ -8,7 +8,7 @@
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
 declare libConfig=''
 

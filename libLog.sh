@@ -1,25 +1,25 @@
 ################################################################################
 # @file         libLog.sh
-# @brief        Source variables and functions to print log messages on terminal
-#               or file.
+# @brief        Shell script source code to print log messages on terminal or file.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
-# @sintaxe:     source libLog.sh
+# @sintaxe:     source libLog.sh [parameters]
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
 declare libLog=''
 
 # Constants
 declare -i logSTARTIME=$(( $(date +%s%N) / 1000000 ))
-declare -i logRamSIZE=$((4096*1024*1024))
+declare -i logRamSIZE=$((4096 * 1024 * 1024))
 declare    logMountDIR=$([ -d '/media' ] && echo -n "/media/$USER" || { [ -d '/run/media' ] && echo -n "/run/media/$USER" || echo -n "/mnt/$USER" ; })
 declare    logRamNAME='logRamDrive'
 declare    logRamDIR="${logMountDIR}/${logRamNAME}"
 declare    logTmpDIR='/tmp'
 declare    logFILE="${logTmpDIR}/$(basename $0).log"
+
 # log message and colors
 declare   ERROR='\033[31m  error\033[0m:'
 declare    FAIL='\033[91mfailure\033[0m:'
@@ -29,33 +29,40 @@ declare    WARN='\033[93mwarning\033[0m:'
 declare SUCCESS='\033[97msuccess\033[0m:'
 declare RUNTIME='\033[97mruntime\033[0m:'
 declare    INFO='\033[98m   info\033[0m:'
-# Variables
-declare    flagRAM=false
-declare    flagQUIET=false
-declare    flagVERBOSE=false
-declare    flagDEBUG=false
-declare    flagTRACE=false
+
+# flags
+declare flagRAM=false
+declare flagQUIET=false
+declare flagVERBOSE=false
+declare flagDEBUG=false
+declare flagTRACE=false
+
+# targets
 declare -i logTONONE=0
 declare -i logTOSCREEN=1
 declare -i logTOFILE=2
 declare -i logTOALL=$((logTOSCREEN+logTOFILE))
 declare -a logTOLIST=($logTOSCREEN $logTOFILE $((logTOSCREEN+logTOFILE)))
 declare -i logTO=$logTONONE
-declare -i logALL=0
-declare -i logINFO=1
-declare -i logSUCCESS=2
-declare -i logRUNTIME=3
-declare -i logWARNING=4
-declare -i logERROR=5
-declare -i logFAILURE=6
-declare -i logDEBUG=7
-declare -i logTRACE=8
-declare -i logNONE=9
+
+# levels
+declare -i logNONE=0
+declare -i logINFO=$((0 << 1))
+declare -i logSUCCESS=$((1 << 1))
+declare -i logRUNTIME=$((2 << 1))
+declare -i logWARNING=$((3 << 1))
+declare -i logERROR=$((4 << 1))
+declare -i logFAILURE=$((5 << 1))
+declare -i logDEBUG=$((6 << 1))
+declare -i logTRACE=$((7 << 1))
+declare -i logALL=$((logINFO|logSUCCESS|logRUNTIME|logWARNING|logERROR|logFAILURE|logDEBUG|logTRACE))
+declare -a logLevelVars=(logNONE logINFO logSUCCESS logRUNTIME logWARNING logERROR logFAILURE logDEBUG logTRACE logALL)
+declare -a logLevelNames=(NONE INFO SUCCESS RUNTIME WARNING ERROR FAILURE DEBUG TRACE ALL)
 declare -i logENABLE=$logALL
 declare -i logDISABLE=$logNONE
-declare -i -a levelLIST=($logALL $logINFO $logSUCCESS $logRUNTIME $logWARNING $logERROR $logFAILURE $logDEBUG $logTRACE $logNONE)
-declare    -a logLevelNamesLIST=(ALL INFO SUCCESS RUNTIME WARNING ERROR FAILURE DEBUG TRACE NONE)
 declare -i logLevel=$logDISABLE
+
+
 # Functions
 
 # begin logs.
@@ -66,8 +73,7 @@ function logBegin()
         touch "${logFILE}" || logE "${logFILE} access."
         if [ -f "${logFILE}" ]
         then
-            echo "################################################################################" > "${logFILE}"
-            echo "         Start Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"               >> "${logFILE}"
+            echo "------------ Start Log to File on $(date +%Y-%m-%d) at $(date +%T.%N) -------------" >> "${logFILE}"
         else
             logE "File ${logFILE} not found."
             return 1
@@ -76,6 +82,7 @@ function logBegin()
     return 0
 }
 
+
 # end logs.
 function logEnd()
 {
@@ -83,8 +90,7 @@ function logEnd()
     then
         if [ -f "${logFILE}" ]
         then
-            echo "         End Log to File on $(date +%Y-%m-%d) at $(date +%T.%N)"                  >> "${logFILE}"
-            echo "################################################################################" >> "${logFILE}"
+            echo "------------- End Log to File on $(date +%Y-%m-%d) at $(date +%T.%N) --------------" >> "${logFILE}"
         else
             logE "File ${logFILE} not found."
             return 1
@@ -132,33 +138,26 @@ function log()
 
 # no line feed, just log message with Carriage Return Not Line Feed.
 function logCRNLF() { echo -e -n "\r$*" ; }
-
 # log info messages
-function logI() { if ((logLevel <= $logINFO)) ; then log "${INFO} $*" ; fi ; }
-
-# log success messages
-function logS() { if ((logLevel <= logSUCCESS)) ; then log "${SUCCESS} $*" ; fi ; }
-
-# log runtime messages
-function logR() { if ((logLevel <= logRUNTIME)) ; then log "${RUNTIME} $(getRuntime)" ; fi ; }
-
+function logI() { if (((logLevel & logINFO) == logINFO)) ; then log "${INFO} $*" ; fi ; }
 # log verbose messages
-function logV() { if $flagVERBOSE && ((logLevel <= $logINFO)) ; then log "${INFO} $*" ; fi ; }
-
+function logV() { if $flagVERBOSE && (((logLevel & logINFO) == logINFO)) ; then log "${INFO} $*" ; fi ; }
+# log success messages
+function logS() { if (((logLevel & logSUCCESS) == logSUCCESS)) ; then log "${SUCCESS} $*" ; fi ; }
+# log runtime messages
+function logR() { if (((logLevel & logRUNTIME) == logRUNTIME)) ; then log "${RUNTIME} $(getRuntime)" ; fi ; }
+# log with time stamp
+function logTS() { if (((logLevel & logRUNTIME) == logRUNTIME)) ; then log "\033[97m$(getRuntime)\033[0m: $*" ; fi ; }
 # log warning messages
-function logW() { if ((logLevel <= logWARNING)) ; then log "${WARN} $*" ; fi ; }
-
+function logW() { if (((logLevel & logWARNING) == logWARNING)) ; then log "${WARN} $*" ; fi ; }
 # log error messagges
-function logE() { if ((logLevel <= logERROR)) ; then log "${ERROR} $*" ; fi ; }
-
+function logE() { if (((logLevel & logERROR) == logERROR)) ; then log "${ERROR} $*" ; fi ; }
 # log failure messages
-function logF() { if ((logLevel <= logFAILURE)) ; then log "${FAIL} $*" ; fi ; }
-
+function logF() { if (((logLevel & logFAILURE) == logFAILURE)) ; then log "${FAIL} $*" ; fi ; }
 # log debug messages
-function logD() { if $flagDEBUG && ((logLevel <= logDEBUG)) ; then log "${DEBUG} $*" ; fi ; }
-
+function logD() { if (((logLevel & logDEBUG) == logDEBUG)) ; then log "${DEBUG} $*" ; fi ; }
 # log trace messages
-function logT() { if $flagTRACE && ((logLevel <= logTRACE)) ; then log "${TRACE} $*" ; fi ; }
+function logT() { if (((logLevel & logTRACE) == logTRACE)) ; then log "${TRACE} $*" ; fi ; }
 
 # on error log trace message and return the error code to exit from program.
 # usage: onErrorTraceAndExit $errCode "trace message" || _exit $?
@@ -198,7 +197,7 @@ function openRamdrive()
     if ((err != 0))
     then
         flagRAM=false
-        logE "Run mount command line."
+        logF "Run mount command line."
         return $err
     fi
     if ! [ -d "${dir}" ]
@@ -215,7 +214,7 @@ function openRamdrive()
         logF "Change device owner to $USER"
         return $err
     fi
-    if ! [ -f "${dir}"/success ]
+    if ! [ -f "${dir}/success" ]
     then
         printf -v cmd "echo 1 > %s" "${dir}/success"
         eval "${cmd}" || err=$?
@@ -226,10 +225,12 @@ function openRamdrive()
             return $err
         fi
     fi
-    if ((err != 0))
+    if ((err == 0))
     then
         logTmpDIR="${dir}"
-        logU $logTOSCREEN "ramDrive enabled and running at path ${logTmpDIR}"
+        logS "ramDrive enabled and running at path ${logTmpDIR}"
+    else
+        logF "ramDrive create and open, may it is not available."
     fi
     return $err
 }
@@ -269,20 +270,19 @@ Options:
   -d|--default              Reset logs to (default) state.
   -e|--enable <level> <target>  Enable logs.
                                 <level>
-                                    0|${logLevelNamesLIST[0]}:\tAll
-                                    1|${logLevelNamesLIST[1]}:\tVerbose
-                                    2|${logLevelNamesLIST[2]}:\tInfo (default)
-                                    3|${logLevelNamesLIST[3]}:\tSuccess
-                                    4|${logLevelNamesLIST[4]}:\tRuntime
-                                    5|${logLevelNamesLIST[5]}:\tWarning
-                                    6|${logLevelNamesLIST[6]}:\tError
-                                    7|${logLevelNamesLIST[7]}:\tFailure
-                                    8|${logLevelNamesLIST[8]}:\tDebug
-                                    9|${logLevelNamesLIST[9]}:\tTrace
-                                   10|${logLevelNamesLIST[10]}:\tNone
+                                    0:\$${logLevelVars[0]}:\t\t${logLevelNames[0]}
+                                    1:\$${logLevelVars[1]}:\t\t${logLevelNames[1]} (default)
+                                    2:\$${logLevelVars[2]}:\t${logLevelNames[2]}
+                                    4:\$${logLevelVars[3]}:\t${logLevelNames[3]}
+                                    8:\$${logLevelVars[4]}:\t${logLevelNames[4]}
+                                   16:\$${logLevelVars[5]}:\t${logLevelNames[5]}
+                                   32:\$${logLevelVars[6]}:\t${logLevelNames[6]}
+                                   64:\$${logLevelVars[7]}:\t${logLevelNames[7]}
+                                  128:\$${logLevelVars[8]}:\t${logLevelNames[8]}
+                                 0xFF:\$${logLevelVars[9]}:\t\t${logLevelNames[9]}
                                 <target>
                                     $logTONONE:\tDisabled
-                                    $logTOSCREEN:\tScreen
+                                    $logTOSCREEN:\tScreen (default)
                                     $logTOFILE:\tFile
                                     $logTOALL:\tAll
   -f|--file                 Enable log to file.
@@ -291,55 +291,108 @@ Options:
   -s|--screen               Enable log to screen (default).
   -t|--trace                Enable trace messages.
   -v|--verbose              Enable verbose level.
-     --disable              Disable logs.
+     --disable <level> <target>  Disable logs.
      --ram [name] [size]    Set ramDrive [name=logRamDrive] and/or [size=128*1024*1024=134217728].
      --                     Let next parameter to another application.
 "
     return 0
 }
 
-function logDisable()
+function clearTarget()
 {
-    logTO=$logTONONE
-    logLevel=$logNONE
-    flagQUIET=true
-    flagVERBOSE=false
-    flagDEBUG=false
-    flagTRACE=false
-    flagRAM=false
+    if [ -n "$1" ] && (((logTOALL & $1) == $1))
+    then
+        ((logTO&=(($1^0xFF))))
+    else
+        return 1
+    fi
     return 0
 }
 
-function logEnable()
+function clearLevel()
 {
-    if [[ "${levelLIST[@]}" =~ $1 ]]
+    if [ -n "$1" ] && (((logALL & $1) == $1))
+    then
+        ((logLevel&=(($1^0xFF))))
+    else
+        return 1
+    fi
+    return 0
+}
+
+function resetTarget()
+{
+    if [ -n "$1" ] && (((logTOALL & $1) == $1))
+    then
+        logTO=$1
+    else
+        return 1
+    fi
+    return 0
+}
+
+function resetLevel()
+{
+    if [ -n "$1" ] && (((logALL & $1) == $1))
     then
         logLevel=$1
     else
         return 1
     fi
-    if [[ "${logTOLIST[@]}" =~ $2 ]]
+    return 0
+}
+
+function setTarget()
+{
+    if [ -n "$1" ] && (((logTOALL & $1) == $1))
     then
-        logTO=$2
+        ((logTO|=$1))
     else
         return 1
     fi
     return 0
 }
 
+function setLevel()
+{
+    if [ -n "$1" ] && (((logALL & $1) == $1))
+    then
+        ((logLevel|=$1))
+    else
+        return 1
+    fi
+    return 0
+}
+
+function logDisable()
+{
+    local level=${1:-$logALL}
+    local target=${2:-$logTOALL}
+    clearLevel  $level  || return $?
+    clearTarget $target || return $?
+    return 0
+}
+
+function logEnable()
+{
+    local level=${1:-$logALL}
+    local target=${2:-$logTOALL}
+    setLevel  $level  || return $?
+    setTarget $target || return $?
+    return 0
+}
+
 function logDefault()
 {
-    logEnable $logINFO $logTOSCREEN
-    flagQUIET=false
+    resetLevel $logINFO
+    resetTarget $logTOSCREEN
     flagVERBOSE=false
-    flagDEBUG=false
-    flagTRACE=false
     return 0
 }
 
 function setRam()
 {
-    function isI() { if echo -n "$1" | grep -aoP '^[+-]?[0-9]+$' > /dev/null 2>&1; then true; else false; fi; }
+    function isI() { if echo -n "$1" | grep -aoP '^[0-9]+$' > /dev/null 2>&1; then true; else false; fi; }
     if isI "$1"
     then
         logRamSIZE=$1
@@ -354,20 +407,24 @@ function setRam()
 function logSetup()
 {
     (($# > 0)) || return 0
-    local err=0
     while [ -n "$1" ]
     do
         case "$1" in
         -h|--help)      logHelp ; break ;;
-        -d|--default)   logDefault ;;
-        -e|--enable)    logEnable $1 $2 || { logF "Invalid parameter to -e|--enable <level> <target>" ; return $? ; } ;;
-        -f|--file)      ((logTO|=logTOFILE)) ;;
-        -g|--debug)     ((logLevel <= logDEBUG)) || logLevel=$logDEBUG; flagDEBUG=true; logU $logTOSCREEN "${DEBUG} Enabled" ;;
-        -q|--quiet)     logLevel=$logNONE ; flagQUIET=true ; flagVERBOSE=false ;;
-        -s|--screen)    ((logTO|=logTOSCREEN)) ;;
-        -t|--trace)     ((logLevel <= logTRACE)) || logLevel=$logTRACE; flagTRACE=true; logU $logTOSCREEN "${TRACE} Enabled" ;;
-        -v|--verbose)   logLevel=$logINFO; flagQUIET=false; flagVERBOSE=true ;;
-           --disable)   logDisable ;;
+        -d|--default)   logDefault || return $? ;;
+        -e|--enable)    logEnable $2 $3 || return $? ; shift 2 ;;
+           --target)    setTarget $2 || return $? ; shift ;;
+           --level)     setLevel $2 || return $? ; shift ;;
+        -f|--file)      setTarget $logTOFILE  || return $? ;;
+        -g|--debug)     setLevel $logDEBUG || return $? ;;
+        -q|--quiet)     clearTarget $logTOSCREEN  || return $? ;;
+        -s|--screen)    setTarget $logTOSCREEN  || return $? ;;
+        -t|--trace)     setLevel $logTRACE || return $? ;;
+        -v|--verbose)   setLevel $logINFO || return $?
+                        setTarget $logTOSCREEN || return $?
+                        flagVERBOSE=true
+                        ;;
+           --disable)   logDisable $2 $3 || return $? ; shift 2 ;;
            --ram)       flagRAM=true
                         local maxargs=2
                         while [ -n "$2" ] && ((maxargs > 0))
@@ -379,13 +436,13 @@ function logSetup()
                             shift
                         done
                         ;;
-        --) shift ; set -- "$@" ; break ;;
-        -*) logE "Unknown parameter $1" ; ((err+=1)) ; break ;;
-         *) logE "Unknown value $1"     ; ((err+=2)) ; break ;;
+        --) shift ; set -- "$@" ; return 0 ;;
+        -*) logE "Unknown parameter $1" ; return 1 ;;
+         *) logE "Unknown value $1"     ; return 2 ;;
         esac
         shift
     done
-    return $err
+    return 0
 }
 
 # Initialize lib log.
@@ -403,9 +460,9 @@ function logStop()
 {
     local code=${1:-0}
     logEnd
-    if ((code == 0)) ; then closeRamdrive || logF "Close ramdrive ${logRamDIR}" ; fi
-    if [ -f "${logRamDIR}"/success ] ; then logW "Ram drive ${logFILE} for log are opened and must be closed manually." ; fi
     logDisable
+    if ((code == 0)) ; then closeRamdrive || logE "Close ramdrive ${logRamDIR}" ; fi
+    if [ -f "${logRamDIR}"/success ] ; then logE "Ram drive ${logFILE} for log are opened and must be closed manually." ; fi
 }
 
 # exit from lib log.
