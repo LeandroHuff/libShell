@@ -24,7 +24,7 @@ function getIDNumber()
     slackware)                   distro=3 ;;
     arch|manjaro)                distro=4 ;;
     SUSE|openSUSE|suse|opensuse) distro=5 ;;
-    *) err=1 ; break ;;
+    *) err=1 ;;
     esac
     echo -n $distro
     return $err
@@ -643,6 +643,103 @@ Options:
     logR
     logStop
     for file in "${libLOADED[@]}"; do "lib${file}Exit" || _error "Call lib${file}Exit()"; done
+
+    return $err
+}
+
+##
+# @param    $1=attrib   >   new sha256sum file.
+#                       >>  add to sha256sum file.
+# @param    $2=hash     path/sha256sum file.
+# @param    $3=target   path[/] source file path.
+#                       path    calculate all files together.
+#                       path/   calculate individual files.
+# @param    $4=files    *.ext|file.ext  individual file or group (wildcard *.ext) of files.
+function buildFindCmd()
+{
+    local err=0
+    local cmd='Invalid parameter to buildFindCmd'
+    local attrib="${1}"
+    local hash="${2}"
+    local target="${3}"
+    local files="${4}"
+
+    if [ -d "${target}" ]
+    then
+        if [ -n "${files}" ]
+        then
+            cmd="find ${target} -name ${files}"
+        else
+            cmd="find ${target} -type f"
+        fi
+        cmd+=" -not -path '.git' -exec sha256sum {} + $(if echo -n ${target} | grep -aoP '/$' > /dev/null 2>&1 ; then echo -n '>' ; else echo -n '|' ; fi) sha256sum ${attrib} ${hash}"
+    else
+        err=1
+    fi
+
+    echo -n "${cmd}"
+    return $err
+}
+
+##
+# @param    $1=hash     path/sha256sum file.
+# @param    $2=target   path[/] source file path.
+#                       path    calculate all files together.
+#                       path/   calculate individual files.
+# @param    $3=files    *.ext|file.ext  individual file or group (wildcard *.ext) of files.
+function calcChecksum()
+{
+    local err=0
+    local cmd="$(buildFindCmd '>' "$1" "$2" "$3")"
+    [ $? -eq 0 ] || return $?
+    eval "${cmd}" || err=$?
+    return $err
+}
+
+##
+# @param    $1=hash     path/sha256sum file.
+# @param    $2=target   path[/] source file path.
+#                       path    calculate all files together.
+#                       path/   calculate individual files.
+# @param    $3=files    *.ext|file.ext  individual file or group (wildcard *.ext) of files.
+function addChecksum()
+{
+    local err=0
+    local cmd="$(buildFindCmd '>>' "$1" "$2" "$3")"
+    [ $? -eq 0 ] || return $?
+    eval "${cmd}" || err=$?
+    return $err
+}
+
+##
+# @param    $1=hash     path/sha256sum file.
+# @param    $2=target   path[/] source file path.
+#                       path    verify all files together.
+#                       path/   verify individual files.
+function verifyChecksum()
+{
+    local err=0
+    cmd=''
+    local hash="$1"
+    local target="$2"
+
+    if [ -d "${target}" ]
+    then
+        if [ -f "${hash}" ]
+        then
+            if echo -n "${target}" | grep -aoP '/$' > /dev/null 2>&1
+            then
+                cmd="sha256sum --status -c ${hash}"
+            else
+                cmd="find ${target} -type f -not -path '.git' -exec sha256sum {} + | sha256sum --status -c ${hash}"
+            fi
+            eval "${cmd}" || err=$?
+        else
+            err=2
+        fi
+    else
+        err=1
+    fi
 
     return $err
 }

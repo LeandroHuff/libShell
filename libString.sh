@@ -32,6 +32,60 @@ function cmpStr()
     else echo -n 0
     fi
 }
+
+function addPrefix()
+{
+    [ -n "${1}" ] || return 1
+    local prefix="$1"
+    shift
+    local join=''
+    declare -a res=()
+    while [ -n "$1" ]
+    do
+        join="${prefix}${1}"
+        res+=("${join}")
+        shift
+    done
+    echo -n ${res[@]}
+    return 0
+}
+
+function addSufix()
+{
+    [ -n "${1}" ] || return 1
+    local sufix="$1"
+    shift
+    local join=''
+    declare -a res=()
+    while [ -n "$1" ]
+    do
+        join="${1}${sufix}"
+        res+=("${join}")
+        shift
+    done
+    echo -n ${res[@]}
+    return 0
+}
+
+function addPrefixSufix()
+{
+    [ -n "${1}" ] || return 1
+    [ -n "${2}" ] || return 1
+    local prefix="$1"
+    local sufix="$2"
+    shift 2
+    local join=''
+    declare -a res=()
+    while [ -n "$1" ]
+    do
+        join="${prefix}${1}${sufix}"
+        res+=("${join}")
+        shift
+    done
+    echo -n ${res[@]}
+    return 0
+}
+
 function libStringExit()
 {
     unset -v libString
@@ -50,6 +104,9 @@ function libStringExit()
     unset -f getDateTime
     unset -f strLen
     unset -f cmpStr
+    unset -f addPrefix
+    unset -f addSufix
+    unset -f addPrefixSufix
     unset -f libStringExit
     return 0
 }

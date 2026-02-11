@@ -47,18 +47,18 @@ declare -i logTO=$logTONONE
 
 # levels
 declare -i logNONE=0
-declare -i logINFO=$((0 << 1))
+declare -i logINFO=$((1 << 0))
 declare -i logSUCCESS=$((1 << 1))
-declare -i logRUNTIME=$((2 << 1))
-declare -i logWARNING=$((3 << 1))
-declare -i logERROR=$((4 << 1))
-declare -i logFAILURE=$((5 << 1))
-declare -i logDEBUG=$((6 << 1))
-declare -i logTRACE=$((7 << 1))
+declare -i logRUNTIME=$((1 << 2))
+declare -i logWARNING=$((1 << 3))
+declare -i logERROR=$((1 << 4))
+declare -i logFAILURE=$((1 << 5))
+declare -i logDEBUG=$((1 << 6))
+declare -i logTRACE=$((1 << 7))
 declare -i logALL=$((logINFO|logSUCCESS|logRUNTIME|logWARNING|logERROR|logFAILURE|logDEBUG|logTRACE))
 declare -a logLevelVars=(logNONE logINFO logSUCCESS logRUNTIME logWARNING logERROR logFAILURE logDEBUG logTRACE logALL)
 declare -a logLevelNames=(NONE INFO SUCCESS RUNTIME WARNING ERROR FAILURE DEBUG TRACE ALL)
-declare -i logENABLE=$logALL
+declare -i logENABLE=$((logINFO|logSUCCESS|logRUNTIME|logWARNING|logERROR|logFAILURE))
 declare -i logDISABLE=$logNONE
 declare -i logLevel=$logDISABLE
 
@@ -145,7 +145,7 @@ function logV() { if $flagVERBOSE && (((logLevel & logINFO) == logINFO)) ; then 
 # log success messages
 function logS() { if (((logLevel & logSUCCESS) == logSUCCESS)) ; then log "${SUCCESS} $*" ; fi ; }
 # log runtime messages
-function logR() { if (((logLevel & logRUNTIME) == logRUNTIME)) ; then log "${RUNTIME} $(getRuntime)" ; fi ; }
+function logR() { if (((logLevel & logRUNTIME) == logRUNTIME)) ; then log "${RUNTIME} $(getRuntime)s" ; fi ; }
 # log with time stamp
 function logTS() { if (((logLevel & logRUNTIME) == logRUNTIME)) ; then log "\033[97m$(getRuntime)\033[0m: $*" ; fi ; }
 # log warning messages
@@ -375,8 +375,8 @@ function logDisable()
 
 function logEnable()
 {
-    local level=${1:-$logALL}
-    local target=${2:-$logTOALL}
+    local level=${1:-$logENABLE}
+    local target=${2:-$logTOSCREEN}
     setLevel  $level  || return $?
     setTarget $target || return $?
     return 0
@@ -384,9 +384,11 @@ function logEnable()
 
 function logDefault()
 {
-    resetLevel $logINFO
-    resetTarget $logTOSCREEN
+    resetLevel ${1:-$logENABLE}
+    resetTarget ${2:-$logTOSCREEN}
     flagVERBOSE=false
+    flagDEBUG=false
+    flagTRACE=false
     return 0
 }
 
@@ -406,13 +408,14 @@ function setRam()
 # parse and setup log from command line parameters.
 function logSetup()
 {
+    function _isArg() { if [ -n "$1" ] ; then case "$1" in -*) false ;; *) true ;; esac ; else false ; fi ; }
     (($# > 0)) || return 0
     while [ -n "$1" ]
     do
         case "$1" in
         -h|--help)      logHelp ; break ;;
         -d|--default)   logDefault || return $? ;;
-        -e|--enable)    logEnable $2 $3 || return $? ; shift 2 ;;
+        -e|--enable)    if _isArg "$2" ; then logEnable $2 $3 || return $? ; shift 2 ; else logEnable || return $? ; fi ;;
            --target)    setTarget $2 || return $? ; shift ;;
            --level)     setLevel $2 || return $? ; shift ;;
         -f|--file)      setTarget $logTOFILE  || return $? ;;
