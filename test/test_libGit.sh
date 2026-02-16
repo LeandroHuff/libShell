@@ -494,6 +494,5 @@ if [ $_ERR -gt 0 ] ; then logFail "${_HRED}$_ERR${_NC} Test(s)"  ; fi
 
 
 ########################################
-
-# Unload Libs, Variables and Functions.
+# Call _exit() to unload libs, variables and functions.
 _exit $_ERR

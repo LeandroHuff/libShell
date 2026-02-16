@@ -22,6 +22,11 @@ declare libGit=''
 # ! Ignored
 declare -a StatusLetters=('A' 'C' 'D' 'M' 'R' 'T' 'U' '?' '!')
 
+##
+# @brief    Check a path parameter for a valid git repository.
+# @param    "$1"    Path
+# @return   0       Success, path/ is a git repository.
+#           1       Failure, path/ is not a git repository.
 function isGitRepository()
 {
     local target="$1"
@@ -37,15 +42,33 @@ function isGitRepository()
         then
             git -C "${target}" rev-parse --git-dir > /dev/null 2>&1
             err=$?
-            [ $err -eq 0 ] && true || false
         else
             false
         fi
     fi
     return $err
 }
-function isBranchCurrent()  { local err ; local b="^${1:-'nil'}$"; git branch -q --show-current | grep -aoP "${b}" > /dev/null 2>&1 ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
+
+##
+# @brief    Check if parameter is the current branch's name in the current
+# directory.
+# @param    "$1"    Branch's name for current repository.
+# @result   true    The parameter is the current branch's name in the
+# respotiroy.
+#           false   The parameter is not the current branch's name in the
+#           respoitory.
+function isBranchCurrent()  { local b="^${1:-'nil'}$"; git branch -q
+--show-current | grep -aoP "${b}" > /dev/null 2>&1 ; return $?; }
+
+##
+# @brief    Check local branch to calculate how many commits are ahead of remote
+#           repository.
+# @param    none
+# @return   N       Commits counter.
 function isBranchAhead()    { local err ; git status | grep -qoE ' ahead ' ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
+
+##
+# @brief    
 function isBranchBehind()   { local err ; git status | grep -qoE ' behind ' ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
 function isBranchUpToDate() { local err ; git status | grep -qoE ' up to date ' ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
 function isRepositoryChanged()
