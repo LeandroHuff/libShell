@@ -744,6 +744,31 @@ function verifyChecksum()
     return $err
 }
 
+##
+# @param    $1=hash     path/sha256sum file.
+# @param    $2=source   path[/] source is a path.
+#                       path    verify all files as *.*
+#                       path/   verify individual files.
+# @return   true        if checksum file (hash file) not found.
+#                       if checksum is Ok.
+#           false       if checksum is not Ok.
+function haveChanges()
+{
+    local hash=${1}
+    local source=${2}
+    if [ -f ${hash} ]
+    then
+        if verifyChecksum ${hash} ${source}
+        then
+            false
+        else
+            true
+        fi
+    else
+        true
+    fi
+}
+
 function libFileExit()
 {
     # unset variables
@@ -781,7 +806,10 @@ function libFileExit()
     unset -f _askToContinue
     unset -f installFromFile
     unset -f cryptCreate
-    unset -v libFileExit
+    unset -f calcChecksum
+    unset -f addChecksum
+    unset -f haveChanges
+    unset -f libFileExit
     return 0
 }
 
