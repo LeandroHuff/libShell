@@ -196,6 +196,7 @@ declare -a testTABLE=(\
 14      1       ''                  newBranch           ''          ''          ''          '' \
 15      0       ''                  newBranch           'teste'     ''          ''          '' \
 16      0       ''                  existBranch         'teste'     ''          ''          '' \
+17      0       ''                  git                 branch -d teste '' \
 \
 17      1       ''                  createBranch        ''          ''          ''          '' \
 \
