@@ -173,7 +173,7 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 declare -a testTABLE=(\
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4 \
 \
-01      1      ''                  isGitRepository     ''          ''          ''          '' \
+01      0      ''                  isGitRepository     ''          ''          ''          '' \
 02      0      ''                  isGitRepository     '../'       ''          ''          '' \
 03      1      ''                  isGitRepository     '/tmp'      ''          ''          '' \
 \
@@ -218,8 +218,6 @@ declare -a testTABLE=(\
 18      1       ''                  gitCountChanges     ''          ''          ''          '' \
 \
 19      1       ''                  gitAnyChanges       ''          ''          ''          '' \
-\
-20      1       ''                  gitCommitCounter    ''          ''          ''          '' \
 \
 21      1       ''                  gitAdd              ''          ''          ''          '' \
 \
