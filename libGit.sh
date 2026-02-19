@@ -262,15 +262,25 @@ function newBranch()
 #           1..N        Failure or empty parameter.
 function createBranch()
 {
-    [ -n "${1}" ] || return 1
-    local branch="${1}"
-    local err=0
     local error='\033[31m  error\033[0m:'
-    newBranch                 "${branch}" || { err=$? ; echo -e "${error} newBranch(${branch}) return code:$err"               ; }
-    gitSwitch                 "${branch}" || { err=$? ; echo -e "${error} gitSwitch(${branch}) return code:$err"               ; }
-    gitSetLocalPushUpstream   "${branch}" || { err=$? ; echo -e "${error} gitSetLocalPushUpstream(${branch}) return code:$err" ; }
-    gitSetupRebase            "${branch}" || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err"          ; }
-    gitConfigBranchMerge      "${branch}" || { err=$? ; echo -e "${error} gitConfigBranchMerge(${branch}) return code:$err"    ; }
+    if [ -z "${1}" ]
+    then
+        echo -e "${error} Empty parameter to function createBranch()"
+        return 1
+    fi
+    local branch="${1}"
+    local current="{2:-$(gitBranchName)}"
+    local err=0
+    newBranch                 "${branch}" || { err=$? ; echo -e "${error} newBranch(${branch}) return code:$err" ; }
+    gitSwitch                 "${branch}" || { err=$? ; echo -e "${error} gitSwitch(${branch}) return code:$err" ; }
+    if [ -n "${current}" ]
+    then
+        gitSetLocalPushUpstream "${current}"
+        err=$?
+        [ $err -eq 0 ] || echo -e "${error} gitSetLocalPushUpstream(${current}) return code:$err"
+    fi
+    gitSetupRebase            "${branch}" || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err" ; }
+    gitConfigBranchMerge      "${branch}" || { err=$? ; echo -e "${error} gitConfigBranchMerge(${branch}) return code:$err" ; }
     gitConfigAutoSetupMerge   "${branch}" || { err=$? ; echo -e "${error} gitConfigAutoSetupMerge(${branch}) return code:$err" ; }
     return $err
 }
@@ -360,7 +370,7 @@ function gitConfigAutoSetupMerge()
 
 ##
 # @brief    Configure repository for push on upstream.
-# @param    "$1"        Branch's name.
+# @param    "$1"        Set upstream to.
 # @result   none
 # @return   0           Success
 #           1..N        Failure or empty parameter.
