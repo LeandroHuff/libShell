@@ -273,7 +273,7 @@ function gitRebase()
 }
 
 ##
-# @brief    Config pull rebase as false.
+# @brief    Config current branch for pull rebase as false.
 # @param    none
 # @result   none
 # @return   0           Success
