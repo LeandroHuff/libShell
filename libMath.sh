@@ -1,12 +1,16 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libLog.sh
 # @brief        Source variables and functions to calculate most common mathematics
 #               espressions.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libMath.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
+
+declare libMath=''
 
 function isNumber()
 {
@@ -191,6 +195,7 @@ function calcNumber()
 function libMathExit()
 {
     # unset variables
+    unset -v libMath
     unset -v regexDouble
     unset -v regexZero
     # unset functions
@@ -204,3 +209,5 @@ function libMathExit()
     unset -f libMathExit
     return 0
 }
+
+libMath='loaded'

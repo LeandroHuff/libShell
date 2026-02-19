@@ -1,13 +1,21 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libRegex.sh
 # @brief        Source variables and functions to validate strings by regex string.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libRegex.sh
 ################################################################################
 
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
+
+declare libRegex=''
+
 # constants
+declare regexFS='(btrfs|exfat|ext2|ext3|ext4|fat16|fat32|hfs|hfsplus|jfs|ntfs|reiser|reiser4|ufs|xfs|zfs)'
+declare regexCryptFS='(crypto_LUKS)'
+declare regexTAG='^\w+'
+declare regexVALUE='\w+$'
 declare regexFLOAT='^[-+]?(\d+\.?\d*|\d*\.\d+)([eE][+-]0*[1-9]+\d*)?$'
 declare regexINTEGER='^[+-]?\d+$'
 declare regexALPHA='^[[:alpha:]]+$'
@@ -26,6 +34,8 @@ declare regexDATETIME12='^\d{4}[-\.\/]((0?\d)|(1[0-2]))[-\.\/]((0?[1-9])|([1-2]\
 declare regexDATETIME24='^\d{4}[-\.\/]((0?\d)|(1[0-2]))[-\.\/]((0?[1-9])|([1-2]\d)|(3[0-1])) ((0?\d)|(1\d)|(2[0-3])):([0-5]\d):([0-5]\d)$'
 declare regexDATETIME124='^\d{4}[-\.\/]((0?\d)|(1[0-2]))[-\.\/]((0?[1-9])|([1-2]\d)|(3[0-1])) (((?:(1[0-2]|0?[1-9]):(?:[0-5][0-9])(:(?:[0-5]\d))? ?([AaPp][Mm])))|((?:[01]\d|2[0-3]):(?:[0-5]\d)(:(?:[0-5]\d))?))$'
 declare regexDATETIMEASCODE='^\d{4}-((0[1-9])|(1[0-2]))-(([0-2]\d)|(3[0-1]))-(([0-1]\d)|(2[0-3]))-([0-5]\d)-([0-5]\d)-(\d{3})$'
+declare regexCompressFile='[\w-]+\.((txz|tgz|tbz2|z|zip|7z|7zip|gz|gzip|xz|xzip|bz|bz2|bzip|bzip2){1}|(tar\.(gz|gzip|xz|xzip|bz|bz2|bzip|bzip2)){1})?$'
+declare regexCompressExt='(txz|tbz2|tgz|tar|z|zip|7z|7zip|gz|gzip|xz|xzip|bz|bz2|bzip|bzip2){1}|(tar\.(gz|gzip|xz|xzip|bz|bz2|bzip|bzip2){1})?$'
 
 # functions
 function regexIt()
@@ -46,28 +56,33 @@ function regexIt()
     fi
 }
 
-function isFloat()            { regexIt "${1}" "${regexFLOAT}"          ; }
-function isInteger()          { regexIt "${1}" "${regexINTEGER}"        ; }
-function isAlpha()            { regexIt "${1}" "${regexALPHA}"          ; }
-function isDigit()            { regexIt "${1}" "${regexDIGIT}"          ; }
-function isAlphaNumeric()     { regexIt "${1}" "${regexALPHADIGIT}"     ; }
-function isHexadecimal()      { regexIt "${1}" "${regexHEXA}"           ; }
-function isLowerHexadecimal() { regexIt "${1}" "${regexLOHEXA}"         ; }
-function isUpperHexadecimal() { regexIt "${1}" "${regexUPHEXA}"         ; }
-function isGraph()            { regexIt "${1}" "${regexGRAPH}"          ; }
-function isGraphSpace()       { regexIt "${1}" "${regexGRAPHSPACE}"     ; }
-function isDate()             { regexIt "${1}" "${regexDATE}"           ; }
-function isTime12()           { regexIt "${1}" "${regexTIME12}"         ; }
-function isTime24()           { regexIt "${1}" "${regexTIME24}"         ; }
-function isTime124()          { regexIt "${1}" "${regexTIME124}"        ; }
-function isDateTime12()       { regexIt "${1}" "${regexDATETIME12}"     ; }
-function isDateTime24()       { regexIt "${1}" "${regexDATETIME24}"     ; }
-function isDateTime124()      { regexIt "${1}" "${regexDATETIME124}"    ; }
-function isDateTimeAsCode()   { regexIt "${1}" "${regexDATETIMEASCODE}" ; }
-
+function reGetStr()             { echo -n "${1}" | grep -aoP "${2}"         ; return $?; }
+function reGetTag()             { echo -n "${1}" | grep -aoP "${regexTAG}"  ; return $?; }
+function reGetValue()           { echo -n "${1}" | grep -aoP "${regexVALUE}"; return $?; }
+function reIsFloat()            { regexIt "${1}" "${regexFLOAT}"          ; }
+function reIsInteger()          { regexIt "${1}" "${regexINTEGER}"        ; }
+function reIsAlpha()            { regexIt "${1}" "${regexALPHA}"          ; }
+function reIsDigit()            { regexIt "${1}" "${regexDIGIT}"          ; }
+function reIsAlphaNumeric()     { regexIt "${1}" "${regexALPHADIGIT}"     ; }
+function reIsHexadecimal()      { regexIt "${1}" "${regexHEXA}"           ; }
+function reIsLowerHexadecimal() { regexIt "${1}" "${regexLOHEXA}"         ; }
+function reIsUpperHexadecimal() { regexIt "${1}" "${regexUPHEXA}"         ; }
+function reIsGraph()            { regexIt "${1}" "${regexGRAPH}"          ; }
+function reIsGraphSpace()       { regexIt "${1}" "${regexGRAPHSPACE}"     ; }
+function reIsDate()             { regexIt "${1}" "${regexDATE}"           ; }
+function reIsTime12()           { regexIt "${1}" "${regexTIME12}"         ; }
+function reIsTime24()           { regexIt "${1}" "${regexTIME24}"         ; }
+function reIsTime124()          { regexIt "${1}" "${regexTIME124}"        ; }
+function reIsDateTime12()       { regexIt "${1}" "${regexDATETIME12}"     ; }
+function reIsDateTime24()       { regexIt "${1}" "${regexDATETIME24}"     ; }
+function reIsDateTime124()      { regexIt "${1}" "${regexDATETIME124}"    ; }
+function reIsDateTimeAsCode()   { regexIt "${1}" "${regexDATETIMEASCODE}" ; }
 function libRegexExit()
 {
     # unset variables
+    unset -v libRegex
+    unset -v regexTAG
+    unset -v regexVALUE
     unset -v regexFLOAT
     unset -v regexINTEGER
     unset -v regexALPHA
@@ -86,19 +101,34 @@ function libRegexExit()
     unset -v regexDATETIME24
     unset -v regexDATETIME124
     unset -v regexDATETIMEASCODE
+    unset -v regexCompressFile
+    unset -v regexCompressExt
     # unset functions
     unset -f regexIt
-    unset -f isFloat
-    unset -f isInteger
-    unset -f isAlpha
-    unset -f isDigit
-    unset -f isAlphaNumeric
-    unset -f isHexadecimal
-    unset -f isLowerHexadecimal
-    unset -f isUpperHexadecimal
-    unset -f isGraph
-    unset -f isGraphSpace
-    unset -f libRegexExit
+    unset -f reGetStr
+    unset -f reGetTag
+    unset -f reGetValue
+    unset -f reIsFloat
+    unset -f reIsInteger
+    unset -f reIsAlpha
+    unset -f reIsDigit
+    unset -f reIsAlphaNumeric
+    unset -f reIsHexadecimal
+    unset -f reIsLowerHexadecimal
+    unset -f reIsUpperHexadecimal
+    unset -f reIsGraph
+    unset -f reIsGraphSpace
+    unset -f reIsDate
+    unset -f reIsTime12
+    unset -f reIsTime24
+    unset -f reIsTime124
+    unset -f reIsDateTime12
+    unset -f reIsDateTime24
+    unset -f reIsDateTime124
+    unset -f reIsDateTimeAsCode
+    unset -f reIibRegexExit
     # return code
     return 0
 }
+
+libRegex='loaded'

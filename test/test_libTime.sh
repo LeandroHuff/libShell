@@ -16,55 +16,90 @@
 ################################################################################
 
 # Local variables.
+declare -a  typeTABLE=('internal' 'external' 'load')
+declare -i  testTYPE=0
+declare -i  minTYPE=0
+declare -i  maxTYPE=3
+declare     flagLoadLib=false
 declare -a  libLIST=(EscCodes Time)
 declare -a  libLOADED=()
 declare     libPATH="/home/${USER}/dev/libShell"
+declare     testPATH="/home/${USER}/dev/libShell/test"
 
-declare -i testDEBUG=0
+declare     flagDEBUG=false
 
 declare -i LINE=0
 declare -i _OK=0
 declare -i _ERR=0
 declare    _RES=''
 declare    _RET=0
+declare    _SUCCESS=true
 
 # test table columns
 declare -i columnID=0
 declare -i columnRET=1
 declare -i columnRES=2
-declare -i columnFUNC=3
+declare -i columnFILE=3
 declare -i columnP1=4
 declare -i columnP2=5
 declare -i columnP3=6
 declare -i columnP4=7
 declare -i maxCOLUMNS=8
 
-function logOk()   { echo -e "${GRAY}Success${NC}: $*" ; }
-function logFail() { echo -e "${RED}Failure${NC}: $*" ; }
-function logWarn() { echo -e "${CYAN}Warning${NC}: $*" ; }
-function logDebug(){ if [ $testDEBUG -ne 0 ] ; then echo -e "${GREEN}Debug${NC}: $*" ; fi ; }
+# colors
+declare _GRAY='\033[37m'
+declare _RED='\033[31m'
+declare _CYAN='\033[36m'
+declare _GREEN='\033[32m'
+declare _HRED='\033[91m'
+declare _HCYAN='\033[96m'
+declare _HGREEN='\033[92m'
+declare _WHITE='\033[97m'
+# no colors
+declare _NC='\033[0m'
 
+function logOk()   { echo -e "${_GRAY}Success${_NC}: $*" ; }
+function logFail() { echo -e "${_RED}Failure${_NC}: $*"  ; }
+function logWarn() { echo -e "${_CYAN}Warning${_NC}: $*" ; }
+function logDebug(){ if $flagDEBUG ; then echo -e "${_GREEN}Debug${_NC}: $*" ; fi ; }
+
+# unset local variables and functions
 function _unsetVars
 {
     # Unset Variables
+    unset -v typeTABLE
+    unset -v testTYPE
+    unset -v minTYPE
+    unset -v maxTYPE
     unset -v libLIST
     unset -v libLOADED
     unset -v libPATH
-    unset -v testDEBUG
+    unset -v testPATH
+    unset -v flagDEBUG
     unset -v LINE
     unset -v _OK
     unset -v _ERR
     unset -v _RES
     unset -v _RET
+    unset -v _SUCCESS
     unset -v columnID
     unset -v columnRET
     unset -v columnRES
-    unset -v columnFUNC
+    unset -v columnFILE
     unset -v columnP1
     unset -v columnP2
     unset -v columnP3
     unset -v columnP4
     unset -v maxCOLUMNS
+    unset -v _GRAY
+    unset -v _RED
+    unset -v _CYAN
+    unset -v _GREEN
+    unset -v _HRED
+    unset -v _HCYAN
+    unset -v _HGREEN
+    unset -v _WHITE
+    unset -v _NC
 
     # Unset Function
     unset -f logOk
@@ -79,6 +114,7 @@ function _unsetVars
     return 0
 }
 
+# exit from bash script and return an error code
 function _exit()
 {
     local code=$([ -n "$1" ] && echo -n $1 || echo -n 0)
@@ -87,23 +123,31 @@ function _exit()
     [ -n "${logStop}" ] && logStop
 
     # Unload Libs
-    for file in ${libLOADED[@]} ; do $(lib${file}Exit) || logFail "Unload lib${file}.sh" ; done
+    if $flagLoadLib
+    then
+        for file in ${libLOADED[@]}
+        do
+            $(lib${file}Exit) || logFail "Unload lib${file}.sh"
+        done
+    fi
 
     # Unload local variables
     unset -v file
 
     # Unload Global Variables and Functions
     _unsetVars
+    unset -f _exit
 
     exit $code
 }
 
+# draw a bar graph
 function barGraph()
 {
     local num=$1
     local ok=$2
     # print '*' green for ok and red for not ok.
-    if $ok ; then printf "${HGREEN}*${NC}" ; else printf "${HRED}*${NC}" ; fi
+    if $ok ; then printf "${_HGREEN}*${_NC}" ; else printf "${_HRED}*${_NC}" ; fi
     # print [N] each 10 and '|' each 5
     if   [ $((num % 10)) -eq 0 ] ; then printf "[%3d]" $num
     elif [ $((num %  5)) -eq 0 ] ; then printf '|' ; fi
@@ -111,15 +155,18 @@ function barGraph()
     if  [ $((num % 50)) -eq 0 ] ; then echo ; fi
 }
 
-function isArg() { if [ -n "$1" ] ; then case $1 in -*) false ;; *) true ;; esac ; else false ; fi ; }
+# check command line arguments
+function _isArg() { if [ -n "$1" ] ; then case $1 in -*) false ;; *) true ;; esac ; else false ; fi ; }
+function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
+function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
 
 # +--------------+---------------------------------------------------------------
 # | Column       | Description
 # +--------------+---------------------------------------------------------------
-# | ID           | Line number, '#' is a commented line.
+# | columnID     | Line number, '#' is a commented line.
 # | columnRET    | Return success or error code (return n)
 # | columnRES    | Result from function (echo '' or printf '')
-# | columnFUNC   | Function in lib or a local wapper test_Function
+# | columnFILE   | Function in lib or a local wapper test_Function
 # | columnP1     | 1st parameter to function
 # | columnP2     | 2nd parameter to function
 # | columnP3     | 3th parameter to function
@@ -127,14 +174,15 @@ function isArg() { if [ -n "$1" ] ; then case $1 in -*) false ;; *) true ;; esac
 # | maxCOLUMNS   | Max table columns
 # +--------------+---------------------------------------------------------------
 
-declare -a -r testTABLE=(\
+# test table
+declare -a testTABLE=(\
 '#ID'   'return code'   'result string' 'function name' 'parameter 1'   'parameter 2'   'parameter 3'   'parameter 4' \
 \
-1       1               ''              isArg           ''              ''              ''              '' \
-2       1               ''              isArg           -a              ''              ''              '' \
-3       1               ''              isArg           -1              ''              ''              '' \
-4       0               ''              isArg           a               ''              ''              '' \
-5       0               ''              isArg           1               ''              ''              '' \
+1       1               ''              _isArg          ''              ''              ''              '' \
+2       1               ''              _isArg          -a              ''              ''              '' \
+3       1               ''              _isArg          -1              ''              ''              '' \
+4       0               ''              _isArg          a               ''              ''              '' \
+5       0               ''              _isArg          1               ''              ''              '' \
 \
 6       1               ''              _isNum          ''              ''              ''              '' \
 7       1               ''              _isNum          a               ''              ''              '' \
@@ -207,17 +255,18 @@ declare -a -r testTABLE=(\
 70      0               ''              libTimeSetup    -t              0               ''              '' \
 71      0               ''              libTimeSetup    -t              -10             ''              '' \
 \
-72      1               ''              isArg           ''              ''              ''              '' \
-73      1               ''              isArg           -a              ''              ''              '' \
-74      1               ''              isArg           -1              ''              ''              '' \
-75      0               ''              isArg           a               ''              ''              '' \
-76      0               ''              isArg           1               ''              ''              '' \
+72      1               ''              _isArg          ''              ''              ''              '' \
+73      1               ''              _isArg          -a              ''              ''              '' \
+74      1               ''              _isArg          -1              ''              ''              '' \
+75      0               ''              _isArg          a               ''              ''              '' \
+76      0               ''              _isArg          1               ''              ''              '' \
 \
 77      0               ''              libTimeExit     ''              ''              ''              '' \
 \
 '#ID'   'return code'   'result string' 'function name' 'parameter 1'   'parameter 2'   'parameter 3'   'parameter 4'\
 )
 
+# show help message
 function usage()
 {
     cat << EOT
@@ -227,6 +276,10 @@ Options:
 -h|--help               Show help message.
 -g|--debug)             Set debug mode for test file.
 -p|--path <directory/>  Set libShell path.
+-t|--type <0|1|2>       Set test type, default is 0.
+                            0: Internal, call function from test table.
+                            1: External, call test_libName.sh
+                            2: Source libName.sh
    --                   Let pass next options to libSell script files.
 libOptions:
 -h|--help               Show help message for libShell files.
@@ -239,22 +292,38 @@ EOT
 while [ $# -gt 0 ] && [ -n "$1" ]
 do
     case $1 in
-    -h|--help) usage ; _exit ;;
+    -h|--help) usage ; _exit 0 ;;
     -p|--path)
-        shift
-        if isArg "$1"
+        if _isArg "$2"
         then
+            shift
             libPATH="$1"
         else
             logFail "Option -p|--path </directory>"
             _exit 1
         fi
         ;;
-    -g) testDEBUG=1 ;;
+    -t|--type)
+        if _isArg "$2" && _isInt "$2"
+        then
+            shift
+            if [ $1 -ge $minTYPE ] && [ $1 -le $maxTYPE ]
+            then
+                testTYPE=$1
+            else
+                logFail "Argument for -t|--type <$minTYPE..$maxTYPE> is out of range."
+                _exit 2
+            fi
+        else
+            logFail "Empty or wrong argument for -t|--type <$minTYPE..$maxTYPE>"
+            _exit 3
+        fi
+        ;;
+    -g) flagDEBUG=true ;;
+    -l|--load) flagLoadLib=true ;;
     --) shift ; break ;;
-    -*) logFail "Option '$1' not available."        ; _exit 2 ;;
-     *) logFail "Argument '$1' not available."      ; _exit 3 ;;
-     ?) logFail "Empty argument from command line." ; _exit 4 ;;
+    -*) logFail "Option '$1' not available."        ; _exit 4 ;;
+     *) logFail "Argument '$1' not available."      ; _exit 5 ;;
     esac
     shift
 done
@@ -265,44 +334,58 @@ then
 fi
 
 # Load Libs
-for file in ${libLIST[@]}
-do
-    if [ -f "${libPATH}/lib${file}.sh" ]
-    then
-        source "${libPATH}/lib${file}.sh"
-        if [ $? -eq 0 ]
+if $flagLoadLib
+then
+    for file in ${libLIST[@]}
+    do
+        if [ -f "${libPATH}/lib${file}.sh" ]
         then
-            libLOADED+=(${file})
+            source "${libPATH}/lib${file}.sh"
+            if [ $? -eq 0 ]
+            then
+                libLOADED+=(${file})
+            else
+                logFail "Load lib${file}.sh"
+                _exit 6
+            fi
         else
-            logFail "Load lib${file}.sh"
-            _exit 5
+            logFail "File ${libPATH}/lib${file}.sh not found."
+            _exit 7
         fi
-    else
-        logFail "File ${libPATH}/lib${file}.sh not found."
-        _exit 6
-    fi
-done
+    done
+fi
 
-# Parse command line parameters next '--'
+# Parse command line parameters after '--'
 while [ $# -gt 0 ] && [ -n "$1" ]
 do
     case $1 in
-    -h|--help) [ -n "${logHelp}" ] && logHelp ; _exit ;;
-    -t|--timeout) shift
-        if isArg "$1"
+    -h|--help) [ -n "${logHelp}" ] && logHelp ; _exit 0 ;;
+    -t|--timeout)
+        if _isArg "$2"
         then
-            libShellSetup $1
+            if _isNum "$2"
+        then
+                libTimeSetup $1 $2
         else
-            logFail "Invalid argument for timeout option."
-            exit 7
+                logFail "Invalid argument for -t|--timeout <time> option."
+                _exit 8
+            fi
+            shift
+        else
+            logFail "Empty or wrong argument for -t|--timeout <time> option."
+            exit 9
         fi
         ;;
-    -*) shift
-        logInit "$@" || _exit 8
+    --) shift
+        logInit "$@" || _exit 10
         break
         ;;
-     *) logFail "Argument $1 not available."        ; _exit 9  ;;
-     ?) logFail "Empty argument from command line." ; _exit 10 ;;
+    -*) logFail "Option $1 not available."
+        _exit 11
+        ;;
+     *) logFail "Argument $1 not available."
+        _exit 12
+        ;;
     esac
     shift
 done
@@ -310,102 +393,132 @@ done
 ################################################################################
 # Run TEST TABLE
 ################################################################################
+
 # Start line counter and offset at 0
 LINE=0
-columnID=0
+idxID=$columnID
 # Calculate the first function column OFFSET.
-idxFUNC=$((columnID+columnFUNC))
+idxFUNC=$((idxID+columnFILE))
+
 # while not empty function name
-while [ -n "${testTABLE[$idxFUNC]}" ] ; do
+while [ -n "${testTABLE[$idxFUNC]}" ]
+do
     # skip commented lines.
-    if [[ "${testTABLE[$columnID]:0:1}" != "#" ]]
+    if [[ "${testTABLE[$idxID]:0:1}" != "#" ]]
     then
         # calculate return column offset
-        idxRET=$((columnID+columnRET))
+        idxRET=$((idxID+columnRET))
         # calculate result column offset
-        idxRES=$((columnID+columnRES))
+        idxRES=$((idxID+columnRES))
         # calculate parameter 1 column offset
-        idxP1=$((columnID+columnP1))
+        idxP1=$((idxID+columnP1))
         # calculate parameter 2 column offset
-        idxP2=$((columnID+columnP2))
+        idxP2=$((idxID+columnP2))
         # calculate parameter 3 column offset
-        idxP3=$((columnID+columnP3))
+        idxP3=$((idxID+columnP3))
         # calculate parameter 4 column offset
-        idxP4=$((columnID+columnP4))
+        idxP4=$((idxID+columnP4))
 
-        # run test table at idxFUNC
-        res="$(${testTABLE[$idxFUNC]} "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
+        # check test type and run it
+        case ${typeTABLE[$testTYPE]} in
+            internal)
+                # Uncomment/Commant to enable/disable test functions from internal test table.
+                if $flagDEBUG ; then printf "${_WHITE}Function${_NC}: ${testTABLE[$idxFUNC]} ${testTABLE[$idxP1]} ${testTABLE[$idxP2]} ${testTABLE[$idxP3]} ${testTABLE[$idxP4]} ... \t" ; fi
+                _RES="$(${testTABLE[$idxFUNC]} "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
+                ;;
+            external)
+                # Uncomment/Commant to enable/disable call extarnal tests files
+                if $flagDEBUG ; then printf "${_WHITE}File${_NC}: test_lib${testTABLE[$idxFUNC]}.sh ... \t" ; fi
+                _RES="$(. ${testPATH}/test_lib${testTABLE[$idxFUNC]}.sh "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
+                ;;
+            load)
+                # Uncomment/Commant to enable/disable test source library
+                if $flagDEBUG ; then printf "${_WHITE}File${_NC}: lib${testTABLE[$idxFUNC]}.sh ... \t" ; fi
+                _RES="$(source ${libPATH}/lib${testTABLE[$idxFUNC]}.sh "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
+                ;;
+            *)  logFail "Test type (${typeTABLE[$testTYPE]}) not available."
+                _exit 13
+                ;;
+        esac
 
         # take returned code
-        ret=$?
+        _RET=$?
 
         # preset result to true
-        _RES=true
+        _SUCCESS=true
 
         # compare result and returned code from function according table to check success or error
-        # increment success counter or error counter and reset result flag
+        # increment success counter or error counter
         if [ -n "${testTABLE[ $idxRET ]}" ] && [ -n "${testTABLE[ $idxRES ]}" ]
         then
-            if [ $ret -eq ${testTABLE[ $idxRET ]} ] && [[ "$res" == "${testTABLE[ $idxRES ]}" ]]
+            if [ $_RET -eq ${testTABLE[ $idxRET ]} ] && [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
                 let _OK++
             else
                 let _ERR++
-                _RES=false
+                _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRET ]}" ]
         then
-            if [ $ret -eq ${testTABLE[ $idxRET ]} ]
+            if [ $_RET -eq ${testTABLE[ $idxRET ]} ]
             then
                 let _OK++
             else
                 let _ERR++
-                _RES=false
+                _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRES ]}" ]
         then
-            if [[ "$res" == "${testTABLE[ $idxRES ]}" ]]
+            if [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
                 let _OK++
             else
                 let _ERR++
-                _RES=false
+                _SUCCESS=false
             fi
         else
             logWarn "Bouth testTABLE[idxRES:$idxRES] and testTABLE[idxRET:$idxRET] columns are empty."
         fi
 
         # on debug mode, print a debug message on terminal
-        if [ $_RES = false ] && [ $testDEBUG -ne 0 ]
+        if  $flagDEBUG && ! $_SUCCESS
         then
             echo
             logDebug "Line:$LINE"
             logDebug "Run:${testTABLE[$idxFUNC]}(${testTABLE[$idxP1]},${testTABLE[$idxP2]},${testTABLE[$idxP3]},${testTABLE[$idxP4]})"
-            logDebug "Ret:'$ret' compare to Table Ret: '${testTABLE[$idxRET]}' "
-            logDebug "Res:'$res' compare to Table Res: '${testTABLE[$idxRES]}' "
+            logDebug "Ret:'$_RET' compare to Table Ret: '${testTABLE[$idxRET]}' "
+            logDebug "Res:'$_RES' compare to Table Res: '${testTABLE[$idxRES]}' "
         fi
 
-        # show bar graph
-        barGraph $LINE $_RES
+        # show bar graph or result message.
+        if ! $flagDEBUG ; then barGraph $LINE $_SUCCESS
+        elif $_SUCCESS  ; then printf "${_GREEN}success${_NC}.\n"
+        else                   printf "${_RED}failure${_NC}.\n"
+        fi
     fi
+
     # next line
     let LINE++
-    # next column offset
-    columnID=$((LINE*maxCOLUMNS))
+    # next idxID offset from line counter
+    idxID=$((LINE*maxCOLUMNS))
     # next function offset
-    idxFUNC=$((columnID+columnFUNC))
+    idxFUNC=$((idxID+columnFILE))
 done
 
+# new line after bar graph
 echo
 
 # print success and error counters on terminal
-if [ $_OK  -gt 0 ] ; then logOk   "${HGREEN}$_OK${NC} Test(s)" ; fi
-if [ $_ERR -gt 0 ] ; then logFail "${HRED}$_ERR${NC} Test(s)"  ; fi
+if [ $_OK  -gt 0 ] ; then logOk   "${_HGREEN}$_OK${_NC} Test(s)" ; fi
+if [ $_ERR -gt 0 ] ; then logFail "${_HRED}$_ERR${_NC} Test(s)"  ; fi
 
 ########################################
-## Area 51 (restrict for special tests)
+# This are is reserved for specific tests before exit from script.
+# Check function parameter, behaviors or results and returned code.
+
+
 
 ########################################
 
 # Unload Libs, Variables and Functions.
-_exit
+_exit $_ERR

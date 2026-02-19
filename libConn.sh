@@ -1,11 +1,15 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libConn.sh
 # @brief        Source variables and functions to check available internet connection.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libConn.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
+
+declare libConn=''
 
 function isConnected()
 {
@@ -28,7 +32,10 @@ function isConnected()
 
 function libConnExit()
 {
+    unset -v libConn
     unset -f isConnected
     unset -f libConnExit
     return 0
 }
+
+libConn='loaded'

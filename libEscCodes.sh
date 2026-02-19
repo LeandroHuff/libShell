@@ -1,11 +1,15 @@
-#!/usr/bin/env bash
-
 ################################################################################
 # @file         libEscCodes.sh
 # @brief        Source variables and functions to resource escape codes for colors and fonts.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
+# @sintaxe:     source libEscCodes.sh
 ################################################################################
+
+# Must be sourced not running
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
+
+declare libEscCodes=''
 
 # Variables
 
@@ -141,8 +145,9 @@ function fullReset()
 
 function _kbhit()
 {
-    local wait=$([ -n "$2" ] && echo -n "$2" || echo -n '1.0')
-    read -s -n 1 -t $wait && return 0
+    local wait=$([ -n "$1" ] && echo -n "$1a" || echo -n '1.0')
+    local ans=''
+    read -r -s -n 1 -t ${wait} ans && { echo -n "${ans}" ; return 0 ; }
     return 1
 }
 
@@ -161,6 +166,7 @@ function escScreenFlashes()
 function libEscCodesExit()
 {
     # Unset Variables
+    unset -v libEscCodes
     unset -v STOFF
     unset -v DEFAULT
     unset -v CLEAR
@@ -249,3 +255,5 @@ function libEscCodesExit()
     # Return Code
     return 0
 }
+
+libEscCodes='loaded'
