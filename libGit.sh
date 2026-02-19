@@ -68,7 +68,7 @@ function isBranchCurrent()
 #           1           The local repository/branch is NOT up to date with the remote.
 function isBranchUpToDate()
 {
-    if git status | grep -qoP ' up to date '
+    if git status | grep -qoF ' up to date '
     then
         return 0
     else
@@ -174,7 +174,7 @@ function getCounterCommitsAhead()
 function gitCountChanges()
 {
     [[ ${StatusLetters[@]} =~ ${1} ]] || return 1
-    local count=$(git status --porcelain | grep -cP "^$1 |$1. |.$1 ")
+    local count=$(git status --porcelain | grep -cE "^$1 |$1. |.$1 ")
     local err=$?
     echo -n $count
     return $err
@@ -229,7 +229,7 @@ function getRepositoryChanges()
 #           1..N        Failure, branch does NOT EXIST in the current repository.
 function existBranch()
 {
-    if git branch -q | grep -aoP "${1:-'null'}$" > /dev/null 2>&1
+    if git branch -q | grep -aoE "${1:-'null'}$" > /dev/null 2>&1
     then
         return 0
     else
@@ -368,6 +368,45 @@ function gitBranchName()
     local err=$?
     echo -n "${res}"
     return $err
+}
+
+##
+# @brief    Delete branches name targeted by parameter.
+# @param    "$1"        Branch name to be deleted, can not be current branch.
+# @result   none
+# @return   0           Success
+#           1           Empty parameter.
+#           2           Parameter match current branch.
+#           3           Delete branch failure.
+function gitBranchDelete()
+{
+    [ -n "${1}" ] || return 1
+    if [[ "${1}" == "$(gitBranchName)" ]]
+    then
+        return 2
+    elif git branch -q -d "${1}" > /dev/null 2>&1
+    then
+        return 0
+    else
+        return 3
+    fi
+}
+
+##
+# @brief    Is branch name in list.
+# @param    "$1"        Branch name.
+# @result   none
+# @return   0           Yes in in list.
+#           1           No, is not in list.
+function gitHaveBranch()
+{
+    [ -n "${1}" ] || return 1
+    if git branch | grep -aoE "${1}$" > /dev/null 2>&1
+    then
+        return 0
+    else
+        return 1
+    fi
 }
 
 ##

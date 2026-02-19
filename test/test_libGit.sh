@@ -289,23 +289,25 @@ declare -a testTABLE=(\
 70      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
 71      0       '0'                 gitCountChanges     '\?'        ''          ''          '' \
 \
-72      0       ''                  gitAnyChanges       ''          ''          ''          '' \
+73      0       ''                  gitAnyChanges       ''          ''          ''          '' \
+54      0       ''                  test_gitCountChanges_FillFile   '' 'test.txt'     ''    '' \
+75      1       ''                  gitAnyChanges       ''          ''          ''          '' \
 \
-73      0       ''                  gitAdd              ''          ''          ''          '' \
+76      0       ''                  gitAdd              ''          ''          ''          '' \
 \
-74      0       ''                  gitCommitSigned     ''          ''          ''          '' \
+77      0       ''                  gitCommitSigned     ''          ''          ''          '' \
 \
-75      0       ''                  gitCommitNotSigned  ''          ''          ''          '' \
+78      0       ''                  gitCommitNotSigned  ''          ''          ''          '' \
 \
-76      0       ''                  gitFetch            ''          ''          ''          '' \
+79      0       ''                  gitFetch            ''          ''          ''          '' \
 \
-77      0       ''                  gitPull             ''          ''          ''          '' \
+80      0       ''                  gitPull             ''          ''          ''          '' \
 \
-78      0       ''                  gitPush             ''          ''          ''          '' \
+81      0       ''                  gitPush             ''          ''          ''          '' \
 \
-79      0       ''                  gitSwitch           'main'      ''          ''          '' \
+82      0       ''                  gitSwitch           'main'      ''          ''          '' \
 \
-80      0       ''                  libGitExit          ''          ''          ''          '' \
+83      0       ''                  libGitExit          ''          ''          ''          '' \
 \
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4\
 )
