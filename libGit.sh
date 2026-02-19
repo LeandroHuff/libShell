@@ -452,6 +452,7 @@ function gitCommitSigned()
     err=$?
     if ((err > 0))
     then
+        echo "res: $res"
         echo -n "${res}" | grep -qoP ' up to date ' > /dev/null 2>&1
         err=$?
     fi
