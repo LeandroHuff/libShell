@@ -446,14 +446,16 @@ function gitCommitNotSigned()
 #           1           Failure
 function gitCommitSigned()
 {
-    local message=''
+    declare message='' res='' err=0
     [ -n "${1}" ] && message="${1}" || message="Updated by $USER on $(date +%Y-%m-%d) at $(date +%H:%M:%S)"
-    if git commit -q -s -m "\"${message}\"" | grep -qoP ' up to date ' > /dev/null 2>&1
+    res="$(git commit -q -s -m "${message}")"
+    err=$?
+    if ((err > 0))
     then
-        return 0
-    else
-        return 1
+        echo -n "${res}" | grep -qoP ' up to date ' > /dev/null 2>&1
+        err=$?
     fi
+    return $err
 }
 
 ##

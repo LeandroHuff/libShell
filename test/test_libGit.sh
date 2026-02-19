@@ -173,47 +173,51 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 declare -a testTABLE=(\
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4 \
 \
-01      0      ''                  isGitRepository     ''          ''          ''          '' \
-02      0      ''                  isGitRepository     '../'       ''          ''          '' \
-03      1      ''                  isGitRepository     '/tmp'      ''          ''          '' \
+01      0      ''                  isGitRepository      ''          ''          ''          '' \
+02      0      ''                  isGitRepository      '../'       ''          ''          '' \
+03      1      ''                  isGitRepository      '/tmp'      ''          ''          '' \
 \
-04      1      ''                  isBranchCurrent     ''          ''          ''          '' \
-05      0      ''                  isBranchCurrent     'AutoUpdate' ''         ''          '' \
-06      1      ''                  isBranchCurrent     'Auto'      ''          ''          '' \
+04      1      ''                  isBranchCurrent      ''          ''          ''          '' \
+05      0      ''                  isBranchCurrent      'AutoUpdate' ''         ''          '' \
+06      1      ''                  isBranchCurrent      'Auto'      ''          ''          '' \
 \
-07      1      ''                  isBranchAhead       ''          ''          ''          '' \
+07      1      ''                  isBranchAhead        ''          ''          ''          '' \
 \
-08      1      ''                  isBranchBehind      ''          ''          ''          '' \
+08      1      ''                  isBranchBehind       ''          ''          ''          '' \
 \
-09      0      ''                  isBranchUpToDate    ''          ''          ''          '' \
+09      0      ''                  isBranchUpToDate     ''          ''          ''          '' \
 \
-10      0      '0'                  getRepositoryChanges ''          ''          ''          '' \
+10      0      '0'                  getRepositoryChanges ''         ''          ''          '' \
 \
 11      1       ''                  existBranch         ''          ''          ''          '' \
 12      1       ''                  existBranch         'notExist'  ''          ''          '' \
 13      0       ''                  existBranch         'AutoUpdate' ''         ''          '' \
 \
 14      1       ''                  newBranch           ''          ''          ''          '' \
-15      0       ''                  newBranch           'teste'     ''          ''          '' \
-16      0       ''                  existBranch         'teste'     ''          ''          '' \
+15      0       ''                  newBranch           'test1'     ''          ''          '' \
+16      0       ''                  existBranch         'test1'     ''          ''          '' \
+17      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
 \
-17      1       ''                  createBranch        ''          ''          ''          '' \
+18      1       ''                  createBranch        ''          ''          ''          '' \
+19      0       ''                  createBranch        'test2'     ''          ''          '' \
+20      0       ''                  existBranch         'test2'     ''          ''          '' \
+21      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
 \
-19      1       ''                  gitRebase           ''          ''          ''          '' \
+22      1       ''                  gitRebase           ''          ''          ''          '' \
 \
-20      1       ''                  gitSetupRebase      ''          ''          ''          '' \
+23      1       ''                  gitSetupRebase      ''          ''          ''          '' \
 \
-12      1       ''                  gitConfigBranchMerge ''         ''          ''          '' \
+24      1       ''                  gitConfigBranchMerge ''         ''          ''          '' \
 \
-13      1       ''                  gitConfigBranchPushRemote ''    ''          ''          '' \
+25      1       ''                  gitConfigBranchPushRemote ''    ''          ''          '' \
 \
-14      1       ''                  gitConfigAutoSetupMerge   ''    ''          ''          '' \
+26      1       ''                  gitConfigAutoSetupMerge   ''    ''          ''          '' \
 \
-15      1       ''                  gitSetLocalPushUpstream   ''    ''          ''          '' \
+27      1       ''                  gitSetLocalPushUpstream   ''    ''          ''          '' \
 \
-16      1       ''                  gitBranchName       ''          ''          ''          '' \
+28      1       ''                  gitBranchName       ''          ''          ''          '' \
 \
-17      1       ''                  gitRepositoryName   ''          ''          ''          '' \
+29      1       ''                  gitRepositoryName   ''          ''          ''          '' \
 \
 18      1       ''                  gitCountChanges     ''          ''          ''          '' \
 \
@@ -498,7 +502,8 @@ if [ $_ERR -gt 0 ] ; then logFail "${_HRED}$_ERR${_NC} Test(s)"  ; fi
 # Check function parameter, function behaviors or result and returned code.
 
 # remove branch created for test purpose
-git branch -d teste > /dev/null 2>&1
+git branch -d test1 > /dev/null 2>&1
+git branch -d test2 > /dev/null 2>&1
 
 
 ########################################
