@@ -173,7 +173,7 @@ function getCounterCommitsAhead()
 #           1..N        Failure or empty parameter.
 function gitCountChanges()
 {
-    [ -n "${1}" ] || return 1
+    [[ ${StatusLetters[@]} =~ ${1} ]] || return 1
     local count=$(git status --porcelain | grep -cP "^$1 |$1. |.$1 ")
     local err=$?
     echo -n $count
@@ -290,7 +290,8 @@ function gitSetupRebase()
 
 ##
 # @brief    Configure current branch for merge into target (parameter) branch.
-# @param    "$1"        Target (base) branches name.
+#           branch.<name>.merge, it tells git fetch/git pull/git rebase which branch to merge.
+# @param    "$1"        Target (rebase) branches name.
 # @result   none
 # @return   0           Success
 #           1..N        Failure or empty parameter.

@@ -155,6 +155,25 @@ function _isArg() { if [ -n "$1" ] ; then case $1 in -*) false ;; *) true ;; esa
 function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
 function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
 
+function test_gitCountChanges_AddChanges()
+{
+    echo "$1" >> "$2"
+    return $?
+}
+
+function test_gitCountChanges_RemoveFile()
+{
+    rm -f "$1" > /dev/null 2>&1
+    return $?
+}
+
+function test_gitCountChanges_FillFile()
+{
+    echo "$1" > "$2"
+    return $?
+}
+
+
 # +--------------+---------------------------------------------------------------
 # | Column       | Description
 # +--------------+---------------------------------------------------------------
@@ -202,26 +221,66 @@ declare -a testTABLE=(\
 19      0       ''                  createBranch        'test2'     ''          ''          '' \
 20      0       ''                  existBranch         'test2'     ''          ''          '' \
 \
-23      1       ''                  gitSetupRebase      ''          ''          ''          '' \
+21      1       ''                  gitSetupRebase      ''          ''          ''          '' \
+22      1       ''                  gitSetupRebase      'AutoUpdate' ''         ''          '' \
 \
-21      1       ''                  gitRebase           ''          ''          ''          '' \
-22      1       ''                  gitRebase           'notExist'  ''          ''          '' \
-23      0       ''                  gitRebase           'AutoUpdate' ''         ''          '' \
-24      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
+23      1       ''                  gitRebase           ''          ''          ''          '' \
+24      1       ''                  gitRebase           'notExist'  ''          ''          '' \
+25      0       ''                  gitRebase           'AutoUpdate' ''         ''          '' \
 \
-24      1       ''                  gitConfigBranchMerge ''         ''          ''          '' \
+26      1       ''                  gitConfigBranchMerge ''         ''          ''          '' \
+27      0       ''                  gitConfigBranchMerge 'AutoUpdate' ''        ''          '' \
+28      0       ''                  gitSwitch            'AutoUpdate' ''        ''          '' \
 \
-25      1       ''                  gitConfigBranchPushRemote ''    ''          ''          '' \
+29      1       ''                  gitConfigBranchPushRemote ''    ''          ''          '' \
+30      0       ''                  gitConfigBranchPushRemote 'AutoUpdate' ''   ''          '' \
 \
-26      1       ''                  gitConfigAutoSetupMerge   ''    ''          ''          '' \
+31      1       ''                  gitConfigAutoSetupMerge ''      ''          ''          '' \
+32      1       ''                  gitConfigAutoSetupMerge 'AutoUpdate' ''     ''          '' \
 \
-27      1       ''                  gitSetLocalPushUpstream   ''    ''          ''          '' \
+33      1       ''                  gitSetLocalPushUpstream ''      ''          ''          '' \
+34      0       ''                  gitSetLocalPushUpstream 'AutoUpdate' ''     ''          '' \
 \
-28      1       ''                  gitBranchName       ''          ''          ''          '' \
+35      0       'AutoUpdate'        gitBranchName       ''          ''          ''          '' \
+36      0       ''                  gitSwitch           'test2'     ''          ''          '' \
+37      0       'test2'             gitBranchName       ''          ''          ''          '' \
+38      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
+39      0       'AutoUpdate'        gitBranchName       ''          ''          ''          '' \
 \
-29      1       ''                  gitRepositoryName   ''          ''          ''          '' \
+40      0       'libShell'          gitRepositoryName   ''          ''          ''          '' \
 \
-18      1       ''                  gitCountChanges     ''          ''          ''          '' \
+41      1       ''                  gitCountChanges     ''          ''          ''          '' \
+44      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
+44      0       '0'                 gitCountChanges     'C'         ''          ''          '' \
+44      0       '0'                 gitCountChanges     'D'         ''          ''          '' \
+44      0       '0'                 gitCountChanges     'M'         ''          ''          '' \
+44      0       '0'                 gitCountChanges     'R'         ''          ''          '' \
+44      0       '0'                 gitCountChanges     'T'         ''          ''          '' \
+44      0       '0'                 gitCountChanges     'U'         ''          ''          '' \
+42      0       '0'                 gitCountChanges     '\?'        ''          ''          '' \
+43      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
+45      1       ''                  gitCountChanges     'Z'         ''          ''          '' \
+\
+46      0       ''                  test_gitCountChanges_FillFile   'a' 'test_1.txt'  ''    '' \
+44      0       '1'                 gitCountChanges     'A'         ''          ''          '' \
+44      0       '1'                 gitCountChanges     '!'         ''          ''          '' \
+44      0       '1'                 gitCountChanges     '\?'        ''          ''          '' \
+46      0       ''                  test_gitCountChanges_FillFile   'b' 'test_2.txt'  ''    '' \
+44      0       '2'                 gitCountChanges     'A'         ''          ''          '' \
+44      0       '2'                 gitCountChanges     '!'         ''          ''          '' \
+44      0       '2'                 gitCountChanges     '\?'        ''          ''          '' \
+46      0       ''                  test_gitCountChanges_AddChanges 'a' 'test.txt'    ''    '' \
+44      0       '1'                 gitCountChanges     'M'         ''          ''          '' \
+46      0       ''                  test_gitCountChanges_AddChanges 'b' 'test.txt'    ''    '' \
+44      0       '1'                 gitCountChanges     'M'         ''          ''          '' \
+44      0       ''                  test_gitCountChanges_RemoveFile 'test_1.txt' ''   ''    '' \
+44      0       '1'                 gitCountChanges     'A'         ''          ''          '' \
+44      0       '1'                 gitCountChanges     '!'         ''          ''          '' \
+44      0       '1'                 gitCountChanges     '\?'        ''          ''          '' \
+44      0       ''                  test_gitCountChanges_RemoveFile 'test_2.txt' ''   ''    '' \
+44      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
+44      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
+44      0       '0'                 gitCountChanges     '\?'        ''          ''          '' \
 \
 19      1       ''                  gitAnyChanges       ''          ''          ''          '' \
 \
