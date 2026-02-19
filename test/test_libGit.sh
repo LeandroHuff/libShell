@@ -201,11 +201,13 @@ declare -a testTABLE=(\
 18      1       ''                  createBranch        ''          ''          ''          '' \
 19      0       ''                  createBranch        'test2'     ''          ''          '' \
 20      0       ''                  existBranch         'test2'     ''          ''          '' \
-21      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
-\
-22      1       ''                  gitRebase           ''          ''          ''          '' \
 \
 23      1       ''                  gitSetupRebase      ''          ''          ''          '' \
+\
+21      1       ''                  gitRebase           ''          ''          ''          '' \
+22      1       ''                  gitRebase           'notExist'  ''          ''          '' \
+23      0       ''                  gitRebase           'AutoUpdate' ''         ''          '' \
+24      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
 \
 24      1       ''                  gitConfigBranchMerge ''         ''          ''          '' \
 \
