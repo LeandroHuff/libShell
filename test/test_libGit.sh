@@ -196,7 +196,6 @@ declare -a testTABLE=(\
 14      1       ''                  newBranch           ''          ''          ''          '' \
 15      0       ''                  newBranch           'teste'     ''          ''          '' \
 16      0       ''                  existBranch         'teste'     ''          ''          '' \
-17      0       ''                  git                 branch -d teste '' \
 \
 17      1       ''                  createBranch        ''          ''          ''          '' \
 \
@@ -498,6 +497,8 @@ if [ $_ERR -gt 0 ] ; then logFail "${_HRED}$_ERR${_NC} Test(s)"  ; fi
 # This are is reserved for specific tests before exit from script.
 # Check function parameter, function behaviors or result and returned code.
 
+# remove branch created for test purpose
+git branch -d teste > /dev/null 2>&1
 
 
 ########################################
