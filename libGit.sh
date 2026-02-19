@@ -263,16 +263,12 @@ function newBranch()
 function createBranch()
 {
     local error='\033[31m  error\033[0m:'
-    if [ -z "${1}" ]
-    then
-        echo -e "${error} Empty parameter to function createBranch()"
-        return 1
-    fi
+    [ -n "${1}" ] || { echo -e "${error} Empty parameter to function createBranch()" ; return 1 ; }
     local branch="${1}"
-    local current="{2:-$(gitBranchName)}"
+    local current="$([ -n "${2}" ] && echo -n "${2}" || echo -n "$(gitBranchName)")"
     local err=0
-    newBranch                 "${branch}" || { err=$? ; echo -e "${error} newBranch(${branch}) return code:$err" ; }
-    gitSwitch                 "${branch}" || { err=$? ; echo -e "${error} gitSwitch(${branch}) return code:$err" ; }
+    newBranch "${branch}" || { err=$? ; echo -e "${error} newBranch(${branch}) return code:$err" ; }
+    gitSwitch "${branch}" || { err=$? ; echo -e "${error} gitSwitch(${branch}) return code:$err" ; }
     if [ -n "${current}" ]
     then
         gitSetLocalPushUpstream "${current}"
