@@ -448,7 +448,7 @@ function gitCommitSigned()
 {
     local message=''
     [ -n "${1}" ] && message="${1}" || message="Updated by $USER on $(date +%Y-%m-%d) at $(date +%H:%M:%S)"
-    if git commit -q -s -m "\"${message}\"" | grep -qoP ' up to date '
+    if git commit -q -s -m "\"${message}\"" | grep -qoP ' up to date ' > /dev/null 2>&1
     then
         return 0
     else
