@@ -255,42 +255,16 @@ function newBranch()
 }
 
 ##
-# @brief    Create a new branch, change to it, set it up as local push upstream, rebase, merge and auto merge.
-# @param    "$1"        Branch's name.
+# @brief    Reapply commits from branch or current branch on top of another target tip.
+# @param    "$1"        Source branch or current branches name to rebase into the top of target.
 # @result   none
 # @return   0           Success
-#           1..N        Failure or empty parameter.
-function createBranch()
-{
-    local error='\033[31m  error\033[0m:'
-    [ -n "${1}" ] || { echo -e "${error} Empty parameter to function createBranch()" ; return 1 ; }
-    local branch="${1}"
-    local current="$([ -n "${2}" ] && echo -n "${2}" || echo -n "$(gitBranchName)")"
-    local err=0
-    newBranch "${branch}" || { err=$? ; echo -e "${error} newBranch(${branch}) return code:$err" ; }
-    gitSwitch "${branch}" || { err=$? ; echo -e "${error} gitSwitch(${branch}) return code:$err" ; }
-    if [ -n "${current}" ]
-    then
-        gitSetLocalPushUpstream "${current}"
-        err=$?
-        [ $err -eq 0 ] || echo -e "${error} gitSetLocalPushUpstream(${current}) return code:$err"
-    fi
-    gitSetupRebase            "${branch}" || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err" ; }
-    gitConfigBranchMerge      "${branch}" || { err=$? ; echo -e "${error} gitConfigBranchMerge(${branch}) return code:$err" ; }
-    gitConfigAutoSetupMerge   "${branch}" || { err=$? ; echo -e "${error} gitConfigAutoSetupMerge(${branch}) return code:$err" ; }
-    return $err
-}
-
-##
-# @brief    Rebase git branch to HEAD position.
-# @param    "$1"        Branch's name.
-# @result   none
-# @return   0           Success
-#           1..N        Failure or empty parameter.
+#           1           Failure
 function gitRebase()
 {
-    [ -n "${1}" ] || return 1
-    if git rebase -m HEAD "${1}" > /dev/null 2>&1
+    local target="$([ -n "${1}" ] && echo -n ${1} || echo -n $(gitBranchName))"
+    [ $? -eq 0 ] || return 1
+    if git rebase -m HEAD "${target}" > /dev/null 2>&1
     then
         return 0
     else
@@ -315,8 +289,8 @@ function gitSetupRebase()
 }
 
 ##
-# @brief    Configure branch for merge.
-# @param    "$1"        Branch's name.
+# @brief    Configure current branch for merge into target (parameter) branch.
+# @param    "$1"        Target (base) branches name.
 # @result   none
 # @return   0           Success
 #           1..N        Failure or empty parameter.
@@ -410,6 +384,34 @@ function gitRepositoryName()
 }
 
 ##
+# @brief    Create a new branch, change to it, set it up as local push upstream, rebase, merge and auto merge.
+# @param    "$1"        Branch's name.
+#           "$2"        Branch to set upstream or current for empty.
+# @result   none
+# @return   0           Success
+#           1..N        Failure or empty parameter.
+function createBranch()
+{
+    local error='\033[31m  error\033[0m:'
+    [ -n "${1}" ] || { echo -e "${error} Empty parameter to function createBranch()" ; return 1 ; }
+    local branch="${1}"
+    local current="$([ -n "${2}" ] && echo -n "${2}" || echo -n "$(gitBranchName)")"
+    local err=0
+    newBranch "${branch}" || { err=$? ; echo -e "${error} newBranch(${branch}) return code:$err" ; }
+    gitSwitch "${branch}" || { err=$? ; echo -e "${error} gitSwitch(${branch}) return code:$err" ; }
+    if [ -n "${current}" ]
+    then
+        gitSetLocalPushUpstream "${current}"
+        err=$?
+        [ $err -eq 0 ] || echo -e "${error} gitSetLocalPushUpstream(${current}) return code:$err"
+    fi
+    gitSetupRebase            "${branch}" || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err" ; }
+    gitConfigBranchMerge      "${branch}" || { err=$? ; echo -e "${error} gitConfigBranchMerge(${branch}) return code:$err" ; }
+    gitConfigAutoSetupMerge   "${branch}" || { err=$? ; echo -e "${error} gitConfigAutoSetupMerge(${branch}) return code:$err" ; }
+    return $err
+}
+
+##
 # @brief    Add new and changed files contents to the index.
 # @param    "$1"        Files to add, for empty parameters assume a '.' as a default
 #                       wilcard to include all files and changes.
@@ -427,25 +429,27 @@ function gitAdd()
 }
 
 ##
-# @brief    Commit all added/staged changes with no signed commit.
+# @brief    Commit all added/staged changes with NO signed commit.
 # @param    "$1"        Message to append to commit or a default message with user, date and time.
 # @result   none
 # @return   0           Success
 #           1           Failure
 function gitCommitNotSigned()
 {
-    local message=''
+    declare message='' res='' err=0
     [ -n "${1}" ] && message="${1}" || message="Updated by $USER on $(date +%Y-%m-%d) at $(date +%H:%M:%S)"
-    if git commit -q -m "\"${message}\"" > /dev/null 2>&1
+    res="$(git commit -q -m "${message}")"
+    err=$?
+    if ((err > 0))
     then
-        return 0
-    else
-        return 1
+        echo -n "${res}" | grep -qoF 'nothing to commit' > /dev/null 2>&1
+        err=$?
     fi
+    return $err
 }
 
 ##
-# @brief    Commit all added/staged changes with signed commit.
+# @brief    Commit all added/staged changes with SIGNED commit.
 # @param    "$1"        Message to append to commit or a default message with user, date and time.
 # @result   none
 # @return   0           Success
