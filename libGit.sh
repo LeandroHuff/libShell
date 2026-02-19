@@ -453,7 +453,7 @@ function gitCommitSigned()
     if ((err > 0))
     then
         echo "res: $res"
-        echo -n "${res}" | grep -qoP ' up to date ' > /dev/null 2>&1
+        echo -n "${res}" | grep -qoP 'nothing to commit' > /dev/null 2>&1
         err=$?
     fi
     return $err
