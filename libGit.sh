@@ -20,13 +20,13 @@ declare libGit=''
 # U Unmerged
 # ? Untracked
 # ! Ignored
-declare -a StatusLetters=('A' 'C' 'D' 'M' 'R' 'T' 'U' '?' '!')
+declare -a StatusLetters=('A' 'C' 'D' 'M' 'R' 'T' 'U' '\?' '\!')
 
 ##
 # @brief    Check a path parameter for a valid git repository.
 # @param    "$1"    Path
 # @return   0       Success, path/ is a git repository.
-#           1       Failure, path/ is not a git repository.
+#           1..N    Failure, path/ is not a git repository.
 function isGitRepository()
 {
     local target="$1"
@@ -42,8 +42,6 @@ function isGitRepository()
         then
             git -C "${target}" rev-parse --git-dir > /dev/null 2>&1
             err=$?
-        else
-            false
         fi
     fi
     return $err
@@ -53,67 +51,122 @@ function isGitRepository()
 # @brief    Check if parameter is the current branch's name in the current
 # directory.
 # @param    "$1"    Branch's name for current repository.
-# @result   true    The parameter is the current branch's name in the
-# respotiroy.
+# @result   true    The parameter is the current branch's name in the respotiroy.
 #           false   The parameter is not the current branch's name in the
 #           respoitory.
-function isBranchCurrent()  { local b="^${1:-'nil'}$"; git branch -q
---show-current | grep -aoP "${b}" > /dev/null 2>&1 ; return $?; }
+function isBranchCurrent()
+{
+    git branch -q --show-current | grep -qaoP "^${1:-'nil'}$"
+    return $?
+}
 
 ##
-# @brief    Check local branch to calculate how many commits are ahead of remote
-#           repository.
+# @brief    Check if the current branch is up to date with the remote repository.
 # @param    none
-# @return   N       Commits counter.
-function isBranchAhead()    { local err ; git status | grep -qoE ' ahead ' ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
+# @return   0       The local repository/branch is up to date with the remote.
+#           1       The local repository/branch is NOT up to date with the remote.
+function isBranchUpToDate()
+{
+    git status | grep -qoP ' up to date '
+    return $?
+}
 
 ##
-# @brief    
-function isBranchBehind()   { local err ; git status | grep -qoE ' behind ' ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
-function isBranchUpToDate() { local err ; git status | grep -qoE ' up to date ' ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
-function isRepositoryChanged()
+# @brief    Check local branch status to verify if it are ahead of remote repository.
+# @param    none
+# @return   0       The local repository is ahead of remote repository.
+#           1       The local repository is NOT ahead of remote repository.
+function isBranchAhead()
 {
-    declare -i err=0
-    declare -i count=0
-    declare -i acc=0
-    for letter in "${StatusLetters[@]}"
-    do
-        count=$(gitCountChanges "${letter}") || err=$?
-        acc=$((acc + count))
-    done
-    if [ $acc -gt 0 ]
+    git status | grep -qoF ' ahead '
+    return $?
+}
+
+##
+# @brief    Check local branch status to verify if it are behind of remote repository.
+# @param    none
+#           0       The local repository is behind of remote repository.
+#           1       The local repository is NOT behind of remote repository.
+function isBranchBehind()
+{
+    git status | grep -qoF ' behind '
+    return $?
+}
+
+##
+# @brief    Get counter behind commits.
+# @param    "$1"        Maximum number length, default is 4 digits, 0..9999
+# @result   integer     Counter, commits behind counter.
+function getCounterCommitsBehind()
+{
+    declare -i maxLen="${1:-4}"
+    declare -i counter=0
+    declare -i len
+    local line="$(git status | grep -F ' behind ')"
+    if [ -n "${line}" ]
     then
-        true
-    else
-        false
+        line="${line##*by }"
+        for ((len=0 ; len < $maxLen ; len++))
+        do
+            case "${line:$len:1}" in
+            [0-9]) continue ;;
+            *) break ;;
+            esac
+        done
+        len=$((len+1))
+        printf -v counter '%d' "${line:0:$len}"
     fi
-    return $err
+    echo -n $counter
 }
-function existBranch() { local err ; git branch -q | grep -oF "$1" > /dev/null 2>&1 ; err=$? ; [ $err -eq 0 ] && true || false ; return $err ; }
-function newBranch()   { local err ; git branch -q "$1" > /dev/null 2>&1 ; err=$? ; return $err ; }
-function createBranch()
+
+##
+# @brief    Get counter ahead commits.
+# @param    "$1"        Maximum number length, default is 4 digits, 0..9999
+# @result   integer     Counter, commits ahead counter.
+function getCounterCommitsAhead()
 {
-    local branch="$1"
-    [ -n "${branch}" ] || return 1
-    local err=0
-    newBranch                 "${branch}" || { err=$? ; logE "newBranch(${branch}) return code:$err" ; }
-    gitSwitch                 "${branch}" || { err=$? ; logE "gitSwitch(${branch}) return code:$err" ; }
-    gitSetLocalPushUpstream   "${branch}" || { err=$? ; logE "gitSetLocalPushUpstream(${branch}) return code:$err" ; }
-    gitSetupRebase            "${branch}" || { err=$? ; logE "gitSetupRebase(${branch}) return code:$err" ; }
-    gitConfigBranchMerge      "${branch}" || { err=$? ; logE "gitConfigBranchMerge(${branch}) return code:$err" ; }
-    gitConfigBranchPushRemote "${branch}" || { err=$? ; logE "gitConfigBranchPushRemote(${branch}) return code:$err" ; }
-    gitConfigAutoSetupMerge   "${branch}" || { err=$? ; logE "gitConfigAutoSetupMerge(${branch}) return code:$err" ; }
+    declare -i maxLen="${1:-4}"
+    declare -i counter=0
+    declare -i len
+    local line="$(git status | grep -F ' ahead ')"
+    if [ -n "${line}" ]
+    then
+        line="${line##*by }"
+        for ((len=0 ; len < $maxLen ; len++))
+        do
+            case "${line:$len:1}" in
+            [0-9]) continue ;;
+            *) break ;;
+            esac
+        done
+        len=$((len+1))
+        printf -v counter '%d' "${line:0:$len}"
+    fi
+    echo -n $counter
+}
+
+##
+# @brief    Get changes counter according to letter parameter that can be one of
+#           ('A' 'C' 'D' 'M' 'R' 'T' 'U' '\?' '\!') option.
+# @param    "$1"    Character, letter to search and count changes.
+# @result   integer Counter, changes counter.
+# @return   0       Success
+#           1..N    Failure or empty parameter.
+function gitCountChanges()
+{
+    [ -n "${1}" ] || return 1
+    local count=$(git status --porcelain | grep -cP "^${1} |${1}. |.${1} ")
+    local err=$?
+    echo -n $count
     return $err
 }
-function gitRebase()                { local err ; git rebase -m HEAD "$1" > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitSetupRebase()           { local err ; git config pull.rebase false > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitConfigBranchMerge()     { local err ; git config branch."$1".merge > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitConfigBranchPushRemote(){ local err ; git config branch."$1".pushRemote > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitConfigAutoSetupMerge()  { local err ; git config branch.autoSetupMerge always > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitSetLocalPushUpstream()  { local err ; git push -q --set-upstream origin "$1" > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitBranchName()            { local err res ; res=$(git branch -q --show-current) ; err=$? ; echo -n "${res}" ; return $err ; }
-function gitRepositoryName()        { local err res ; res="$(git rev-parse --show-toplevel)" ; err=$? ; echo -n "$(basename ${res})" ; return $err ; }
-function gitCountChanges()          { local err count ; count=$(git status --porcelain | grep -cP "^$1 |$1. |.$1 ") ; err=$? ; echo -n $count ; return $err ; }
+
+##
+# @brief    Check for any changes in the repository/branch.
+# @param    none
+# @result   integer     Accumulated changes counter.
+# @return   0           Success
+#           1..N        Failure
 function gitAnyChanges()
 {
     local err=0
@@ -127,30 +180,234 @@ function gitAnyChanges()
     echo -n $acc
     return $err
 }
-function gitCommitCounter()
+
+##
+# @brief    Get the current repository counter changes.
+# @param    none
+# @return   0       No one changes.
+#           N       N changes in the current repository/branch.
+function getRepositoryChanges()
 {
-    declare -i -r maxLen=$([ -n "$1" ] && echo $1 || echo 4)
-    local line=''
-    declare -i len counter direction
-    counter=0
-    if   line="$(git status | grep -F ' behind ')" ; then direction=-1
-    elif line="$(git status | grep -F ' ahead ' )" ; then direction=1
-    else { echo -n $counter ; return 0 ; }
-    fi
-    line="${line##*by }"
-    for ((len=0 ; len < $maxLen ; len++)) ; do case "${line:$len:1}" in [0-9]) continue ;; *) break ;; esac ; done
-    if [ $len -gt 0 ] ; then printf -v counter '%d' "${line:0:$len}" ; fi
-    counter=$((counter * direction))
-    echo -n $counter
-    return 0
+    declare -i err=0
+    declare -i count=0
+    declare -i acc=0
+    for letter in "${StatusLetters[@]}"
+    do
+        count=$(gitCountChanges "${letter}") || err=$?
+        acc=$((acc + count))
+        count=0
+    done
+    echo $acc
+    return $err
 }
-function gitAdd()            { local err ; git add "$1" > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitCommitNotSigned(){ local err ; git commit -q -m "${1}" > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitCommitSigned()   { local err ; git commit -q -s -m \""${1}"\" > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitFetch()          { local err ; git fetch  -q origin HEAD > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitPull()           { local err ; git pull   -q origin HEAD > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitPush()           { local err ; git push   -q origin HEAD > /dev/null 2>&1 ; err=$? ; return $err ; }
-function gitSwitch()         { local err ; git switch -q "$1" > /dev/null 2>&1 ; err=$? ; return $err ; }
+
+##
+# @brief    Check if branch parameter exist in the current repository.
+# @param    "$1"    Branch's name.
+# @return   0       Success, branch EXIST in current repository.
+#           1..N    Failure, branch does NOT EXIST in the current repository.
+function existBranch()
+{
+    git branch -q | grep -aoP "${1:-nil}$" > /dev/null 2>&1
+    return $?
+}
+
+##
+# @brief    Create a new branch in the current repository.
+# @param    "$1'    Branches name.
+# @return   0       Success
+#           1..N    Failure or empty parameter
+function newBranch()
+{
+    [ -n "${1}" ] || return 1
+    git branch -q "${1}" > /dev/null 2>&1
+    return $?
+}
+
+##
+# @brief    Create a new branch, change to it, set it up as local push upstream, rebase, merge and auto merge.
+# @param    "$1"    Branch's name.
+# @return   0       Success
+#           1..N    Failure or empty parameter.
+function createBranch()
+{
+    [ -n "${1}" ] || return 1
+    local branch="${1}"
+    local err=0
+    local error='\033[31m  error\033[0m:'
+    newBranch                 "${branch}" || { err=$? ; echo -e "${error} newBranch(${branch}) return code:$err"               ; }
+    gitSwitch                 "${branch}" || { err=$? ; echo -e "${error} gitSwitch(${branch}) return code:$err"               ; }
+    gitSetLocalPushUpstream   "${branch}" || { err=$? ; echo -e "${error} gitSetLocalPushUpstream(${branch}) return code:$err" ; }
+    gitSetupRebase            "${branch}" || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err"          ; }
+    gitConfigBranchMerge      "${branch}" || { err=$? ; echo -e "${error} gitConfigBranchMerge(${branch}) return code:$err"    ; }
+    gitConfigAutoSetupMerge   "${branch}" || { err=$? ; echo -e "${error} gitConfigAutoSetupMerge(${branch}) return code:$err" ; }
+    return $err
+}
+
+##
+# @brief    Rebase git branch to HEAD position.
+# @param    "$1"    Branch's name.
+# @return   0       Success
+#           1..N    Failure or empty parameter.
+function gitRebase()
+{
+    [ -n "${1}" ] || return 1
+    git rebase -m HEAD "${1}" > /dev/null 2>&1
+    return $?
+}
+
+##
+# @brief    Config pull rebase as false.
+# @param    none
+# @return   0       sSuccess
+#           1..N    Failure
+function gitSetupRebase()
+{
+    git config pull.rebase false > /dev/null 2>&1
+    return $?
+}
+
+##
+# @brief    Configure branch for merge.
+# @param    "$1"    Branch's name.
+# @return   0       Success
+#           1..N    Failure or empty parameter.
+function gitConfigBranchMerge()
+{
+    [ -n "${1}" ] || return 1
+    git config branch."${1}".merge > /dev/null 2>&1
+    return $?
+}
+
+##
+# @brief    Configure branch for push to remote repository.
+# @param    "$1"    Branch's name.
+# @return   0       Success
+#           1..N    Failure or empty parameter.
+function gitConfigBranchPushRemote()
+{
+    [ -n "${1}" ] || return 1
+    git config branch."${1}".pushRemote > /dev/null 2>&1 ;
+    return $?
+}
+
+##
+# @brief    Configurate branch for auto merge.
+# @param    none
+# @return   0       Success
+#           1..N    Failure
+function gitConfigAutoSetupMerge()
+{
+    git config branch.autoSetupMerge always > /dev/null 2>&1
+    return $?
+}
+
+##
+# @brief    Configure repository for push on upstream.
+# @param    "$1"    Branch's name.
+# @return   0       Success
+#           1..N    Failure or empty parameter.
+function gitSetLocalPushUpstream()
+{
+    [ -n "${1}" ] || return 1
+    git push -q --set-upstream origin "${1}" > /dev/null 2>&1
+    return $?
+}
+
+##
+# @brief    Get current branch's name.
+# @param    none
+# @result   string  Branch's name.
+# @return   0       Success
+#           1..N    Failure
+function gitBranchName()
+{
+    local res=$(git branch -q --show-current)
+    local err=$?
+    echo -n "${res}"
+    return $err
+}
+
+##
+# @brief    Get git repository's name.
+# @param    none
+# @result   string  Repository's name.
+# @return   0       Success
+#           1..N    Failure
+function gitRepositoryName()
+{
+    local res="$(git rev-parse --show-toplevel)"
+    local err=$?
+    echo -n "$(basename ${res})"
+    return $err
+}
+
+##
+# @brief    Add new and changed files contents to the index.
+# @param    "$1"    Files to add, for empty parameters assume a '.' as a default
+#                   wilcard to include all files and changes.
+# @return   0       Success
+#           1       Failure
+function gitAdd()
+{
+    git add "${1:-.}" > /dev/null 2>&1
+    return $?
+}
+
+##
+# @brief    Commit all added/staged changes with no signed commit.
+# @param    "$1"    Message to append to commit or a default message with user, date and time.
+# @return   0       Success
+#           1       Failure
+function gitCommitNotSigned()
+{
+    local message=''
+    [ -n "${1}" ] && message="${1}" || message="Updated by $USER on $(date +%Y-%m-%d) at $(date +%H:%M:%S)"
+    git commit -q -m "\"${message}\"" > /dev/null 2>&1
+    return $?
+}
+
+##
+# @brief    Commit all added/staged changes with signed commit.
+# @param    "$1"    Message to append to commit or a default message with user, date and time.
+# @return   0       Success
+#           1       Failure
+function gitCommitSigned()
+{
+    local message=''
+    [ -n "${1}" ] && message="${1}" || message="Updated by $USER on $(date +%Y-%m-%d) at $(date +%H:%M:%S)"
+    git commit -q -s -m "\"${message}\"" > /dev/null 2>&1
+    return $?
+}
+
+
+function gitFetch()
+{
+    git fetch -q origin HEAD > /dev/null 2>&1
+    return $?
+}
+
+
+function gitPull()
+{
+    git pull -q origin HEAD > /dev/null 2>&1
+    return $?
+}
+
+
+function gitPush()
+{
+    git push -q origin HEAD > /dev/null 2>&1
+    return $?
+}
+
+
+function gitSwitch()
+{
+    [ -n "${1}" ] || return 1
+    git switch -q "${1}" > /dev/null 2>&1
+    return $?
+}
 
 function libGitExit()
 {

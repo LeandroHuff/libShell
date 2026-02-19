@@ -174,26 +174,34 @@ declare -a testTABLE=(\
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4 \
 \
 01      1      ''                  isGitRepository     ''          ''          ''          '' \
+02      0      ''                  isGitRepository     '../'       ''          ''          '' \
+03      1      ''                  isGitRepository     '/tmp'      ''          ''          '' \
 \
-02      1      ''                  isBranchCurrent     ''          ''          ''          '' \
+04      1      ''                  isBranchCurrent     ''          ''          ''          '' \
+05      0      ''                  isBranchCurrent     'AutoUpdate' ''         ''          '' \
+06      1      ''                  isBranchCurrent     'Auto'      ''          ''          '' \
 \
-03      1      ''                  isBranchAhead       ''          ''          ''          '' \
+07      1      ''                  isBranchAhead       ''          ''          ''          '' \
 \
-04      1      ''                  isBranchBehind      ''          ''          ''          '' \
+08      1      ''                  isBranchBehind      ''          ''          ''          '' \
 \
-05      1      ''                  isBranchUpToDate    ''          ''          ''          '' \
+09      0      ''                  isBranchUpToDate    ''          ''          ''          '' \
 \
-06      0      ''                  isRepositoryChanged ''          ''          ''          '' \
+10      0      '4'                  getRepositoryChanges ''          ''          ''          '' \
 \
-07      1       ''                  existBranch         ''          ''          ''          '' \
+11      1       ''                  existBranch         ''          ''          ''          '' \
+12      1       ''                  existBranch         'notExist'  ''          ''          '' \
+13      0       ''                  existBranch         'AutoUpdate' ''         ''          '' \
 \
-08      1       ''                  newBranch           ''          ''          ''          '' \
+14      1       ''                  newBranch           ''          ''          ''          '' \
+15      0       ''                  newBranch           'teste'     ''          ''          '' \
+16      0       ''                  existBranch         'teste'     ''          ''          '' \
 \
-09      1       ''                  createBranch        ''          ''          ''          '' \
+17      1       ''                  createBranch        ''          ''          ''          '' \
 \
-10      1       ''                  gitRebase           ''          ''          ''          '' \
+19      1       ''                  gitRebase           ''          ''          ''          '' \
 \
-11      1       ''                  gitSetupRebase      ''          ''          ''          '' \
+20      1       ''                  gitSetupRebase      ''          ''          ''          '' \
 \
 12      1       ''                  gitConfigBranchMerge ''         ''          ''          '' \
 \
