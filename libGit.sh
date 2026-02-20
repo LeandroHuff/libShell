@@ -317,7 +317,7 @@ function gitConfigBranchMerge()
 #           1           Failure
 function gitConfigBranchPushDefault()
 {
-    if git config remote.pushDefault always > /dev/null 2>&1
+    if git config remote.pushDefault > /dev/null 2>&1
     then
         return 0
     else
@@ -333,7 +333,7 @@ function gitConfigBranchPushDefault()
 #           1..N        Failure
 function gitConfigAutoSetupMerge()
 {
-    if git config branch.autoSetupMerge always > /dev/null 2>&1
+    if git config branch.autoSetupMerge > /dev/null 2>&1
     then
         return 0
     else
