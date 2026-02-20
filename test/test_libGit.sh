@@ -304,7 +304,7 @@ declare -a testTABLE=(\
 \
 85      0       ''                  gitPush             ''          ''          ''          '' \
 \
-86      0       ''                  gitSwitch           'main'      ''          ''          '' \
+86      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
 \
 87      0       ''                  libGitExit          ''          ''          ''          '' \
 \
