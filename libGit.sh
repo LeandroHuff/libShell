@@ -534,7 +534,7 @@ function gitFetch()
 #           1..N        Failure
 function gitPull()
 {
-    if git pull -q origin HEAD > /dev/null 2>&1
+    if git pull -q origin > /dev/null 2>&1
     then
         return 0
     else
