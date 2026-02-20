@@ -294,10 +294,15 @@ declare -a testTABLE=(\
 \
 79      0       ''                  gitCommitSigned     ''          ''          ''          '' \
 \
-80      1       ''                 isBranchUpToDate     ''          ''          ''          '' \
-81      0       ''                 isBranchAhead        ''          ''          ''          '' \
-82      1       ''                 isBranchBehind       ''          ''          ''          '' \
-83      0       '1'                getCounterCommitsBehind ''       ''          ''          '' \
+80      0       ''                 isBranchUpToDate     ''          ''          ''
+'' \
+81      1       ''                 isBranchAhead        ''          ''
+''
+'' \
+82      0       ''                 isBranchBehind       ''          ''
+'' '' \
+83      0       '0'                getCounterCommitsBehind ''       ''          ''
+'' \
 84      0       '0'                getCounterCommitsAhead  ''       ''          ''          '' \
 \
 85      0       ''                  gitCommitNotSigned  ''          ''          ''          '' \
