@@ -262,9 +262,8 @@ function newBranch()
 #           1           Failure
 function gitRebase()
 {
-    local target="$([ -n "${1}" ] && echo -n ${1} || echo -n $(gitBranchName))"
-    [ $? -eq 0 ] || return 1
-    if git rebase -m HEAD "${target}" > /dev/null 2>&1
+    [ -n "${1}" ] || return 1
+    if git rebase -m HEAD "${1}" > /dev/null 2>&1
     then
         return 0
     else
