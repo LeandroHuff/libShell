@@ -261,14 +261,14 @@ declare -a testTABLE=(\
 49      0       ''                  gitAnyChanges       ''          ''          ''          '' \
 \
 50      0       ''                  test_gitCountChanges_FillFile   'a' 'test_1.txt'  ''    '' \
-51      0       ''                  gitAnyChanges       ''          ''          ''          '' \
-52      0       '1'                 gitCountChanges     'A'         ''          ''          '' \
-53      0       '1'                 gitCountChanges     '!'         ''          ''          '' \
+51      0       '1'                 gitAnyChanges       ''          ''          ''          '' \
+52      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
+53      0       '1'                 gitCountChanges     'M'         ''          ''          '' \
 54      0       '1'                 gitCountChanges     '\?'        ''          ''          '' \
 55      0       ''                  test_gitCountChanges_FillFile   'b' 'test_2.txt'  ''    '' \
 56      0       ''                  gitAnyChanges       ''          ''          ''          '' \
-57      0       '2'                 gitCountChanges     'A'         ''          ''          '' \
-58      0       '2'                 gitCountChanges     '!'         ''          ''          '' \
+57      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
+58      0       '2'                 gitCountChanges     'M'         ''          ''          '' \
 58      0       '2'                 gitCountChanges     '\?'        ''          ''          '' \
 59      0       ''                  test_gitCountChanges_AddChanges 'a' 'test.txt'    ''    '' \
 60      0       ''                  gitAnyChanges       ''          ''          ''          '' \
