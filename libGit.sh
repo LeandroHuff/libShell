@@ -26,6 +26,7 @@ declare libGit=''
 # U Unmerged
 # ? Untracked
 # ! Ignored
+# '\' to be compatible with regex search
 declare -a StatusLetters=('A' 'C' 'D' 'M' 'R' 'T' 'U' '\?' '!')
 
 ##
@@ -173,7 +174,10 @@ function getCounterCommitsAhead()
 #           1..N        Failure or empty parameter.
 function gitCountChanges()
 {
-    if ! [[ "${StatusLetters[@]}" =~ "${1}" ]] ; then return 1 ; fi
+    if ! [ -n  "${1}" ] || ! [[ "${StatusLetters[@]}" =~ "${1}" ]]
+    then
+        return 1
+    fi
     local count=$(git status --porcelain | grep -cE "^$1 |$1. |.$1 ")
     local err=$?
     echo -n $count
