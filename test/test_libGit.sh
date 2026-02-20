@@ -263,12 +263,12 @@ declare -a testTABLE=(\
 50      0       ''                  test_gitCountChanges_FillFile   'a' 'test_1.txt'  ''    '' \
 51      0       '1'                 gitAnyChanges       ''          ''          ''          '' \
 52      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
-53      0       '1'                 gitCountChanges     'M'         ''          ''          '' \
+53      0       '0'                 gitCountChanges     'M'         ''          ''          '' \
 54      0       '1'                 gitCountChanges     '\?'        ''          ''          '' \
 55      0       ''                  test_gitCountChanges_FillFile   'b' 'test_2.txt'  ''    '' \
 56      0       ''                  gitAnyChanges       ''          ''          ''          '' \
 57      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
-58      0       '2'                 gitCountChanges     'M'         ''          ''          '' \
+58      0       '0'                 gitCountChanges     'M'         ''          ''          '' \
 58      0       '2'                 gitCountChanges     '\?'        ''          ''          '' \
 59      0       ''                  test_gitCountChanges_AddChanges 'a' 'test.txt'    ''    '' \
 60      0       ''                  gitAnyChanges       ''          ''          ''          '' \
@@ -278,9 +278,9 @@ declare -a testTABLE=(\
 64      0       '1'                 gitCountChanges     'M'         ''          ''          '' \
 65      0       ''                  test_gitCountChanges_RemoveFile 'test_1.txt' ''   ''    '' \
 66      0       ''                  gitAnyChanges       ''          ''          ''          '' \
-67      0       '1'                 gitCountChanges     'A'         ''          ''          '' \
-68      0       '1'                 gitCountChanges     '!'         ''          ''          '' \
-69      0       '1'                 gitCountChanges     '\?'        ''          ''          '' \
+67      0       '2'                 gitCountChanges     'A'         ''          ''          '' \
+68      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
+69      0       '2'                 gitCountChanges     '\?'        ''          ''          '' \
 70      0       ''                  test_gitCountChanges_RemoveFile 'test_2.txt' ''   ''    '' \
 71      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
 72      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
