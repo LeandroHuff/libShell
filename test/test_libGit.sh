@@ -269,42 +269,42 @@ declare -a testTABLE=(\
 56      0       ''                  gitAnyChanges       ''          ''          ''          '' \
 57      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
 58      0       '0'                 gitCountChanges     'M'         ''          ''          '' \
-58      0       '2'                 gitCountChanges     '\?'        ''          ''          '' \
-59      0       ''                  test_gitCountChanges_AddChanges 'a' 'test.txt'    ''    '' \
-60      0       ''                  gitAnyChanges       ''          ''          ''          '' \
-61      0       '1'                 gitCountChanges     'M'         ''          ''          '' \
-62      0       ''                  test_gitCountChanges_AddChanges 'b' 'test.txt'    ''    '' \
-63      0       ''                  gitAnyChanges       ''          ''          ''          '' \
-64      0       '1'                 gitCountChanges     'M'         ''          ''          '' \
-65      0       ''                  test_gitCountChanges_RemoveFile 'test_1.txt' ''   ''    '' \
-66      0       ''                  gitAnyChanges       ''          ''          ''          '' \
-67      0       '2'                 gitCountChanges     'A'         ''          ''          '' \
-68      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
-69      0       '2'                 gitCountChanges     '\?'        ''          ''          '' \
-70      0       ''                  test_gitCountChanges_RemoveFile 'test_2.txt' ''   ''    '' \
-71      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
-72      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
-73      0       '0'                 gitCountChanges     '\?'        ''          ''          '' \
+59      0       '2'                 gitCountChanges     '\?'        ''          ''          '' \
+60      0       ''                  test_gitCountChanges_AddChanges 'a' 'test.txt'    ''    '' \
+61      0       ''                  gitAnyChanges       ''          ''          ''          '' \
+62      0       '1'                 gitCountChanges     'M'         ''          ''          '' \
+63      0       ''                  test_gitCountChanges_AddChanges 'b' 'test.txt'    ''    '' \
+64      0       ''                  gitAnyChanges       ''          ''          ''          '' \
+65      0       '1'                 gitCountChanges     'M'         ''          ''          '' \
+66      0       ''                  test_gitCountChanges_RemoveFile 'test_1.txt' ''   ''    '' \
+67      0       ''                  gitAnyChanges       ''          ''          ''          '' \
+68      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
+69      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
+70      0       '2'                 gitCountChanges     '\?'        ''          ''          '' \
+71      0       ''                  test_gitCountChanges_RemoveFile 'test_2.txt' ''   ''    '' \
+72      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
+73      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
+74      0       '0'                 gitCountChanges     '\?'        ''          ''          '' \
 \
-74      0       ''                  gitAnyChanges       ''          ''          ''          '' \
-75      0       ''                  test_gitCountChanges_FillFile   '' 'test.txt'     ''    '' \
-76      1       ''                  gitAnyChanges       ''          ''          ''          '' \
+75      0       ''                  gitAnyChanges       ''          ''          ''          '' \
+76      0       ''                  test_gitCountChanges_FillFile   '' 'test.txt'     ''    '' \
+77      0       ''                  gitAnyChanges       ''          ''          ''          '' \
 \
-77      0       ''                  gitAdd              ''          ''          ''          '' \
+78      0       ''                  gitAdd              ''          ''          ''          '' \
 \
-78      0       ''                  gitCommitSigned     ''          ''          ''          '' \
+79      0       ''                  gitCommitSigned     ''          ''          ''          '' \
 \
-79      0       ''                  gitCommitNotSigned  ''          ''          ''          '' \
+80      0       ''                  gitCommitNotSigned  ''          ''          ''          '' \
 \
-80      0       ''                  gitFetch            ''          ''          ''          '' \
+81      0       ''                  gitFetch            ''          ''          ''          '' \
 \
-81      0       ''                  gitPull             ''          ''          ''          '' \
+82      0       ''                  gitPull             ''          ''          ''          '' \
 \
-82      0       ''                  gitPush             ''          ''          ''          '' \
+83      0       ''                  gitPush             ''          ''          ''          '' \
 \
-83      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
+84      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
 \
-84      0       ''                  libGitExit          ''          ''          ''          '' \
+85      0       ''                  libGitExit          ''          ''          ''          '' \
 \
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4\
 )
