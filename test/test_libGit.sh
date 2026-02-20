@@ -231,11 +231,10 @@ declare -a testTABLE=(\
 26      0       ''                  gitConfigBranchMerge 'AutoUpdate' ''        ''          '' \
 27      0       ''                  gitSwitch            'AutoUpdate' ''        ''          '' \
 \
-28      1       ''                  gitConfigBranchPushRemote ''    ''          ''          '' \
-29      0       ''                  gitConfigBranchPushRemote 'AutoUpdate' ''   ''          '' \
+28      0       ''                  gitConfigBranchPushDefault ''    ''          ''          '' \
 \
-30      1       ''                  gitConfigAutoSetupMerge ''      ''          ''          '' \
-31      1       ''                  gitConfigAutoSetupMerge 'AutoUpdate' ''     ''          '' \
+29      1       ''                  gitConfigAutoSetupMerge ''      ''          ''          '' \
+30      1       ''                  gitConfigAutoSetupMerge 'AutoUpdate' ''     ''          '' \
 \
 32      1       ''                  gitSetLocalPushUpstream ''      ''          ''          '' \
 33      0       ''                  gitSetLocalPushUpstream 'AutoUpdate' ''     ''          '' \

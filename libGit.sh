@@ -306,15 +306,14 @@ function gitConfigBranchMerge()
 }
 
 ##
-# @brief    Configure branch for push to remote repository.
-# @param    "$1"        Branch's name.
+# @brief    Configure branch for push to default remote repository.
+# @param    none        Assume current branches name.
 # @result   none
 # @return   0           Success
-#           1..N        Failure or empty parameter.
-function gitConfigBranchPushRemote()
+#           1           Failure
+function gitConfigBranchPushDefault()
 {
-    [ -n "${1}" ] || return 1
-    if git config branch."${1}".pushRemote > /dev/null 2>&1 ;
+    if git config remote.pushDefault > /dev/null 2>&1
     then
         return 0
     else
