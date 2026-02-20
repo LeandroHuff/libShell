@@ -258,7 +258,7 @@ declare -a testTABLE=(\
 47      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
 48      1       ''                  gitCountChanges     'Z'         ''          ''          '' \
 \
-49      1       ''                  gitAnyChanges       ''          ''          ''          '' \
+49      0       ''                  gitAnyChanges       ''          ''          ''          '' \
 \
 50      0       ''                  test_gitCountChanges_FillFile   'a' 'test_1.txt'  ''    '' \
 51      0       ''                  gitAnyChanges       ''          ''          ''          '' \
