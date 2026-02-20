@@ -280,7 +280,7 @@ declare -a testTABLE=(\
 67      0       ''                  gitAnyChanges       ''          ''          ''          '' \
 68      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
 69      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
-70      0       '2'                 gitCountChanges     '\?'        ''          ''          '' \
+70      0       '1'                 gitCountChanges     '\?'        ''          ''          '' \
 71      0       ''                  test_gitCountChanges_RemoveFile 'test_2.txt' ''   ''    '' \
 72      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
 73      0       '0'                 gitCountChanges     '!'         ''          ''          '' \
