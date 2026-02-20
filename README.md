@@ -34,8 +34,7 @@ Where:
 | [libGit](libGit.sh) | Manage git repositories. |
 | [libKbHit](libKbHit.sh) | Detect keyboard key pressed. |
 | [libLog](libLog.sh) | Print log messages on terminal or file. |
-| [libMath](libMath.sh) | Calculate most common mathematics
-| espressions. |
+| [libMath](libMath.sh) | Calculate most common mathematics espressions. |
 | [libRandom](libRandom.sh) | Generate randomic strings. |
 | [libRegex](libRegex.sh) | Validate strings by regex string. |
 | [libString](libString.sh) | Treat and validate strings. |
