@@ -26,7 +26,7 @@ declare libGit=''
 # U Unmerged
 # ? Untracked
 # ! Ignored
-declare -a StatusLetters=('A' 'C' 'D' 'M' 'R' 'T' 'U' '\?' '\!')
+declare -a StatusLetters=('A' 'C' 'D' 'M' 'R' 'T' 'U' '\?' '!')
 
 ##
 # @brief    Check a path parameter for a valid git repository.
@@ -173,7 +173,7 @@ function getCounterCommitsAhead()
 #           1..N        Failure or empty parameter.
 function gitCountChanges()
 {
-    [[ ${StatusLetters[@]} =~ ${1} ]] || return 1
+    [[ "${StatusLetters[@]}" =~ "${1}" ]] || return 1
     local count=$(git status --porcelain | grep -cE "^$1 |$1. |.$1 ")
     local err=$?
     echo -n $count
@@ -278,7 +278,7 @@ function gitRebase()
 # @result   none
 # @return   0           Success
 #           1..N        Failure
-function gitSetupRebase()
+function gitSetupPullRebase()
 {
     if git config pull.rebase false > /dev/null 2>&1
     then
@@ -445,7 +445,7 @@ function createBranch()
         err=$?
         [ $err -eq 0 ] || echo -e "${error} gitSetLocalPushUpstream(${current}) return code:$err"
     fi
-    gitSetupRebase            "${branch}" || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err" ; }
+    gitSetupPullRebase                    || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err" ; }
     gitConfigBranchMerge      "${branch}" || { err=$? ; echo -e "${error} gitConfigBranchMerge(${branch}) return code:$err" ; }
     gitConfigAutoSetupMerge   "${branch}" || { err=$? ; echo -e "${error} gitConfigAutoSetupMerge(${branch}) return code:$err" ; }
     return $err
