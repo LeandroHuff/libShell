@@ -246,7 +246,7 @@ declare -a testTABLE=(\
 \
 37      0       'libShell'          gitRepositoryName   ''          ''          ''          '' \
 \
-38      1       ''                  gitCountChanges     ''          ''          ''          '' \
+38      0       '0'                 gitCountChanges     ''          ''          ''          '' \
 39      0       '0'                 gitCountChanges     'A'         ''          ''          '' \
 40      0       '0'                 gitCountChanges     'C'         ''          ''          '' \
 41      0       '0'                 gitCountChanges     'D'         ''          ''          '' \

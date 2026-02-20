@@ -173,7 +173,7 @@ function getCounterCommitsAhead()
 #           1..N        Failure or empty parameter.
 function gitCountChanges()
 {
-    [[ "${StatusLetters[@]}" =~ "${1}" ]] || return 1
+    if ! [[ "${StatusLetters[@]}" =~ "${1}" ]] ; then return 1 ; fi
     local count=$(git status --porcelain | grep -cE "^$1 |$1. |.$1 ")
     local err=$?
     echo -n $count
