@@ -160,7 +160,7 @@ function getCounterCommitsAhead()
             esac
         done
         len=$((len+1))
-        printf -v counter '%d' "${line:0:$len}"
+        printf -v counter "%d" "${line:0:$len}"
     fi
     echo -n $counter
 }
