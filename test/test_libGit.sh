@@ -206,7 +206,7 @@ declare -a testTABLE=(\
 \
 09      0      ''                  isBranchUpToDate     ''          ''          ''          '' \
 \
-10      0      '0'                  getRepositoryChanges ''         ''          ''          '' \
+10      0      '0'                 getRepositoryChanges ''         ''          ''          '' \
 \
 11      1       ''                  existBranch         ''          ''          ''          '' \
 12      1       ''                  existBranch         'notExist'  ''          ''          '' \
