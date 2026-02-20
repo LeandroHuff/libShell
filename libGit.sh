@@ -297,7 +297,7 @@ function gitSetupPullRebase()
 function gitConfigBranchMerge()
 {
     [ -n "${1}" ] || return 1
-    if git config branch."${1}".merge > /dev/null 2>&1
+    if git config branch."${1}".merge always > /dev/null 2>&1
     then
         return 0
     else
@@ -313,7 +313,7 @@ function gitConfigBranchMerge()
 #           1           Failure
 function gitConfigBranchPushDefault()
 {
-    if git config remote.pushDefault > /dev/null 2>&1
+    if git config remote.pushDefault always > /dev/null 2>&1
     then
         return 0
     else
