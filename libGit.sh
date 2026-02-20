@@ -583,35 +583,38 @@ function gitSwitch()
 function libGitExit()
 {
     unset -v libGit
-
+    unset -v StatusLetters
     unset -f isGitRepository
     unset -f isBranchCurrent
+    unset -f isBranchUpToDate
     unset -f isBranchAhead
     unset -f isBranchBehind
-    unset -f isBranchUpToDate
-    unset -f isRepositoryChanged
+    unset -f getCounterCommitsBehind
+    unset -f getCounterCommitsAhead
+    unset -f gitCountChanges
+    unset -f gitAnyChanges
+    unset -f getRepositoryChanges
     unset -f existBranch
     unset -f newBranch
-    unset -f createBranch
     unset -f gitRebase
-    unset -f gitSetupRebase
+    unset -f gitSetupPullRebase
     unset -f gitConfigBranchMerge
     unset -f gitConfigBranchPushRemote
     unset -f gitConfigAutoSetupMerge
     unset -f gitSetLocalPushUpstream
     unset -f gitBranchName
+    unset -f gitBranchDelete
+    unset -f gitHaveBranch
     unset -f gitRepositoryName
-    unset -f gitCountChanges
-    unset -f gitAnyChanges
-    unset -f gitCommitCounter
+    unset -f createBranch
     unset -f gitAdd
-    unset -f gitCommitNotSigned
     unset -f gitCommitSigned
+    unset -f gitCommitNotSigned
     unset -f gitFetch
     unset -f gitPull
     unset -f gitPush
     unset -f gitSwitch
-    unset -f libGitExit
+    unset -f libGitExt
     return 0
 }
 

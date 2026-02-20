@@ -294,17 +294,23 @@ declare -a testTABLE=(\
 \
 79      0       ''                  gitCommitSigned     ''          ''          ''          '' \
 \
-80      0       ''                  gitCommitNotSigned  ''          ''          ''          '' \
+80      1       ''                 isBranchUpToDate     ''          ''          ''          '' \
+81      0       ''                 isBranchAhead        ''          ''          ''          '' \
+82      1       ''                 isBranchBehind       ''          ''          ''          '' \
+83      0       '1'                getCounterCommitsBehind ''       ''          ''          '' \
+84      0       '0'                getCounterCommitsAhead  ''       ''          ''          '' \
 \
-81      0       ''                  gitFetch            ''          ''          ''          '' \
+85      0       ''                  gitCommitNotSigned  ''          ''          ''          '' \
 \
-82      0       ''                  gitPull             ''          ''          ''          '' \
+86      0       ''                  gitFetch            ''          ''          ''          '' \
 \
-83      0       ''                  gitPush             ''          ''          ''          '' \
+87      0       ''                  gitPull             ''          ''          ''          '' \
 \
-84      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
+88      0       ''                  gitPush             ''          ''          ''          '' \
 \
-85      0       ''                  libGitExit          ''          ''          ''          '' \
+89      0       ''                  gitSwitch           'AutoUpdate' ''         ''          '' \
+\
+90      0       ''                  libGitExit          ''          ''          ''          '' \
 \
 '#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4\
 )
