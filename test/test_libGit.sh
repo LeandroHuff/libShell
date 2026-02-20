@@ -299,7 +299,7 @@ declare -a testTABLE=(\
 81      1       ''                 isBranchAhead        ''          ''
 ''
 '' \
-82      0       ''                 isBranchBehind       ''          ''
+82      1       ''                 isBranchBehind       ''          ''
 '' '' \
 83      0       '0'                getCounterCommitsBehind ''       ''          ''
 '' \
