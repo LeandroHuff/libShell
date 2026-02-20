@@ -186,9 +186,8 @@ declare -a testTABLE=(\
 7       0       ''      Random      '-g'        ''          ''          '' \
 8       0       ''      Regex       '-g'        ''          ''          '' \
 9       0       ''      String      '-g'        ''          ''          '' \
-10      0       ''      Template    '-g'        ''          ''          '' \
-11      0       ''      Time        '-g'        ''          ''          '' \
-12      0       ''      EscCodes    ''          ''          ''          '' \
+10      0       ''      Time        '-g'        ''          ''          '' \
+11      0       ''      EscCodes    ''          ''          ''          '' \
 '#ID'   return  result  function    parameter1  parameter2  parameter3  parameter4\
 )
 
