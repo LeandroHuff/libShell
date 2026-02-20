@@ -26,7 +26,8 @@ declare libGit=''
 # U Unmerged
 # ? Untracked
 # ! Ignored
-declare -a StatusLetters=('A' 'C' 'D' 'M' 'R' 'T' 'U' '\?' '\!')
+# '\' to be compatible with regex search
+declare -a StatusLetters=('A' 'C' 'D' 'M' 'R' 'T' 'U' '\?' '!')
 
 ##
 # @brief    Check a path parameter for a valid git repository.
@@ -159,7 +160,7 @@ function getCounterCommitsAhead()
             esac
         done
         len=$((len+1))
-        printf -v counter '%d' "${line:0:$len}"
+        printf -v counter "%d" "${line:0:$len}"
     fi
     echo -n $counter
 }
@@ -173,7 +174,10 @@ function getCounterCommitsAhead()
 #           1..N        Failure or empty parameter.
 function gitCountChanges()
 {
-    [[ ${StatusLetters[@]} =~ ${1} ]] || return 1
+    if ! [ -n  "${1}" ] || ! [[ "${StatusLetters[@]}" =~ "${1}" ]]
+    then
+        return 1
+    fi
     local count=$(git status --porcelain | grep -cE "^$1 |$1. |.$1 ")
     local err=$?
     echo -n $count
@@ -262,9 +266,8 @@ function newBranch()
 #           1           Failure
 function gitRebase()
 {
-    local target="$([ -n "${1}" ] && echo -n ${1} || echo -n $(gitBranchName))"
-    [ $? -eq 0 ] || return 1
-    if git rebase -m HEAD "${target}" > /dev/null 2>&1
+    [ -n "${1}" ] || return 1
+    if git rebase -m HEAD "${1}" > /dev/null 2>&1
     then
         return 0
     else
@@ -278,7 +281,7 @@ function gitRebase()
 # @result   none
 # @return   0           Success
 #           1..N        Failure
-function gitSetupRebase()
+function gitSetupPullRebase()
 {
     if git config pull.rebase false > /dev/null 2>&1
     then
@@ -298,7 +301,7 @@ function gitSetupRebase()
 function gitConfigBranchMerge()
 {
     [ -n "${1}" ] || return 1
-    if git config branch."${1}".merge > /dev/null 2>&1
+    if git config branch."${1}".merge always > /dev/null 2>&1
     then
         return 0
     else
@@ -307,15 +310,14 @@ function gitConfigBranchMerge()
 }
 
 ##
-# @brief    Configure branch for push to remote repository.
-# @param    "$1"        Branch's name.
+# @brief    Configure branch for push to default remote repository.
+# @param    none        Assume current branches name.
 # @result   none
 # @return   0           Success
-#           1..N        Failure or empty parameter.
-function gitConfigBranchPushRemote()
+#           1           Failure
+function gitConfigBranchPushDefault()
 {
-    [ -n "${1}" ] || return 1
-    if git config branch."${1}".pushRemote > /dev/null 2>&1 ;
+    if git config remote.pushDefault > /dev/null 2>&1
     then
         return 0
     else
@@ -331,7 +333,7 @@ function gitConfigBranchPushRemote()
 #           1..N        Failure
 function gitConfigAutoSetupMerge()
 {
-    if git config branch.autoSetupMerge always > /dev/null 2>&1
+    if git config branch.autoSetupMerge > /dev/null 2>&1
     then
         return 0
     else
@@ -445,7 +447,7 @@ function createBranch()
         err=$?
         [ $err -eq 0 ] || echo -e "${error} gitSetLocalPushUpstream(${current}) return code:$err"
     fi
-    gitSetupRebase            "${branch}" || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err" ; }
+    gitSetupPullRebase                    || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err" ; }
     gitConfigBranchMerge      "${branch}" || { err=$? ; echo -e "${error} gitConfigBranchMerge(${branch}) return code:$err" ; }
     gitConfigAutoSetupMerge   "${branch}" || { err=$? ; echo -e "${error} gitConfigAutoSetupMerge(${branch}) return code:$err" ; }
     return $err
@@ -532,7 +534,7 @@ function gitFetch()
 #           1..N        Failure
 function gitPull()
 {
-    if git pull -q origin HEAD > /dev/null 2>&1
+    if git pull -q origin > /dev/null 2>&1
     then
         return 0
     else
@@ -581,35 +583,38 @@ function gitSwitch()
 function libGitExit()
 {
     unset -v libGit
-
+    unset -v StatusLetters
     unset -f isGitRepository
     unset -f isBranchCurrent
+    unset -f isBranchUpToDate
     unset -f isBranchAhead
     unset -f isBranchBehind
-    unset -f isBranchUpToDate
-    unset -f isRepositoryChanged
+    unset -f getCounterCommitsBehind
+    unset -f getCounterCommitsAhead
+    unset -f gitCountChanges
+    unset -f gitAnyChanges
+    unset -f getRepositoryChanges
     unset -f existBranch
     unset -f newBranch
-    unset -f createBranch
     unset -f gitRebase
-    unset -f gitSetupRebase
+    unset -f gitSetupPullRebase
     unset -f gitConfigBranchMerge
     unset -f gitConfigBranchPushRemote
     unset -f gitConfigAutoSetupMerge
     unset -f gitSetLocalPushUpstream
     unset -f gitBranchName
+    unset -f gitBranchDelete
+    unset -f gitHaveBranch
     unset -f gitRepositoryName
-    unset -f gitCountChanges
-    unset -f gitAnyChanges
-    unset -f gitCommitCounter
+    unset -f createBranch
     unset -f gitAdd
-    unset -f gitCommitNotSigned
     unset -f gitCommitSigned
+    unset -f gitCommitNotSigned
     unset -f gitFetch
     unset -f gitPull
     unset -f gitPush
     unset -f gitSwitch
-    unset -f libGitExit
+    unset -f libGitExt
     return 0
 }
 
