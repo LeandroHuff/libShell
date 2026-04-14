@@ -60,7 +60,7 @@ declare -i MAGENTA=5
 declare -i CYAN=6
 declare -i WHITE=7
 
-# Escaé. No Color, Reset Color, Default Color, Codes
+# Escape. No Color, Reset Color, Default Color, Codes
 declare escDC='\033[0m'
 declare escNC='\033[0;39;49m'
 declare escNBG='\033[49m'
@@ -74,7 +74,7 @@ declare escBLUE='\033[34m'
 declare escMAGENTA='\033[35m'
 declare escCYAN='\033[36m'
 declare escWHITE='\033[37m'
-# Escape Light Colors Codes
+# Escape Light|Bright Colors Codes
 declare escIBLACK='\033[90m'
 declare escIRED='\033[91m'
 declare escIGREEN='\033[92m'
@@ -145,7 +145,7 @@ function fullReset()
 
 function _kbhit()
 {
-    local wait=$([ -n "$1" ] && echo -n "$1a" || echo -n '1.0')
+    local wait="${1:-'1.0'}"
     local ans=''
     read -r -s -n 1 -t ${wait} ans && { echo -n "${ans}" ; return 0 ; }
     return 1
@@ -153,7 +153,7 @@ function _kbhit()
 
 function escScreenFlashes()
 {
-    local  wait=$([ -n "$1" ] && echo -n "$1" || echo -n '0.125')
+    local  wait=${1:-'0.125'}
     echo -e "Press any key..."
     while ! _kbhit "$2"
     do

@@ -13,7 +13,7 @@ declare -i  testTYPE=1
 declare -i  minTYPE=0
 declare -i  maxTYPE=3
 declare     flagLoadLib=false
-declare -a  libLIST=(EscCodes Git Log Regex)
+declare -a  libLIST=(EscCodes Git Log Regex Conn)
 declare -a  libLOADED=()
 declare     libPATH="/home/${USER}/dev/libShell"
 declare     testPATH="/home/${USER}/dev/libShell/test"
@@ -457,6 +457,7 @@ idxFUNC=$((idxID+columnFILE))
 # while not empty function name
 if [ $testTYPE -gt 0 ]
 then
+    if  isConnected ; then
     while [ -n "${testTABLE[$idxFUNC]}" ]
     do
         # skip commented lines.
@@ -564,6 +565,9 @@ then
         # next function offset
         idxFUNC=$((idxID+columnFILE))
     done
+    else
+        logWarn "No internet connection available."
+    fi
 else
     logOk "${escFGIGREEN}No tests from table${NC}"
 fi

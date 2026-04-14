@@ -118,7 +118,7 @@ function _unsetVars
 # exit from bash script and return an error code
 function _exit()
 {
-    local code=$([ -n "$1" ] && echo -n $1 || echo -n 0)
+    local code=${1:-0}
 
     # Stop logs
     [ -n "${logStop}" ] && logStop
@@ -286,6 +286,9 @@ declare -a testTABLE=(\
 \
 66      0       ''              libStringExit       ''                  ''          ''          '' \
 \
+67      0       'prevar'        addPrefix           'pre'               'var'       ''          '' \
+68      0       'prevarsuf'     addPrefixSuffix     'pre'               'suf'       'var'       '' \
+69      0       'varsuf'        addSuffix           'suf'               'var'       ''          '' \
 '#ID'   return  result          function            parameter1          parameter2  parameter3  parameter4\
 )
 

@@ -50,7 +50,7 @@ function addPrefix()
     return 0
 }
 
-function addSufix()
+function addSuffix()
 {
     [ -n "${1}" ] || return 1
     local sufix="$1"
@@ -67,7 +67,7 @@ function addSufix()
     return 0
 }
 
-function addPrefixSufix()
+function addPrefixSuffix()
 {
     [ -n "${1}" ] || return 1
     [ -n "${2}" ] || return 1
@@ -105,8 +105,8 @@ function libStringExit()
     unset -f strLen
     unset -f cmpStr
     unset -f addPrefix
-    unset -f addSufix
-    unset -f addPrefixSufix
+    unset -f addSuffix
+    unset -f addPrefixSuffix
     unset -f libStringExit
     return 0
 }
