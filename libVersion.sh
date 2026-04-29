@@ -1,6 +1,6 @@
 ################################################################################
 # @file         libVersion.sh
-# @brief        Source variables and functions to store and get libShell version.
+# @brief        Source variables and functions to manage and get libShell version.
 # @author:      Leandro D. Huff
 # @copyright:   https://creativecommons.org/licenses/by/4.0/
 # @sintaxe:     source libVersion.sh ... libVersionExit
