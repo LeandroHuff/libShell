@@ -487,24 +487,24 @@ echo -e "\033[$((DBG+CYAN))m Dark Cyan ${escDC}"
 echo -e "\033[$((DBG+WHITE))m Dark White ${escDC}"
 
 # Intense/Bright Foreground Colors
-echo -e "\033[$((IFG+BLACK))m Dark Black ${escDC}"
-echo -e "\033[$((IFG+RED))m Dark Red ${escDC}"
-echo -e "\033[$((IFG+GREEN))m Dark Green ${escDC}"
-echo -e "\033[$((IFG+BLUE))m Dark Blue ${escDC}"
-echo -e "\033[$((IFG+YELLOW))m Dark Yellow ${escDC}"
-echo -e "\033[$((IFG+MAGENTA))m Dark Magenta ${escDC}"
-echo -e "\033[$((IFG+CYAN))m Dark Cyan ${escDC}"
-echo -e "\033[$((IFG+WHITE))m Dark White ${escDC}"
+echo -e "\033[$((IFG+BLACK))m Bright Black ${escDC}"
+echo -e "\033[$((IFG+RED))m Bright Red ${escDC}"
+echo -e "\033[$((IFG+GREEN))m Bright Green ${escDC}"
+echo -e "\033[$((IFG+BLUE))m Bright Blue ${escDC}"
+echo -e "\033[$((IFG+YELLOW))m Bright Yellow ${escDC}"
+echo -e "\033[$((IFG+MAGENTA))m Bright Magenta ${escDC}"
+echo -e "\033[$((IFG+CYAN))m Bright Cyan ${escDC}"
+echo -e "\033[$((IFG+WHITE))m Bright White ${escDC}"
 
 # Intense/Bright Background Colors
-echo -e "\033[$((IBG+BLACK))m Dark Black ${escDC}"
-echo -e "\033[$((IBG+RED))m Dark Red ${escDC}"
-echo -e "\033[$((IBG+GREEN))m Dark Green ${escDC}"
-echo -e "\033[$((IBG+BLUE))m Dark Blue ${escDC}"
-echo -e "\033[$((IBG+YELLOW))m Dark Yellow ${escDC}"
-echo -e "\033[$((IBG+MAGENTA))m Dark Magenta ${escDC}"
-echo -e "\033[$((IBG+CYAN))m Dark Cyan ${escDC}"
-echo -e "\033[$((IBG+WHITE))m Dark White ${escDC}"
+echo -e "\033[$((IBG+BLACK))m Bright Black ${escDC}"
+echo -e "\033[$((IBG+RED))m Bright Red ${escDC}"
+echo -e "\033[$((IBG+GREEN))m Bright Green ${escDC}"
+echo -e "\033[$((IBG+BLUE))m Bright Blue ${escDC}"
+echo -e "\033[$((IBG+YELLOW))m Bright Yellow ${escDC}"
+echo -e "\033[$((IBG+MAGENTA))m Bright Magenta ${escDC}"
+echo -e "\033[$((IBG+CYAN))m Bright Cyan ${escDC}"
+echo -e "\033[$((IBG+WHITE))m Bright White ${escDC}"
 
 # Dark Escape Code for Foreground Colors
 echo -e "${escBLACK} Escape Dark Black ${escDC}"
@@ -517,29 +517,29 @@ echo -e "${escCYAN} Escape Dark Cyan ${escDC}"
 echo -e "${escWHITE} Escape Dark White ${escDC}"
 
 # Intense/Bright Escape Code for Foreground Colors
-echo -e "${escIBLACK} Escape Dark Black ${escDC}"
-echo -e "${escIRED} Escape Dark Red ${escDC}"
-echo -e "${escIGREEN} Escape Dark Green ${escDC}"
-echo -e "${escIYELLOW} Escape Dark Yellow ${escDC}"
-echo -e "${escIBLUE} Escape Dark Blue ${escDC}"
-echo -e "${escIMAGENTA} Escape Dark Magenta ${escDC}"
-echo -e "${escICYAN} Escape Dark Cyan ${escDC}"
-echo -e "${escIWHITE} Escape Dark White ${escDC}"
+echo -e "${escIBLACK} Escape Bright Black ${escDC}"
+echo -e "${escIRED} Escape Bright Red ${escDC}"
+echo -e "${escIGREEN} Escape Bright Green ${escDC}"
+echo -e "${escIYELLOW} Escape Bright Yellow ${escDC}"
+echo -e "${escIBLUE} Escape Bright Blue ${escDC}"
+echo -e "${escIMAGENTA} Escape Bright Magenta ${escDC}"
+echo -e "${escICYAN} Escape Bright Cyan ${escDC}"
+echo -e "${escIWHITE} Escape Bright White ${escDC}"
 
 # Reverse all Screen (flash screen)
 echo -e -n "${escIWHITE} Flashes Screen ${escDC}"
 echo -e -n "${escScrRevON}"
-sleep 0.1
+sleep 0.5
 echo -e -n "${escScrRevOFF}"
 sleep 0.5
 echo -e -n "${escScrRevON}"
-sleep 0.1
+sleep 0.5
 echo -e -n "${escScrRevOFF}"
 sleep 0.5
 echo -e -n "${escScrRevON}"
-sleep 0.1
+sleep 0.5
 echo -e -n "${escScrRevOFF}"
-
+sleep 0.5
 
 # Generate Escape Code for Foreground|Background Colors
 echo -e "$(genEscSt ${BRIGHT}) genEscST(BRIGHT) $(genEscSt ${NORMAL})"
@@ -574,6 +574,8 @@ echo -e "Testing after a full reset"
 echo -e "Testing after a full reset"
 echo -e "Testing after a full reset"
 echo -e "End"
+
+escScreenFlashes 0.25 0.25
 
 #escScreenFlashes
 ########################################

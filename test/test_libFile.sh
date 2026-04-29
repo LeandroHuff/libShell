@@ -235,7 +235,7 @@ declare -a testTABLE=(\
 40      0       ''                  itExist             "${PWD}/test_libFile.sh" '' ''      '' \
 41      0       ''                  itExist             '/dev/sda'  ''          ''          '' \
 \
-42      0       "/media/$USER"      getMountDir         ''          ''          ''          '' \
+42      0       "/run/media/$USER"  getMountDir         ''          ''          ''          '' \
 \
 43      1       ''                  tryRun              ''          ''          ''          '' \
 44      1       ''                  tryRun              '-x'        ''          ''          '' \

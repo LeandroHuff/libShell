@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 ################################################################################
-# @file     test_libConfig.sh
-# @brief    Test and check libConfig file.
+# @file     test_libTemplate.sh
+# @brief    Test and check libTemplate file.
 # @parameter
 #           -h|--help           Show help message.
 #           -g|--debug          Set debug mode on.
@@ -19,14 +19,14 @@
 declare -a  typeTABLE=('internal' 'external' 'load')
 declare -i  testTYPE=0
 declare -i  minTYPE=0
-declare -i  maxTYPE=2
+declare -i  maxTYPE=3
 declare     flagLoadLib=false
-declare -a  libLIST=(Config EscCodes)
+declare -a  libLIST=(Config Conn EscCodes File Git Log Math Random Regex String Time)
 declare -a  libLOADED=()
 declare     libPATH="/home/${USER}/dev/libShell"
 declare     testPATH="/home/${USER}/dev/libShell/test"
 
-declare -i flagDEBUG=0
+declare     flagDEBUG=false
 
 declare -i LINE=0
 declare -i _OK=0
@@ -55,14 +55,13 @@ declare _HRED='\033[91m'
 declare _HCYAN='\033[96m'
 declare _HGREEN='\033[92m'
 declare _WHITE='\033[97m'
-
 # no colors
 declare _NC='\033[0m'
 
 function logOk()   { echo -e "${_GRAY}Success${_NC}: $*" ; }
 function logFail() { echo -e "${_RED}Failure${_NC}: $*"  ; }
 function logWarn() { echo -e "${_CYAN}Warning${_NC}: $*" ; }
-function logDebug(){ if [ $flagDEBUG -ne 0 ] ; then echo -e "${_GREEN}Debug${_NC}: $*" ; fi ; }
+function logDebug(){ if $flagDEBUG ; then echo -e "${_GREEN}Debug${_NC}: $*" ; fi ; }
 
 # unset local variables and functions
 function _unsetVars
@@ -155,72 +154,6 @@ function barGraph()
     if  [ $((num % 50)) -eq 0 ] ; then echo ; fi
 }
 
-declare -i tableMAX=10
-
-declare -a tableTAG=(\
-zero \
-one \
-two \
-three \
-four \
-five \
-six \
-seven \
-eight \
-nine\
-)
-
-declare -a tableVALUE=(0 11 22 33 44 55 66 77 88 99)
-
-declare -a tableCONFIG=()
-
-
-function test_saveConfigToFile()
-{
-    local err=0
-    local file="$1"
-    saveConfigToFile "${file}" "${#tableTAG[@]}" "${tableTAG[@]}" "${tableVALUE[@]}"
-    err=$?
-    return $err
-}
-
-function test_readTagsFromFile()
-{
-    local err=0
-    local ret=0
-    local file="$1"
-    declare -a res=()
-    res=("$(readTagsFromFile ${file})")
-    ret=$?
-    echo -n "${res[@]}"
-    return $ret
-}
-
-function test_readValuesFromFile()
-{
-    local err=0
-    local ret=0
-    local file="$1"
-    declare -a res=()
-    res=("$(readValuesFromFile ${file})")
-    ret=$?
-    echo -n "${res[@]}"
-    return $ret
-}
-
-
-function test_loadConfigFromFile()
-{
-    local err=0
-    local ret=0
-    local file="$1"
-    declare -a res=()
-    res=($(loadConfigFromFile "${file}" "${#tableTAG[@]}" "${tableTAG[@]}" "${tableVALUE[@]}"))
-    ret=$?
-    echo -n "${res[@]}"
-    return $ret
-}
-
 # check command line arguments
 function _isArg() { if [ -n "$1" ] ; then case $1 in -*) false ;; *) true ;; esac ; else false ; fi ; }
 function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
@@ -241,22 +174,41 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 # +--------------+---------------------------------------------------------------
 
 # test table
-
 declare -a testTABLE=(\
-1       0       alpha   _getTag              'alpha=11'  ''          ''          '' \
-2       0       beta    _getTag              'beta=22'   ''          ''          '' \
-3       0       gama    _getTag              'gama=33'   ''          ''          '' \
-4       0       delta   _getTag              'delta=44'  ''          ''          '' \
-5       0       omega   _getTag              'omega=999' ''          ''          '' \
-6       0       111     _getValue            'one=111'   ''          ''          '' \
-7       0       222     _getValue            'two=222'   ''          ''          '' \
-8       0       333     _getValue            'three=333' ''          ''          '' \
-9       0       444     _getValue            'four=444'  ''          ''          '' \
-10      0       ''      test_saveConfigToFile 'test_Config' ''      ''          '' \
-11      10      'zero one two three four five six seven eight nine'      test_readTagsFromFile 'test_Config' ''      ''          '' \
-12      10      '0 11 22 33 44 55 66 77 88 99'      test_readValuesFromFile 'test_Config' ''    ''          '' \
-13      10      '0 11 22 33 44 55 66 77 88 99'      test_loadConfigFromFile 'test_Config' ''    ''          '' \
-14      0       ''      libConfigExit       ''          ''          ''          '' \
+'#ID'   return  result  function            parameter1  parameter2  parameter3  parameter4 \
+\
+1       1       ''      _isArg              ''          ''          ''          '' \
+2       0       ''      _isArg              'a'         ''          ''          '' \
+3       1       ''      _isArg              '-a'        ''          ''          '' \
+\
+4       1       ''      _isInt              ''          ''          ''          '' \
+5       0       ''      _isInt              '1'         ''          ''          '' \
+6       0       ''      _isInt              '+1'        ''          ''          '' \
+7       0       ''      _isInt              '-1'        ''          ''          '' \
+8       1       ''      _isInt              'a'         ''          ''          '' \
+9       1       ''      _isInt              '+a'        ''          ''          '' \
+10      1       ''      _isInt              '-a'        ''          ''          '' \
+11      1       ''      _isInt              '1l1'       ''          ''          '' \
+\
+12      1       ''      _isNum              ''          ''          ''          '' \
+13      0       ''      _isNum              '1'         ''          ''          '' \
+14      0       ''      _isNum              '+1'        ''          ''          '' \
+15      0       ''      _isNum              '-1'        ''          ''          '' \
+16      0       ''      _isNum              '.1'        ''          ''          '' \
+17      0       ''      _isNum              '+.1'       ''          ''          '' \
+18      0       ''      _isNum              '-.1'       ''          ''          '' \
+19      0       ''      _isNum              '1.'        ''          ''          '' \
+20      0       ''      _isNum              '+1.'       ''          ''          '' \
+21      0       ''      _isNum              '-1.'       ''          ''          '' \
+22      1       ''      _isNum              '1l'        ''          ''          '' \
+23      1       ''      _isNum              '+1l'       ''          ''          '' \
+24      1       ''      _isNum              '-1l'       ''          ''          '' \
+25      1       ''      _isNum              'a'         ''          ''          '' \
+26      1       ''      _isNum              '+a'        ''          ''          '' \
+27      1       ''      _isNum              '-a'        ''          ''          '' \
+28      1       ''      _isNum              '1l1'       ''          ''          '' \
+\
+'#ID'   return  result  function            parameter1  parameter2  parameter3  parameter4\
 )
 
 # show help message
@@ -273,7 +225,6 @@ Options:
                             0: Internal, call function from test table.
                             1: External, call test_libName.sh
                             2: Source libName.sh
--l|--load               Load libs.
    --                   Let pass next options to libSell script files.
 libOptions:
 -h|--help               Show help message for libShell files.
@@ -313,7 +264,7 @@ do
             _exit 3
         fi
         ;;
-    -g) flagDEBUG=1 ;;
+    -g) flagDEBUG=true ;;
     -l|--load) flagLoadLib=true ;;
     --) shift ; break ;;
     -*) logFail "Option '$1' not available."        ; _exit 4 ;;
@@ -397,7 +348,6 @@ idxFUNC=$((idxID+columnFILE))
 # while not empty function name
 while [ -n "${testTABLE[$idxFUNC]}" ]
 do
-    ((LINE++))
     # skip commented lines.
     if [[ "${testTABLE[$idxID]:0:1}" != "#" ]]
     then
@@ -418,14 +368,17 @@ do
         case ${typeTABLE[$testTYPE]} in
             internal)
                 # Uncomment/Commant to enable/disable test functions from internal test table.
+                if $flagDEBUG ; then printf "${_WHITE}Function${_NC}: ${testTABLE[$idxFUNC]} ${testTABLE[$idxP1]} ${testTABLE[$idxP2]} ${testTABLE[$idxP3]} ${testTABLE[$idxP4]} ... \t" ; fi
                 _RES="$(${testTABLE[$idxFUNC]} "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
                 ;;
             external)
                 # Uncomment/Commant to enable/disable call extarnal tests files
+                if $flagDEBUG ; then printf "${_WHITE}File${_NC}: test_lib${testTABLE[$idxFUNC]}.sh ... \t" ; fi
                 _RES="$(. ${testPATH}/test_lib${testTABLE[$idxFUNC]}.sh "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
                 ;;
             load)
                 # Uncomment/Commant to enable/disable test source library
+                if $flagDEBUG ; then printf "${_WHITE}File${_NC}: lib${testTABLE[$idxFUNC]}.sh ... \t" ; fi
                 _RES="$(source ${libPATH}/lib${testTABLE[$idxFUNC]}.sh "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
                 ;;
             *)  logFail "Test type (${typeTABLE[$testTYPE]}) not available."
@@ -473,20 +426,24 @@ do
         fi
 
         # on debug mode, print a debug message on terminal
-        if [ $_SUCCESS = false ] && [ $flagDEBUG -ne 0 ]
+        if  $flagDEBUG && ! $_SUCCESS
         then
-        echo
+            echo
             logDebug "Line:$LINE"
             logDebug "Run:${testTABLE[$idxFUNC]}(${testTABLE[$idxP1]},${testTABLE[$idxP2]},${testTABLE[$idxP3]},${testTABLE[$idxP4]})"
             logDebug "Ret:'$_RET' compare to Table Ret: '${testTABLE[$idxRET]}' "
             logDebug "Res:'$_RES' compare to Table Res: '${testTABLE[$idxRES]}' "
         fi
 
-        # show bar graph
-        barGraph $LINE $_SUCCESS
+        # show bar graph or result message.
+        if ! $flagDEBUG ; then barGraph $LINE $_SUCCESS
+        elif $_SUCCESS  ; then printf "${_GREEN}success${_NC}.\n"
+        else                   printf "${_RED}failure${_NC}.\n"
+        fi
     fi
 
     # next line
+    let LINE++
     # next idxID offset from line counter
     idxID=$((LINE*maxCOLUMNS))
     # next function offset
@@ -502,7 +459,7 @@ if [ $_ERR -gt 0 ] ; then logFail "${_HRED}$_ERR${_NC} Test(s)"  ; fi
 
 ########################################
 # This are is reserved for specific tests before exit from script.
-# Check function parameter, behaviors or results / returned code.
+# Check function parameter, behaviors or results and returned code.
 
 
 
