@@ -177,331 +177,346 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 declare -a testTABLE=(\
 '#ID'   return  result  function            parameter1  parameter2  parameter3  parameter4 \
 \
-1       1       ''      _isArg              ''          ''          ''          '' \
-2       0       ''      _isArg              'a'         ''          ''          '' \
-3       1       ''      _isArg              '-a'        ''          ''          '' \
+1       1       ''      reIsArg              ''          ''          ''          '' \
+2       0       ''      reIsArg              'a'         ''          ''          '' \
+3       1       ''      reIsArg              '-a'        ''          ''          '' \
+4       1       ''      reIsParam            ''          ''          ''          '' \
+5       1       ''      reIsParam            'a'         ''          ''          '' \
+6       1       ''      reIsParam            '1'         ''          ''          '' \
+7       1       ''      reIsParam            '_a'        ''          ''          '' \
+8       1       ''      reIsParam            '-'         ''          ''          '' \
+9       1       ''      reIsParam            '--a'       ''          ''          '' \
+10      1       ''      reIsParam            '--a'       ''          ''          '' \
+11      1       ''      reIsParam            '-aa'       ''          ''          '' \
+12      0       ''      reIsParam            '-a'        ''          ''          '' \
+13      0       ''      reIsParam            '-1'        ''          ''          '' \
+14      0       ''      reIsParam            '--1'       ''          ''          '' \
+15      0       ''      reIsParam            '--aaa'     ''          ''          '' \
+16      0       ''      reIsParam            '--a_b_c'   ''          ''          '' \
+17      0       ''      reIsParam            '--_a_b_c'  ''          ''          '' \
+18      0       ''      reIsParam            '--__a_b_c' ''          ''          '' \
 \
-4       1       ''      _isInt              ''          ''          ''          '' \
-5       0       ''      _isInt              '1'         ''          ''          '' \
-6       0       ''      _isInt              '+1'        ''          ''          '' \
-7       0       ''      _isInt              '-1'        ''          ''          '' \
-8       1       ''      _isInt              'a'         ''          ''          '' \
-9       1       ''      _isInt              '+a'        ''          ''          '' \
-10      1       ''      _isInt              '-a'        ''          ''          '' \
-11      1       ''      _isInt              '1l1'       ''          ''          '' \
+19      1       ''      reIsInteger          ''          ''          ''          '' \
+20      0       ''      reIsInteger          '1'         ''          ''          '' \
+21      0       ''      reIsInteger          '+1'        ''          ''          '' \
+22      0       ''      reIsInteger          '-1'        ''          ''          '' \
+23      1       ''      reIsInteger          'a'         ''          ''          '' \
+24      1       ''      reIsInteger          '+a'        ''          ''          '' \
+25      1       ''      reIsInteger          '-a'        ''          ''          '' \
+26      1       ''      reIsInteger          '1l1'       ''          ''          '' \
 \
-12      1       ''      _isNum              ''          ''          ''          '' \
-13      0       ''      _isNum              '1'         ''          ''          '' \
-14      0       ''      _isNum              '+1'        ''          ''          '' \
-15      0       ''      _isNum              '-1'        ''          ''          '' \
-16      0       ''      _isNum              '.1'        ''          ''          '' \
-17      0       ''      _isNum              '+.1'       ''          ''          '' \
-18      0       ''      _isNum              '-.1'       ''          ''          '' \
-19      0       ''      _isNum              '1.'        ''          ''          '' \
-20      0       ''      _isNum              '+1.'       ''          ''          '' \
-21      0       ''      _isNum              '-1.'       ''          ''          '' \
-22      1       ''      _isNum              '1l'        ''          ''          '' \
-23      1       ''      _isNum              '+1l'       ''          ''          '' \
-24      1       ''      _isNum              '-1l'       ''          ''          '' \
-25      1       ''      _isNum              'a'         ''          ''          '' \
-26      1       ''      _isNum              '+a'        ''          ''          '' \
-27      1       ''      _isNum              '-a'        ''          ''          '' \
-28      1       ''      _isNum              '1l1'       ''          ''          '' \
+27      1       ''      reIsNumber           ''          ''          ''          '' \
+28      0       ''      reIsNumber           '1'         ''          ''          '' \
+29      0       ''      reIsNumber           '+1'        ''          ''          '' \
+30      0       ''      reIsNumber           '-1'        ''          ''          '' \
+31      0       ''      reIsNumber           '.1'        ''          ''          '' \
+32      0       ''      reIsNumber           '+.1'       ''          ''          '' \
+33      0       ''      reIsNumber           '-.1'       ''          ''          '' \
+34      0       ''      reIsNumber           '1.'        ''          ''          '' \
+35      0       ''      reIsNumber           '+1.'       ''          ''          '' \
+36      0       ''      reIsNumber           '-1.'       ''          ''          '' \
+37      1       ''      reIsNumber           '1l'        ''          ''          '' \
+38      1       ''      reIsNumber           '+1l'       ''          ''          '' \
+39      1       ''      reIsNumber           '-1l'       ''          ''          '' \
+40      1       ''      reIsNumber           'a'         ''          ''          '' \
+41      1       ''      reIsNumber           '+a'        ''          ''          '' \
+42      1       ''      reIsNumber           '-a'        ''          ''          '' \
+43      1       ''      reIsNumber           '1l1'       ''          ''          '' \
 \
-29      1       ''      regexIt             ''          ''          ''          '' \
-30      1       ''      regexIt             ''          '^[+-]?\d+$' ''         '' \
-31      1       ''      regexIt             '1.0'       '^[+-]?\d+$' ''         '' \
-32      0       ''      regexIt             '1'         '^[+-]?\d+$' ''         '' \
-33      0       ''      regexIt             '+1'        '^[+-]?\d+$' ''         '' \
-34      0       ''      regexIt             '-1'        '^[+-]?\d+$' ''         '' \
-35      1       ''      regexIt             '1l'        '^[+-]?\d+$' ''         '' \
+44      1       ''      regexIt             ''          ''          ''          '' \
+45      1       ''      regexIt             ''          '^[+-]?\d+$' ''         '' \
+46      1       ''      regexIt             '1.0'       '^[+-]?\d+$' ''         '' \
+47      0       ''      regexIt             '1'         '^[+-]?\d+$' ''         '' \
+48      0       ''      regexIt             '+1'        '^[+-]?\d+$' ''         '' \
+49      0       ''      regexIt             '-1'        '^[+-]?\d+$' ''         '' \
+50      1       ''      regexIt             '1l'        '^[+-]?\d+$' ''         '' \
 \
-36      1       ''      reIsFloat             ''          ''          ''          '' \
-37      1       ''      reIsFloat             'a'         ''          ''          '' \
-38      1       ''      reIsFloat             '1.a'       ''          ''          '' \
-39      0       ''      reIsFloat             '.1'        ''          ''          '' \
-40      0       ''      reIsFloat             '1.'        ''          ''          '' \
-41      0       ''      reIsFloat             '1'         ''          ''          '' \
-42      0       ''      reIsFloat             '1.2'       ''          ''          '' \
-43      0       ''      reIsFloat             '+.1'       ''          ''          '' \
-44      0       ''      reIsFloat             '+1.'       ''          ''          '' \
-45      0       ''      reIsFloat             '+1'        ''          ''          '' \
-46      0       ''      reIsFloat             '+1.2'      ''          ''          '' \
-47      0       ''      reIsFloat             '-.1'       ''          ''          '' \
-48      0       ''      reIsFloat             '-1.'       ''          ''          '' \
-49      0       ''      reIsFloat             '-1'        ''          ''          '' \
-50      0       ''      reIsFloat             '-1.2'      ''          ''          '' \
-51      0       ''      reIsFloat             '1.2e+10'   ''          ''          '' \
-52      0       ''      reIsFloat             '+1.2e+10'  ''          ''          '' \
-53      0       ''      reIsFloat             '-1.2e+10'  ''          ''          '' \
-54      0       ''      reIsFloat             '1.2e-10'   ''          ''          '' \
-55      0       ''      reIsFloat             '+1.2e-10'  ''          ''          '' \
-56      0       ''      reIsFloat             '-1.2e-10'  ''          ''          '' \
-57      0       ''      reIsFloat             '1.2E+10'   ''          ''          '' \
-58      0       ''      reIsFloat             '+1.2E+10'  ''          ''          '' \
-59      0       ''      reIsFloat             '-1.2E+10'  ''          ''          '' \
-60      0       ''      reIsFloat             '1.2E-10'   ''          ''          '' \
-61      0       ''      reIsFloat             '+1.2E-10'  ''          ''          '' \
-62      0       ''      reIsFloat             '-1.2E-10'  ''          ''          '' \
+51      1       ''      reIsFloat             ''          ''          ''          '' \
+52      1       ''      reIsFloat             'a'         ''          ''          '' \
+53      1       ''      reIsFloat             '1.a'       ''          ''          '' \
+54      0       ''      reIsFloat             '.1'        ''          ''          '' \
+55      0       ''      reIsFloat             '1.'        ''          ''          '' \
+56      0       ''      reIsFloat             '1'         ''          ''          '' \
+57      0       ''      reIsFloat             '1.2'       ''          ''          '' \
+58      0       ''      reIsFloat             '+.1'       ''          ''          '' \
+59      0       ''      reIsFloat             '+1.'       ''          ''          '' \
+60      0       ''      reIsFloat             '+1'        ''          ''          '' \
+61      0       ''      reIsFloat             '+1.2'      ''          ''          '' \
+62      0       ''      reIsFloat             '-.1'       ''          ''          '' \
+63      0       ''      reIsFloat             '-1.'       ''          ''          '' \
+64      0       ''      reIsFloat             '-1'        ''          ''          '' \
+65      0       ''      reIsFloat             '-1.2'      ''          ''          '' \
+66      0       ''      reIsFloat             '1.2e+10'   ''          ''          '' \
+67      0       ''      reIsFloat             '+1.2e+10'  ''          ''          '' \
+68      0       ''      reIsFloat             '-1.2e+10'  ''          ''          '' \
+69      0       ''      reIsFloat             '1.2e-10'   ''          ''          '' \
+70      0       ''      reIsFloat             '+1.2e-10'  ''          ''          '' \
+71      0       ''      reIsFloat             '-1.2e-10'  ''          ''          '' \
+72      0       ''      reIsFloat             '1.2E+10'   ''          ''          '' \
+73      0       ''      reIsFloat             '+1.2E+10'  ''          ''          '' \
+74      0       ''      reIsFloat             '-1.2E+10'  ''          ''          '' \
+75      0       ''      reIsFloat             '1.2E-10'   ''          ''          '' \
+76      0       ''      reIsFloat             '+1.2E-10'  ''          ''          '' \
+77      0       ''      reIsFloat             '-1.2E-10'  ''          ''          '' \
 \
-63      1       ''      reIsInteger           ''          ''          ''          '' \
-64      1       ''      reIsInteger           'a'         ''          ''          '' \
-65      1       ''      reIsInteger           '1a'        ''          ''          '' \
-66      1       ''      reIsInteger           '1.'        ''          ''          '' \
-67      1       ''      reIsInteger           '.1'        ''          ''          '' \
-68      1       ''      reIsInteger           '1.2'       ''          ''          '' \
-69      0       ''      reIsInteger           '1'         ''          ''          '' \
-70      0       ''      reIsInteger           '+1'        ''          ''          '' \
-71      0       ''      reIsInteger           '-1'        ''          ''          '' \
+78      1       ''      reIsInteger           ''          ''          ''          '' \
+79      1       ''      reIsInteger           'a'         ''          ''          '' \
+80      1       ''      reIsInteger           '1a'        ''          ''          '' \
+81      1       ''      reIsInteger           '1.'        ''          ''          '' \
+82      1       ''      reIsInteger           '.1'        ''          ''          '' \
+83      1       ''      reIsInteger           '1.2'       ''          ''          '' \
+84      0       ''      reIsInteger           '1'         ''          ''          '' \
+85      0       ''      reIsInteger           '+1'        ''          ''          '' \
+86      0       ''      reIsInteger           '-1'        ''          ''          '' \
 \
-72      1       ''      reIsAlpha             ''          ''          ''          '' \
-73      1       ''      reIsAlpha             '1'         ''          ''          '' \
-74      1       ''      reIsAlpha             '@'         ''          ''          '' \
-75      0       ''      reIsAlpha             'a'         ''          ''          '' \
-76      0       ''      reIsAlpha             'B'         ''          ''          '' \
+87      1       ''      reIsAlpha             ''          ''          ''          '' \
+88      1       ''      reIsAlpha             '1'         ''          ''          '' \
+89      1       ''      reIsAlpha             '@'         ''          ''          '' \
+90      0       ''      reIsAlpha             'a'         ''          ''          '' \
+91      0       ''      reIsAlpha             'B'         ''          ''          '' \
 \
-77      1       ''      reIsDigit             ''          ''          ''          '' \
-78      1       ''      reIsDigit             'a'         ''          ''          '' \
-79      1       ''      reIsDigit             'B'         ''          ''          '' \
-80      1       ''      reIsDigit             '@'         ''          ''          '' \
-81      1       ''      reIsDigit             '1l1'       ''          ''          '' \
-82      0       ''      reIsDigit             '111'       ''          ''          '' \
+92      1       ''      reIsDigit             ''          ''          ''          '' \
+93      1       ''      reIsDigit             'a'         ''          ''          '' \
+94      1       ''      reIsDigit             'B'         ''          ''          '' \
+95      1       ''      reIsDigit             '@'         ''          ''          '' \
+96      1       ''      reIsDigit             '1l1'       ''          ''          '' \
+97      0       ''      reIsDigit             '111'       ''          ''          '' \
 \
-83      1       ''      reIsAlphaNumeric      ''          ''          ''          '' \
-84      1       ''      reIsAlphaNumeric      '@'         ''          ''          '' \
-85      1       ''      reIsAlphaNumeric      '1@'        ''          ''          '' \
-86      1       ''      reIsAlphaNumeric      'a@'        ''          ''          '' \
-87      0       ''      reIsAlphaNumeric      'a'         ''          ''          '' \
-88      0       ''      reIsAlphaNumeric      'B'         ''          ''          '' \
-89      0       ''      reIsAlphaNumeric      '1l1'       ''          ''          '' \
-90      0       ''      reIsAlphaNumeric      '111'       ''          ''          '' \
+98      1       ''      reIsAlphaNumeric      ''          ''          ''          '' \
+99      1       ''      reIsAlphaNumeric      '@'         ''          ''          '' \
+100     1       ''      reIsAlphaNumeric      '1@'        ''          ''          '' \
+101     1       ''      reIsAlphaNumeric      'a@'        ''          ''          '' \
+102     0       ''      reIsAlphaNumeric      'a'         ''          ''          '' \
+103     0       ''      reIsAlphaNumeric      'B'         ''          ''          '' \
+104     0       ''      reIsAlphaNumeric      '1l1'       ''          ''          '' \
+105     0       ''      reIsAlphaNumeric      '111'       ''          ''          '' \
 \
-91      1       ''      reIsHexadecimal       ''          ''          ''          '' \
-92      1       ''      reIsHexadecimal       '.'         ''          ''          '' \
-93      1       ''      reIsHexadecimal       '@'         ''          ''          '' \
-94      1       ''      reIsHexadecimal       'g'         ''          ''          '' \
-95      1       ''      reIsHexadecimal       'H'         ''          ''          '' \
-96      0       ''      reIsHexadecimal       '1'         ''          ''          '' \
-97      0       ''      reIsHexadecimal       'a'         ''          ''          '' \
-98      0       ''      reIsHexadecimal       'A'         ''          ''          '' \
-99      0       ''      reIsHexadecimal       '1a'        ''          ''          '' \
-100     0       ''      reIsHexadecimal       '1A'        ''          ''          '' \
-101     0       ''      reIsHexadecimal       '1Aa'       ''          ''          '' \
+106     1       ''      reIsHexadecimal       ''          ''          ''          '' \
+107     1       ''      reIsHexadecimal       '.'         ''          ''          '' \
+108     1       ''      reIsHexadecimal       '@'         ''          ''          '' \
+109     1       ''      reIsHexadecimal       'g'         ''          ''          '' \
+110     1       ''      reIsHexadecimal       'H'         ''          ''          '' \
+111     0       ''      reIsHexadecimal       '1'         ''          ''          '' \
+112     0       ''      reIsHexadecimal       'a'         ''          ''          '' \
+113     0       ''      reIsHexadecimal       'A'         ''          ''          '' \
+114     0       ''      reIsHexadecimal       '1a'        ''          ''          '' \
+115     0       ''      reIsHexadecimal       '1A'        ''          ''          '' \
+116     0       ''      reIsHexadecimal       '1Aa'       ''          ''          '' \
 \
-102     1       ''      reIsLowerHexadecimal  ''          ''          ''          '' \
-103     1       ''      reIsLowerHexadecimal  '.'         ''          ''          '' \
-104     1       ''      reIsLowerHexadecimal  '@'         ''          ''          '' \
-105     1       ''      reIsLowerHexadecimal  'g'         ''          ''          '' \
-106     1       ''      reIsLowerHexadecimal  'H'         ''          ''          '' \
-107     1       ''      reIsLowerHexadecimal  'A'         ''          ''          '' \
-108     1       ''      reIsLowerHexadecimal  '1A'        ''          ''          '' \
-109     1       ''      reIsLowerHexadecimal  '1Aa'       ''          ''          '' \
-110     0       ''      reIsLowerHexadecimal  '1'         ''          ''          '' \
-111     0       ''      reIsLowerHexadecimal  'a'         ''          ''          '' \
-112     0       ''      reIsLowerHexadecimal  '1a'        ''          ''          '' \
+117     1       ''      reIsLowerHexadecimal  ''          ''          ''          '' \
+118     1       ''      reIsLowerHexadecimal  '.'         ''          ''          '' \
+119     1       ''      reIsLowerHexadecimal  '@'         ''          ''          '' \
+120     1       ''      reIsLowerHexadecimal  'g'         ''          ''          '' \
+121     1       ''      reIsLowerHexadecimal  'H'         ''          ''          '' \
+122     1       ''      reIsLowerHexadecimal  'A'         ''          ''          '' \
+123     1       ''      reIsLowerHexadecimal  '1A'        ''          ''          '' \
+124     1       ''      reIsLowerHexadecimal  '1Aa'       ''          ''          '' \
+124     0       ''      reIsLowerHexadecimal  '1'         ''          ''          '' \
+125     0       ''      reIsLowerHexadecimal  'a'         ''          ''          '' \
+126     0       ''      reIsLowerHexadecimal  '1a'        ''          ''          '' \
 \
-113     1       ''      reIsUpperHexadecimal  ''          ''          ''          '' \
-114     1       ''      reIsUpperHexadecimal  '.'         ''          ''          '' \
-115     1       ''      reIsUpperHexadecimal  '@'         ''          ''          '' \
-116     1       ''      reIsUpperHexadecimal  'g'         ''          ''          '' \
-117     1       ''      reIsUpperHexadecimal  'H'         ''          ''          '' \
-118     1       ''      reIsUpperHexadecimal  'a'         ''          ''          '' \
-119     1       ''      reIsUpperHexadecimal  '1a'        ''          ''          '' \
-120     1       ''      reIsUpperHexadecimal  '1Aa'       ''          ''          '' \
-121     0       ''      reIsUpperHexadecimal  '1'         ''          ''          '' \
-122     0       ''      reIsUpperHexadecimal  'A'         ''          ''          '' \
-123     0       ''      reIsUpperHexadecimal  '1A'        ''          ''          '' \
+127     1       ''      reIsUpperHexadecimal  ''          ''          ''          '' \
+128     1       ''      reIsUpperHexadecimal  '.'         ''          ''          '' \
+129     1       ''      reIsUpperHexadecimal  '@'         ''          ''          '' \
+130     1       ''      reIsUpperHexadecimal  'g'         ''          ''          '' \
+131     1       ''      reIsUpperHexadecimal  'H'         ''          ''          '' \
+132     1       ''      reIsUpperHexadecimal  'a'         ''          ''          '' \
+133     1       ''      reIsUpperHexadecimal  '1a'        ''          ''          '' \
+134     1       ''      reIsUpperHexadecimal  '1Aa'       ''          ''          '' \
+135     0       ''      reIsUpperHexadecimal  '1'         ''          ''          '' \
+136     0       ''      reIsUpperHexadecimal  'A'         ''          ''          '' \
+137     0       ''      reIsUpperHexadecimal  '1A'        ''          ''          '' \
 \
-124     1       ''      reIsGraph             ''          ''          ''          '' \
-125     0       ''      reIsGraph             '1'         ''          ''          '' \
-126     0       ''      reIsGraph             'a'         ''          ''          '' \
-127     0       ''      reIsGraph             'A'         ''          ''          '' \
-128     0       ''      reIsGraph             '@!%'       ''          ''          '' \
-129     0       ''      reIsGraph             '"1!2@3#4$%6¨7&8*9(0)-_=+§¹²³£¢¬qwertyuiopQWERTYUIOP[{asdfghjklç~]ASDFGHJKLÇ^}\zxcvbnm,.;/|ZXCVBNM<>:?' '' '' '' \
+138     1       ''      reIsGraph             ''          ''          ''          '' \
+139     0       ''      reIsGraph             '1'         ''          ''          '' \
+140     0       ''      reIsGraph             'a'         ''          ''          '' \
+141     0       ''      reIsGraph             'A'         ''          ''          '' \
+142     0       ''      reIsGraph             '@!%'       ''          ''          '' \
+143     0       ''      reIsGraph             '"1!2@3#4$%6¨7&8*9(0)-_=+§¹²³£¢¬qwertyuiopQWERTYUIOP[{asdfghjklç~]ASDFGHJKLÇ^}\zxcvbnm,.;/|ZXCVBNM<>:?' '' '' '' \
 \
-130     1       ''      reIsGraphSpace        ''          ''          ''          '' \
-131     0       ''      reIsGraphSpace        '1'         ''          ''          '' \
-132     0       ''      reIsGraphSpace        'a'         ''          ''          '' \
-133     0       ''      reIsGraphSpace        'A'         ''          ''          '' \
-134     0       ''      reIsGraphSpace        '@!%'       ''          ''          '' \
-135     1       ''      reIsGraphSpace        ' @!%'      ''          ''          '' \
-136     1       ''      reIsGraphSpace        '@!% '      ''          ''          '' \
-137     0       ''      reIsGraphSpace        '"1!2 @3#4$% 6¨7&8*9( 0)-_=+§¹²³£¢¬qw ertyuiopQWERT YUIOP[{asd fghjklç~]ASDFGH JKLÇ^}\zxcvb nm,.;/|ZXCV BNM<>:?' '' '' '' \
+144     1       ''      reIsGraphSpace        ''          ''          ''          '' \
+145     0       ''      reIsGraphSpace        '1'         ''          ''          '' \
+146     0       ''      reIsGraphSpace        'a'         ''          ''          '' \
+147     0       ''      reIsGraphSpace        'A'         ''          ''          '' \
+148     0       ''      reIsGraphSpace        '@!%'       ''          ''          '' \
+149     1       ''      reIsGraphSpace        ' @!%'      ''          ''          '' \
+150     1       ''      reIsGraphSpace        '@!% '      ''          ''          '' \
+151     0       ''      reIsGraphSpace        '"1!2 @3#4$% 6¨7&8*9( 0)-_=+§¹²³£¢¬qw ertyuiopQWERT YUIOP[{asd fghjklç~]ASDFGH JKLÇ^}\zxcvb nm,.;/|ZXCV BNM<>:?' '' '' '' \
 \
-138     1       ''      reIsDate              ''          ''          ''          '' \
-139     1       ''      reIsDate              '1234.12.12' ''         ''          '' \
-140     1       ''      reIsDate              '9999-88-77' ''         ''          '' \
-141     1       ''      reIsDate              '1999-02-29' ''         ''          '' \
-142     0       ''      reIsDate              '2000-02-29' ''         ''          '' \
-143     0       ''      reIsDate              '2012-02-29' ''         ''          '' \
-144     0       ''      reIsDate              '2024-02-29' ''         ''          '' \
-145     0       ''      reIsDate              '2024/02/29' ''         ''          '' \
-146     0       ''      reIsDate              '2024.02.29' ''         ''          '' \
-147     0       ''      reIsDate              "$(date '+%Y-%m-%d')" '' ''         '' \
+152     1       ''      reIsDate              ''          ''          ''          '' \
+153     1       ''      reIsDate              '1234.12.12' ''         ''          '' \
+154     1       ''      reIsDate              '9999-88-77' ''         ''          '' \
+155     1       ''      reIsDate              '1999-02-29' ''         ''          '' \
+156     0       ''      reIsDate              '2000-02-29' ''         ''          '' \
+157     0       ''      reIsDate              '2012-02-29' ''         ''          '' \
+158     0       ''      reIsDate              '2024-02-29' ''         ''          '' \
+159     0       ''      reIsDate              '2024/02/29' ''         ''          '' \
+160     0       ''      reIsDate              '2024.02.29' ''         ''          '' \
+161     0       ''      reIsDate              "$(date '+%Y-%m-%d')" '' ''         '' \
 \
-148     1       ''      reIsTime12            ''          ''          ''          '' \
-149     1       ''      reIsTime12            '13:00:00'  ''          ''          '' \
-150     1       ''      reIsTime12            '13:00:00am' ''         ''          '' \
-151     1       ''      reIsTime12            '12:00:00'  ''          ''          '' \
-152     0       ''      reIsTime12            '12:00:00am' ''         ''          '' \
-153     0       ''      reIsTime12            '12:00:00pm' ''         ''          '' \
-154     0       ''      reIsTime12            '12:00:00 am' ''        ''          '' \
-155     0       ''      reIsTime12            '12:00:00 pm' ''        ''          '' \
-156     1       ''      reIsTime12            '12:00:00  pm' ''       ''          '' \
-157     0       ''      reIsTime12            '12:59:59 pm' ''        ''          '' \
-158     1       ''      reIsTime12            '13:59:59 pm' ''        ''          '' \
-159     0       ''      reIsTime12            '1:59:59 am' ''         ''          '' \
-160     0       ''      reIsTime12            '01:59:59 am' ''        ''          '' \
-161     1       ''      reIsTime12            "$(date '+%H:%M:%S')" '' ''         '' \
+162     1       ''      reIsTime12            ''          ''          ''          '' \
+163     1       ''      reIsTime12            '13:00:00'  ''          ''          '' \
+164     1       ''      reIsTime12            '13:00:00am' ''         ''          '' \
+165     1       ''      reIsTime12            '12:00:00'  ''          ''          '' \
+166     0       ''      reIsTime12            '12:00:00am' ''         ''          '' \
+167     0       ''      reIsTime12            '12:00:00pm' ''         ''          '' \
+168     0       ''      reIsTime12            '12:00:00 am' ''        ''          '' \
+169     0       ''      reIsTime12            '12:00:00 pm' ''        ''          '' \
+170     1       ''      reIsTime12            '12:00:00  pm' ''       ''          '' \
+171     0       ''      reIsTime12            '12:59:59 pm' ''        ''          '' \
+172     1       ''      reIsTime12            '13:59:59 pm' ''        ''          '' \
+173     0       ''      reIsTime12            '1:59:59 am' ''         ''          '' \
+174     0       ''      reIsTime12            '01:59:59 am' ''        ''          '' \
+175     1       ''      reIsTime12            "$(date '+%H:%M:%S')" '' ''         '' \
 \
-162     1       ''      reIsTime24            ''          ''          ''          '' \
-163     0       ''      reIsTime24            '13:00:00'  ''          ''          '' \
-164     1       ''      reIsTime24            '13:00:00am' ''         ''          '' \
-165     0       ''      reIsTime24            '12:00:00'  ''          ''          '' \
-166     0       ''      reIsTime24            '23:59:59'  ''          ''          '' \
-167     1       ''      reIsTime24            '24:00:00'  ''          ''          '' \
-168     0       ''      reIsTime24            '00:00:00'  ''          ''          '' \
-169     0       ''      reIsTime24            '13:00:00'  ''          ''          '' \
-170     1       ''      reIsTime24            '23:60:59'  ''          ''          '' \
-171     1       ''      reIsTime24            '12.59.59'  ''          ''          '' \
-172     1       ''      reIsTime24            '1:59:59'   ''          ''          '' \
-173     0       ''      reIsTime24            '01:59:59'  ''          ''          '' \
-174     0       ''      reIsTime24            "$(date '+%H:%M:%S')" '' ''         '' \
+176     1       ''      reIsTime24            ''          ''          ''          '' \
+177     0       ''      reIsTime24            '13:00:00'  ''          ''          '' \
+178     1       ''      reIsTime24            '13:00:00am' ''         ''          '' \
+179     0       ''      reIsTime24            '12:00:00'  ''          ''          '' \
+180     0       ''      reIsTime24            '23:59:59'  ''          ''          '' \
+181     1       ''      reIsTime24            '24:00:00'  ''          ''          '' \
+182     0       ''      reIsTime24            '00:00:00'  ''          ''          '' \
+183     0       ''      reIsTime24            '13:00:00'  ''          ''          '' \
+184     1       ''      reIsTime24            '23:60:59'  ''          ''          '' \
+185     1       ''      reIsTime24            '12.59.59'  ''          ''          '' \
+186     1       ''      reIsTime24            '1:59:59'   ''          ''          '' \
+187     0       ''      reIsTime24            '01:59:59'  ''          ''          '' \
+188     0       ''      reIsTime24            "$(date '+%H:%M:%S')" '' ''         '' \
 \
-175     1       ''      reIsTime124           ''          ''          ''          '' \
-176     0       ''      reIsTime124           '13:00:00'  ''          ''          '' \
-177     1       ''      reIsTime124           '13:00:00am' ''         ''          '' \
-178     0       ''      reIsTime124           '12:00:00'  ''          ''          '' \
-179     0       ''      reIsTime124           '12:00:00am' ''         ''          '' \
-180     0       ''      reIsTime124           '12:00:00pm' ''         ''          '' \
-181     0       ''      reIsTime124           '12:00:00 am' ''        ''          '' \
-182     0       ''      reIsTime124           '12:00:00 pm' ''        ''          '' \
-183     1       ''      reIsTime124           '12:00:00  pm' ''       ''          '' \
-184     0       ''      reIsTime124           '12:59:59 pm' ''        ''          '' \
-185     1       ''      reIsTime124           '13:59:59 pm' ''        ''          '' \
-186     0       ''      reIsTime124           '1:59:59 am' ''         ''          '' \
-187     0       ''      reIsTime124           '01:59:59 am' ''        ''          '' \
-188     0       ''      reIsTime124           "$(date '+%H:%M:%S')" '' ''         '' \
-189     0       ''      reIsTime124           '13:00:00'  ''          ''          '' \
-190     1       ''      reIsTime124           '13:00:00am' ''         ''          '' \
-191     0       ''      reIsTime124           '12:00:00'  ''          ''          '' \
-192     0       ''      reIsTime124           '23:59:59'  ''          ''          '' \
-193     1       ''      reIsTime124           '24:00:00'  ''          ''          '' \
-194     0       ''      reIsTime124           '00:00:00'  ''          ''          '' \
-195     0       ''      reIsTime124           '13:00:00'  ''          ''          '' \
-196     1       ''      reIsTime124           '23:60:59'  ''          ''          '' \
-197     1       ''      reIsTime124           '12.59.59'  ''          ''          '' \
-198     1       ''      reIsTime124           '1:59:59'   ''          ''          '' \
-199     0       ''      reIsTime124           '01:59:59'  ''          ''          '' \
-200     0       ''      reIsTime124           '00:00:00'  ''          ''          '' \
-201     0       ''      reIsTime124           '23:59:59'  ''          ''          '' \
-202     1       ''      reIsTime124           '24:00:00'  ''          ''          '' \
-203     1       ''      reIsTime124           '23:60:00'  ''          ''          '' \
-204     1       ''      reIsTime124           '23:59:60'  ''          ''          '' \
-205     0       ''      reIsTime124           '23:59:59'  ''          ''          '' \
-206     0       ''      reIsTime124           '12:00:00 pm' ''        ''          '' \
-207     0       ''      reIsTime124           '12:00:00 am' ''        ''          '' \
-208     0       ''      reIsTime124           '12:59:59 pm' ''        ''          '' \
-209     0       ''      reIsTime124           '12:59:59 am' ''        ''          '' \
-210     1       ''      reIsTime124           '13:00:00 am' ''        ''          '' \
-211     1       ''      reIsTime124           '12:60:00 am' ''        ''          '' \
-212     1       ''      reIsTime124           '12:59:60 am' ''        ''          '' \
-213     1       ''      reIsTime124           '13:00:00 pm' ''        ''          '' \
-214     1       ''      reIsTime124           '12:60:00 pm' ''        ''          '' \
-215     1       ''      reIsTime124           '12:59:60 pm' ''        ''          '' \
+189     1       ''      reIsTime124           ''          ''          ''          '' \
+190     0       ''      reIsTime124           '13:00:00'  ''          ''          '' \
+191     1       ''      reIsTime124           '13:00:00am' ''         ''          '' \
+192     0       ''      reIsTime124           '12:00:00'  ''          ''          '' \
+193     0       ''      reIsTime124           '12:00:00am' ''         ''          '' \
+194     0       ''      reIsTime124           '12:00:00pm' ''         ''          '' \
+195     0       ''      reIsTime124           '12:00:00 am' ''        ''          '' \
+196     0       ''      reIsTime124           '12:00:00 pm' ''        ''          '' \
+197     1       ''      reIsTime124           '12:00:00  pm' ''       ''          '' \
+198     0       ''      reIsTime124           '12:59:59 pm' ''        ''          '' \
+199     1       ''      reIsTime124           '13:59:59 pm' ''        ''          '' \
+200     0       ''      reIsTime124           '1:59:59 am' ''         ''          '' \
+201     0       ''      reIsTime124           '01:59:59 am' ''        ''          '' \
+202     0       ''      reIsTime124           "$(date '+%H:%M:%S')" '' ''         '' \
+203     0       ''      reIsTime124           '13:00:00'  ''          ''          '' \
+204     1       ''      reIsTime124           '13:00:00am' ''         ''          '' \
+205     0       ''      reIsTime124           '12:00:00'  ''          ''          '' \
+206     0       ''      reIsTime124           '23:59:59'  ''          ''          '' \
+207     1       ''      reIsTime124           '24:00:00'  ''          ''          '' \
+208     0       ''      reIsTime124           '00:00:00'  ''          ''          '' \
+209     0       ''      reIsTime124           '13:00:00'  ''          ''          '' \
+210     1       ''      reIsTime124           '23:60:59'  ''          ''          '' \
+211     1       ''      reIsTime124           '12.59.59'  ''          ''          '' \
+212     1       ''      reIsTime124           '1:59:59'   ''          ''          '' \
+213     0       ''      reIsTime124           '01:59:59'  ''          ''          '' \
+214     0       ''      reIsTime124           '00:00:00'  ''          ''          '' \
+215     0       ''      reIsTime124           '23:59:59'  ''          ''          '' \
+216     1       ''      reIsTime124           '24:00:00'  ''          ''          '' \
+217     1       ''      reIsTime124           '23:60:00'  ''          ''          '' \
+218     1       ''      reIsTime124           '23:59:60'  ''          ''          '' \
+219     0       ''      reIsTime124           '23:59:59'  ''          ''          '' \
+220     0       ''      reIsTime124           '12:00:00 pm' ''        ''          '' \
+221     0       ''      reIsTime124           '12:00:00 am' ''        ''          '' \
+222     0       ''      reIsTime124           '12:59:59 pm' ''        ''          '' \
+223     0       ''      reIsTime124           '12:59:59 am' ''        ''          '' \
+224     1       ''      reIsTime124           '13:00:00 am' ''        ''          '' \
+225     1       ''      reIsTime124           '12:60:00 am' ''        ''          '' \
+226     1       ''      reIsTime124           '12:59:60 am' ''        ''          '' \
+227     1       ''      reIsTime124           '13:00:00 pm' ''        ''          '' \
+228     1       ''      reIsTime124           '12:60:00 pm' ''        ''          '' \
+229     1       ''      reIsTime124           '12:59:60 pm' ''        ''          '' \
 \
-216     1       ''      reIsDateTime12        ''          ''          ''          '' \
-217     0       ''      reIsDateTime12        '2000-02-29 12:00:00 am' '' ''      '' \
-218     0       ''      reIsDateTime12        '2000-02-29 12:00:00 pm' '' ''      '' \
-219     0       ''      reIsDateTime12        '2001-02-29 12:00:00 am' '' ''      '' \
-220     0       ''      reIsDateTime12        '2001-02-28 12:00:00 am' '' ''      '' \
-221     1       ''      reIsDateTime12        '2000-02-29 13:00:00 am' '' ''      '' \
-222     1       ''      reIsDateTime12        '2000-02-29 12:60:00 am' '' ''      '' \
-223     1       ''      reIsDateTime12        '2000-02-29 12:59:60 am' '' ''      '' \
-224     0       ''      reIsDateTime12        '2000-02-29 12:59:59 am' '' ''      '' \
-225     1       ''      reIsDateTime12        '0000-00-00 00:00:00 am' '' ''      '' \
-226     1       ''      reIsDateTime12        '0001-00-00 00:00:00 am' '' ''      '' \
-227     1       ''      reIsDateTime12        '0001-01-00 00:00:00 am' '' ''      '' \
-228     1       ''      reIsDateTime12        '0001-01-01 00:00:00 am' '' ''      '' \
-229     0       ''      reIsDateTime12        '0001-01-01 01:00:00 am' '' ''      '' \
-230     0       ''      reIsDateTime12        '9999-01-01 01:00:00 am' '' ''      '' \
-231     0       ''      reIsDateTime12        '9999-12-01 01:00:00 am' '' ''      '' \
-232     0       ''      reIsDateTime12        '9999-12-31 01:00:00 am' '' ''      '' \
-233     0       ''      reIsDateTime12        '9999-12-31 12:00:00 am' '' ''      '' \
-234     0       ''      reIsDateTime12        '9999-12-31 12:59:00 am' '' ''      '' \
-235     0       ''      reIsDateTime12        '9999-12-31 12:59:59 am' '' ''      '' \
-236     1       ''      reIsDateTime12        '9999-13-31 12:59:59 am' '' ''      '' \
-237     1       ''      reIsDateTime12        '9999-12-32 12:59:59 am' '' ''      '' \
-238     1       ''      reIsDateTime12        '9999-12-31 12:59:59  am' '' ''     '' \
-239     0       ''      reIsDateTime12        '9999-12-31 12:59:59 Am' '' ''      '' \
-240     0       ''      reIsDateTime12        '9999-12-31 12:59:59 AM' '' ''      '' \
-241     1       ''      reIsDateTime12        '9999-12-31 12:59:59 xm' '' ''      '' \
-242     1       ''      reIsDateTime12        '2000-00-00 12:59:59 am' '' ''      '' \
-243     1       ''      reIsDateTime12        '2000-01-00 12:59:59 am' '' ''      '' \
-244     0       ''      reIsDateTime12        '0000-01-01 01:00:00 am' '' ''      '' \
+230     1       ''      reIsDateTime12        ''          ''          ''          '' \
+231     0       ''      reIsDateTime12        '2000-02-29 12:00:00 am' '' ''      '' \
+232     0       ''      reIsDateTime12        '2000-02-29 12:00:00 pm' '' ''      '' \
+233     0       ''      reIsDateTime12        '2001-02-29 12:00:00 am' '' ''      '' \
+234     0       ''      reIsDateTime12        '2001-02-28 12:00:00 am' '' ''      '' \
+235     1       ''      reIsDateTime12        '2000-02-29 13:00:00 am' '' ''      '' \
+236     1       ''      reIsDateTime12        '2000-02-29 12:60:00 am' '' ''      '' \
+237     1       ''      reIsDateTime12        '2000-02-29 12:59:60 am' '' ''      '' \
+238     0       ''      reIsDateTime12        '2000-02-29 12:59:59 am' '' ''      '' \
+239     1       ''      reIsDateTime12        '0000-00-00 00:00:00 am' '' ''      '' \
+240     1       ''      reIsDateTime12        '0001-00-00 00:00:00 am' '' ''      '' \
+241     1       ''      reIsDateTime12        '0001-01-00 00:00:00 am' '' ''      '' \
+242     1       ''      reIsDateTime12        '0001-01-01 00:00:00 am' '' ''      '' \
+243     0       ''      reIsDateTime12        '0001-01-01 01:00:00 am' '' ''      '' \
+244     0       ''      reIsDateTime12        '9999-01-01 01:00:00 am' '' ''      '' \
+245     0       ''      reIsDateTime12        '9999-12-01 01:00:00 am' '' ''      '' \
+246     0       ''      reIsDateTime12        '9999-12-31 01:00:00 am' '' ''      '' \
+247     0       ''      reIsDateTime12        '9999-12-31 12:00:00 am' '' ''      '' \
+248     0       ''      reIsDateTime12        '9999-12-31 12:59:00 am' '' ''      '' \
+249     0       ''      reIsDateTime12        '9999-12-31 12:59:59 am' '' ''      '' \
+250     1       ''      reIsDateTime12        '9999-13-31 12:59:59 am' '' ''      '' \
+251     1       ''      reIsDateTime12        '9999-12-32 12:59:59 am' '' ''      '' \
+252     1       ''      reIsDateTime12        '9999-12-31 12:59:59  am' '' ''     '' \
+253     0       ''      reIsDateTime12        '9999-12-31 12:59:59 Am' '' ''      '' \
+254     0       ''      reIsDateTime12        '9999-12-31 12:59:59 AM' '' ''      '' \
+255     1       ''      reIsDateTime12        '9999-12-31 12:59:59 xm' '' ''      '' \
+256     1       ''      reIsDateTime12        '2000-00-00 12:59:59 am' '' ''      '' \
+257     1       ''      reIsDateTime12        '2000-01-00 12:59:59 am' '' ''      '' \
+258     0       ''      reIsDateTime12        '0000-01-01 01:00:00 am' '' ''      '' \
 \
-245     1       ''      reIsDateTime24        ''                      ''  ''      '' \
-246     1       ''      reIsDateTime24        '0000-00-00 00:00:00'   ''  ''      '' \
-247     1       ''      reIsDateTime24        '0000-01-00 00:00:00'   ''  ''      '' \
-248     0       ''      reIsDateTime24        '0000-01-01 00:00:00'   ''  ''      '' \
-249     0       ''      reIsDateTime24        '0000-01-01 23:00:00'   ''  ''      '' \
-250     1       ''      reIsDateTime24        '0000-01-01 24:00:00'   ''  ''      '' \
-251     0       ''      reIsDateTime24        '0000-01-01 23:59:00'   ''  ''      '' \
-252     1       ''      reIsDateTime24        '0000-01-01 23:60:00'   ''  ''      '' \
-253     0       ''      reIsDateTime24        '0000-01-01 23:59:59'   ''  ''      '' \
-254     1       ''      reIsDateTime24        '0000-01-01 23:59:60'   ''  ''      '' \
-255     0       ''      reIsDateTime24        '9999-01-01 23:59:59'   ''  ''      '' \
-256     0       ''      reIsDateTime24        '9999-12-01 23:59:59'   ''  ''      '' \
-257     1       ''      reIsDateTime24        '9999-13-01 23:59:59'   ''  ''      '' \
-258     0       ''      reIsDateTime24        '9999-12-31 23:59:59'   ''  ''      '' \
-259     1       ''      reIsDateTime24        '9999-12-32 23:59:59'   ''  ''      '' \
-260     0       ''      reIsDateTime24        '9999-12-31 23:59:59'   ''  ''      '' \
+259     1       ''      reIsDateTime24        ''                      ''  ''      '' \
+260     1       ''      reIsDateTime24        '0000-00-00 00:00:00'   ''  ''      '' \
+261     1       ''      reIsDateTime24        '0000-01-00 00:00:00'   ''  ''      '' \
+262     0       ''      reIsDateTime24        '0000-01-01 00:00:00'   ''  ''      '' \
+263     0       ''      reIsDateTime24        '0000-01-01 23:00:00'   ''  ''      '' \
+264     1       ''      reIsDateTime24        '0000-01-01 24:00:00'   ''  ''      '' \
+265     0       ''      reIsDateTime24        '0000-01-01 23:59:00'   ''  ''      '' \
+266     1       ''      reIsDateTime24        '0000-01-01 23:60:00'   ''  ''      '' \
+267     0       ''      reIsDateTime24        '0000-01-01 23:59:59'   ''  ''      '' \
+268     1       ''      reIsDateTime24        '0000-01-01 23:59:60'   ''  ''      '' \
+269     0       ''      reIsDateTime24        '9999-01-01 23:59:59'   ''  ''      '' \
+270     0       ''      reIsDateTime24        '9999-12-01 23:59:59'   ''  ''      '' \
+271     1       ''      reIsDateTime24        '9999-13-01 23:59:59'   ''  ''      '' \
+272     0       ''      reIsDateTime24        '9999-12-31 23:59:59'   ''  ''      '' \
+273     1       ''      reIsDateTime24        '9999-12-32 23:59:59'   ''  ''      '' \
+274     0       ''      reIsDateTime24        '9999-12-31 23:59:59'   ''  ''      '' \
 \
-261     1       ''      reIsDateTime124       ''          ''          ''          '' \
-262     0       ''      reIsDateTime124       '2000-02-29 12:00:00 am' '' ''      '' \
-263     0       ''      reIsDateTime124       '2000-02-29 12:00:00 pm' '' ''      '' \
-264     0       ''      reIsDateTime124       '2001-02-29 12:00:00 am' '' ''      '' \
-265     0       ''      reIsDateTime124       '2001-02-28 12:00:00 am' '' ''      '' \
-266     1       ''      reIsDateTime124       '2000-02-29 13:00:00 am' '' ''      '' \
-267     1       ''      reIsDateTime124       '2000-02-29 12:60:00 am' '' ''      '' \
-268     1       ''      reIsDateTime124       '2000-02-29 12:59:60 am' '' ''      '' \
-269     0       ''      reIsDateTime124       '2000-02-29 12:59:59 am' '' ''      '' \
-270     1       ''      reIsDateTime124       '0000-00-00 00:00:00 am' '' ''      '' \
-271     1       ''      reIsDateTime124       '0001-00-00 00:00:00 am' '' ''      '' \
-272     1       ''      reIsDateTime124       '0001-01-00 00:00:00 am' '' ''      '' \
-273     1       ''      reIsDateTime124       '0001-01-01 00:00:00 am' '' ''      '' \
-274     0       ''      reIsDateTime124       '0001-01-01 01:00:00 am' '' ''      '' \
-275     0       ''      reIsDateTime124       '9999-01-01 01:00:00 am' '' ''      '' \
-276     0       ''      reIsDateTime124       '9999-12-01 01:00:00 am' '' ''      '' \
-277     0       ''      reIsDateTime124       '9999-12-31 01:00:00 am' '' ''      '' \
-278     0       ''      reIsDateTime124       '9999-12-31 12:00:00 am' '' ''      '' \
-279     0       ''      reIsDateTime124       '9999-12-31 12:59:00 am' '' ''      '' \
-280     0       ''      reIsDateTime124       '9999-12-31 12:59:59 am' '' ''      '' \
-281     1       ''      reIsDateTime124       '9999-13-31 12:59:59 am' '' ''      '' \
-282     1       ''      reIsDateTime124       '9999-12-32 12:59:59 am' '' ''      '' \
-283     1       ''      reIsDateTime124       '9999-12-31 12:59:59  am' '' ''     '' \
-284     0       ''      reIsDateTime124       '9999-12-31 12:59:59 Am' '' ''      '' \
-285     0       ''      reIsDateTime124       '9999-12-31 12:59:59 AM' '' ''      '' \
-286     1       ''      reIsDateTime124       '9999-12-31 12:59:59 xm' '' ''      '' \
-287     1       ''      reIsDateTime124       '2000-00-00 12:59:59 am' '' ''      '' \
-288     1       ''      reIsDateTime124       '2000-01-00 12:59:59 am' '' ''      '' \
-289     0       ''      reIsDateTime124       '0000-01-01 01:00:00 am' '' ''      '' \
-290     1       ''      reIsDateTime124       ''                      ''  ''      '' \
-291     1       ''      reIsDateTime124       '0000-00-00 00:00:00'   ''  ''      '' \
-292     1       ''      reIsDateTime124       '0000-01-00 00:00:00'   ''  ''      '' \
-293     0       ''      reIsDateTime124       '0000-01-01 00:00:00'   ''  ''      '' \
-294     0       ''      reIsDateTime124       '0000-01-01 23:00:00'   ''  ''      '' \
-295     1       ''      reIsDateTime124       '0000-01-01 24:00:00'   ''  ''      '' \
-296     0       ''      reIsDateTime124       '0000-01-01 23:59:00'   ''  ''      '' \
-297     1       ''      reIsDateTime124       '0000-01-01 23:60:00'   ''  ''      '' \
-298     0       ''      reIsDateTime124       '0000-01-01 23:59:59'   ''  ''      '' \
-299     1       ''      reIsDateTime124       '0000-01-01 23:59:60'   ''  ''      '' \
-300     0       ''      reIsDateTime124       '9999-01-01 23:59:59'   ''  ''      '' \
-301     0       ''      reIsDateTime124       '9999-12-01 23:59:59'   ''  ''      '' \
-302     1       ''      reIsDateTime124       '9999-13-01 23:59:59'   ''  ''      '' \
-303     0       ''      reIsDateTime124       '9999-12-31 23:59:59'   ''  ''      '' \
-304     1       ''      reIsDateTime124       '9999-12-32 23:59:59'   ''  ''      '' \
-305     0       ''      reIsDateTime124       '9999-12-31 23:59:59'   ''  ''      '' \
+275     1       ''      reIsDateTime124       ''          ''          ''          '' \
+276     0       ''      reIsDateTime124       '2000-02-29 12:00:00 am' '' ''      '' \
+277     0       ''      reIsDateTime124       '2000-02-29 12:00:00 pm' '' ''      '' \
+278     0       ''      reIsDateTime124       '2001-02-29 12:00:00 am' '' ''      '' \
+279     0       ''      reIsDateTime124       '2001-02-28 12:00:00 am' '' ''      '' \
+280     1       ''      reIsDateTime124       '2000-02-29 13:00:00 am' '' ''      '' \
+281     1       ''      reIsDateTime124       '2000-02-29 12:60:00 am' '' ''      '' \
+282     1       ''      reIsDateTime124       '2000-02-29 12:59:60 am' '' ''      '' \
+283     0       ''      reIsDateTime124       '2000-02-29 12:59:59 am' '' ''      '' \
+284     1       ''      reIsDateTime124       '0000-00-00 00:00:00 am' '' ''      '' \
+285     1       ''      reIsDateTime124       '0001-00-00 00:00:00 am' '' ''      '' \
+286     1       ''      reIsDateTime124       '0001-01-00 00:00:00 am' '' ''      '' \
+287     1       ''      reIsDateTime124       '0001-01-01 00:00:00 am' '' ''      '' \
+288     0       ''      reIsDateTime124       '0001-01-01 01:00:00 am' '' ''      '' \
+289     0       ''      reIsDateTime124       '9999-01-01 01:00:00 am' '' ''      '' \
+290     0       ''      reIsDateTime124       '9999-12-01 01:00:00 am' '' ''      '' \
+291     0       ''      reIsDateTime124       '9999-12-31 01:00:00 am' '' ''      '' \
+292     0       ''      reIsDateTime124       '9999-12-31 12:00:00 am' '' ''      '' \
+293     0       ''      reIsDateTime124       '9999-12-31 12:59:00 am' '' ''      '' \
+294     0       ''      reIsDateTime124       '9999-12-31 12:59:59 am' '' ''      '' \
+295     1       ''      reIsDateTime124       '9999-13-31 12:59:59 am' '' ''      '' \
+296     1       ''      reIsDateTime124       '9999-12-32 12:59:59 am' '' ''      '' \
+297     1       ''      reIsDateTime124       '9999-12-31 12:59:59  am' '' ''     '' \
+298     0       ''      reIsDateTime124       '9999-12-31 12:59:59 Am' '' ''      '' \
+299     0       ''      reIsDateTime124       '9999-12-31 12:59:59 AM' '' ''      '' \
+300     1       ''      reIsDateTime124       '9999-12-31 12:59:59 xm' '' ''      '' \
+301     1       ''      reIsDateTime124       '2000-00-00 12:59:59 am' '' ''      '' \
+302     1       ''      reIsDateTime124       '2000-01-00 12:59:59 am' '' ''      '' \
+303     0       ''      reIsDateTime124       '0000-01-01 01:00:00 am' '' ''      '' \
+304     1       ''      reIsDateTime124       ''                      ''  ''      '' \
+305     1       ''      reIsDateTime124       '0000-00-00 00:00:00'   ''  ''      '' \
+306     1       ''      reIsDateTime124       '0000-01-00 00:00:00'   ''  ''      '' \
+307     0       ''      reIsDateTime124       '0000-01-01 00:00:00'   ''  ''      '' \
+308     0       ''      reIsDateTime124       '0000-01-01 23:00:00'   ''  ''      '' \
+309     1       ''      reIsDateTime124       '0000-01-01 24:00:00'   ''  ''      '' \
+310     0       ''      reIsDateTime124       '0000-01-01 23:59:00'   ''  ''      '' \
+311     1       ''      reIsDateTime124       '0000-01-01 23:60:00'   ''  ''      '' \
+312     0       ''      reIsDateTime124       '0000-01-01 23:59:59'   ''  ''      '' \
+313     1       ''      reIsDateTime124       '0000-01-01 23:59:60'   ''  ''      '' \
+314     0       ''      reIsDateTime124       '9999-01-01 23:59:59'   ''  ''      '' \
+315     0       ''      reIsDateTime124       '9999-12-01 23:59:59'   ''  ''      '' \
+316     1       ''      reIsDateTime124       '9999-13-01 23:59:59'   ''  ''      '' \
+317     0       ''      reIsDateTime124       '9999-12-31 23:59:59'   ''  ''      '' \
+318     1       ''      reIsDateTime124       '9999-12-32 23:59:59'   ''  ''      '' \
+319     0       ''      reIsDateTime124       '9999-12-31 23:59:59'   ''  ''      '' \
 \
 306     1       ''      reIsDateTimeAsCode    ''          ''          ''          '' \
 307     1       ''      reIsDateTimeAsCode    '0000-00-00-00-00-00-000' '' ''     '' \

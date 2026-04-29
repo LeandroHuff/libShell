@@ -261,12 +261,12 @@ declare -a testTABLE=(\
 47      1       ''              isParam             '1'                 ''          ''          '' \
 48      0       ''              isParam             '-a'                ''          ''          '' \
 49      0       ''              isParam             '-2'                ''          ''          '' \
-50      0       ''              isParam             '-a1'               ''          ''          '' \
+50      1       ''              isParam             '-a1'               ''          ''          '' \
 51      0       ''              isParam             '-a'                '1'         ''          '' \
 \
 52      1       ''              isArg               ''                  ''          ''          '' \
 53      1       ''              isArg               -a                  ''          ''          '' \
-54      1       ''              isArg               -1                  ''          ''          '' \
+54      0       ''              isArg               -1                  ''          ''          '' \
 55      0       ''              isArg               a                   ''          ''          '' \
 56      0       ''              isArg               1                   ''          ''          '' \
 \
