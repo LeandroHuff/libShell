@@ -7,9 +7,7 @@
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
-
-declare libCompress=''
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
 ##
 # @brief    unCompress files.
@@ -23,18 +21,18 @@ declare libCompress=''
 function unCompress()
 {
     local err=0
-    local file="$1"
+    local source="$1"
     shift
 
-    if [ -n "${file}" ] ; then
-        if [ -f "${file}" ] ; then
-            case "${file}" in
-            *.tar.bz2|*.tbz2|*.tar.gz|*.tgz|*.tar.xz|*.txz|*.tar) tar -a -x -f "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.7z|*.7zip) 7z x -mmt4 "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.zip|*.z) unzip -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.gz) gzip -d -f -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.bz2) bzip2 -d -f -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.xz) xz -d -T 0 -f -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
+    if [ -n "${source}" ] ; then
+        if [ -f "${source}" ] ; then
+            case "${source}" in
+            *.tar.bz2|*.tbz2|*.tar.gz|*.tgz|*.tar.xz|*.txz|*.tar) tar -a -x -f "${source}" "$@" || err=$? ;;
+            *.7z|*.7zip) 7z x -mmt4 "${source}" "$@" || err=$? ;;
+            *.zip|*.z) unzip -q     "${source}" "$@" || err=$? ;;
+            *.gz) gzip -d -f -q     "${source}" "$@" || err=$? ;;
+            *.bz2) bzip2 -d -f -q   "${source}" "$@" || err=$? ;;
+            *.xz) xz -d -T 0 -f -q  "${source}" "$@" || err=$? ;;
             *) err=103 ;;
             esac
         else
@@ -59,18 +57,18 @@ function unCompress()
 function compress()
 {
     local err=0
-    local file="$1"
+    local destine="$1"
     shift
 
-    if [ -n "${file}" ] ; then
-        if ! [ -f "${file}" ] ; then
-            case "${file}" in
-            *.tar.gz|*.tgz|*.tar.xz|*.txz|*.tar.bz2|*.tbz2|*.tar) tar -a -c -f "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.7z|*.7zip) 7z a -snh -snl -mmt4 -mx9 "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.zip|*.z) zip -9 -y -f -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.gz|*.gzip) gzip -d -f -k -q -9 "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.bz2) bzip2 -z -k -9 -f -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
-            *.xz) xz -z -k -f -9 -e -T 0 -q "${file}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" || err=$? ;;
+    if [ -n "${destine}" ] ; then
+        if ! [ -f "${destine}" ] ; then
+            case "${destine}" in
+            *.tar.gz|*.tgz|*.tar.xz|*.txz|*.tar.bz2|*.tbz2|*.tar) tar -a -c -f "${destine}" "$@" || err=$? ;;
+            *.7z|*.7zip) 7z a -snh -snl -mmt4 -mx9 "${destine}" "$@" || err=$? ;;
+            *.zip|*.z) zip -9 -y -f -q             "${destine}" "$@" || err=$? ;;
+            *.gz|*.gzip) gzip -d -f -k -q -9       "${destine}" "$@" || err=$? ;;
+            *.bz2) bzip2 -z -k -9 -f -q            "${destine}" "$@" || err=$? ;;
+            *.xz) xz -z -k -f -9 -e -T 0 -q        "${destine}" "$@" || err=$? ;;
             *) err=103 ;;
             esac
         else
@@ -96,4 +94,4 @@ function libCompressExit()
     return 0
 }
 
-libCompress='loaded'
+declare libCompress='loaded'

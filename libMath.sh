@@ -8,14 +8,13 @@
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
-declare libMath=''
-
-function isNumber()
+## @brief   Check if parameter is a number.
+function _isNumber()
 {
-    local regexDouble='^[+-]?(\d+\.?\d*|\d*\.?\d+)$'
-    if echo -n "$1" | grep -aoP "${regexDouble}" > /dev/null 2>&1
+    local regexFloat='^[+-]?(\d+\.?\d*|\d*\.?\d+)$'
+    if echo -n "$1" | grep -qaoP "${regexFloat}" > /dev/null 2>&1
     then
         true
     else
@@ -23,12 +22,13 @@ function isNumber()
     fi
 }
 
-function isZero()
+## @brief   Check if parameter is an integer or float zero not IEEE 32.
+function _isZero()
 {
     local regexZero='^[-+]?(0+\.?0*|0*\.?0+)$'
-    if isNumber "$1"
+    if _isNumber "$1"
     then
-        if echo -n "$1" | grep -aoP "${regexZero}" > /dev/null 2>&1
+        if echo -n "$1" | grep -qaoP "${regexZero}" > /dev/null 2>&1
         then
             true
         else
@@ -39,11 +39,36 @@ function isZero()
     fi
 }
 
+## @brief   Check if parameter is an integer or float zero and accept IEEE 32.
+function _isFloatZero()
+{
+    local regexZero='^[-+]?(0+\.?0*|0*\.?0+)([eE][+-]?0*[1-9]+\d*)?$'
+    if echo -n "$1" | grep -qaoP "${regexZero}" > /dev/null 2>&1
+    then
+        true
+    else
+        false
+    fi
+}
+
+## @brief   Check if the parameter is a regular float number.
+function _isFloat()
+{
+    local regexFloat='^[-+]?([0-9]+\.?[0-9]*|[0-9]*\.[0-9]+)([eE][+-]?0*[1-9]+\d*)?$'
+    if echo -n "$1" | grep -qaoP "${regexFloat}" > /dev/null 2>&1
+    then
+        true
+    else
+        false
+    fi
+}
+
+## @brief   Add zero before|after dot for float point numbers.
 function normalizeNumber()
 {
     local err=1
     local fp='NaN'
-    if isNumber "$1"
+    if _isNumber "$1"
     then
         fp="$1"
         fp=$([[ "${1:0:1}" == '+' ]] && echo -n "${1:1}" || echo -n "${1}")
@@ -81,7 +106,7 @@ function trimZeros()
 {
     local err=0
     local fp=''
-    if isNumber "$1"
+    if _isNumber "$1"
     then
         fp="$(normalizeNumber "${1}")"
         fp="$(echo "${fp}" | bc -l | sed -e 's/^[0]*//' -e 's/[0]*$//' -e 's/\.$//g')"
@@ -95,11 +120,12 @@ function trimZeros()
     return $err
 }
 
+## @brief   Get integer number from a floating pointer number.
 function getIntegerFromFloat()
 {
     local err=0
     local fp='NaN'
-    if isNumber "$1"
+    if _isNumber "$1"
     then
         fp=$([[ "${1:0:1}" == '+' ]] && echo -n "${1:1}" || echo -n "${1}")
         fp="$(normalizeNumber "${fp}")"
@@ -113,11 +139,12 @@ function getIntegerFromFloat()
     return $err
 }
 
+## @brief   Get fraction number from a floating point number.
 function getFractionFromFloat()
 {
     local err=0
     local fp='NaN'
-    if isNumber "$1"
+    if _isNumber "$1"
     then
         fp=$([[ "${1:0:1}" == '+' ]] && echo -n "${1:1}" || echo -n "${1}")
         fp="$(normalizeNumber "${fp}")"
@@ -134,28 +161,7 @@ function getFractionFromFloat()
     return $err
 }
 
-function isFloatZero()
-{
-    local regexZero='^[-+]?(0+\.?0*|0*\.?0+)([eE][+-]?0*[1-9]+\d*)?$'
-    if echo -n "$1" | grep -aoP "${regexZero}" > /dev/null 2>&1
-    then
-        true
-    else
-        false
-    fi
-}
-
-function isFloat()
-{
-    local regexDouble='^[-+]?([0-9]+\.?[0-9]*|[0-9]*\.[0-9]+)([eE][+-]?0*[1-9]+\d*)?$'
-    if echo -n "$1" | grep -aoP "${regexDouble}" > /dev/null 2>&1
-    then
-        true
-    else
-        false
-    fi
-}
-
+## @brief   Execute calculation according to operator (+ - * /) parameter.
 function calcNumber()
 {
     local err=1
@@ -164,7 +170,7 @@ function calcNumber()
     local fp2="$3"
     local res='NaN'
     declare -a operTable=('+' '-' '*' '/')
-    if isNumber "${fp1}" && isNumber "${fp2}"
+    if _isNumber "${fp1}" && _isNumber "${fp2}"
     then
         if [[ "${operTable[@]}" =~ "${oper}" ]]
         then
@@ -190,8 +196,7 @@ function calcNumber()
     return $err
 }
 
-################################################################################
-# Exit
+## @brief   Exit from lib and unload all variables and functions.
 function libMathExit()
 {
     # unset variables
@@ -199,15 +204,16 @@ function libMathExit()
     unset -v regexDouble
     unset -v regexZero
     # unset functions
-    unset -f isZero
-    unset -f isNumber
+    unset -f _isZero
+    unset -f _isNumber
     unset -f getIntegerFromFloat
     unset -f getFractionFromFloat
-    unset -f isFloatZero
-    unset -f isFloat
+    unset -f _isFloatZero
+    unset -f _isFloat
     unset -f isNumberInRange
     unset -f libMathExit
     return 0
 }
 
-libMath='loaded'
+## @brief   Check if libRegex is loaded and available.
+declare libMath='loaded'

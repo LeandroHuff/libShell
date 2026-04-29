@@ -7,10 +7,9 @@
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
-declare libKbHit=''
-
+## @brief   Check for key pressed, return 0 for key pressed, otherwise return 1.
 function kbhit()
 {
     local wait=$([ -n "$2" ] && echo -n "$2" || echo -n '1.0')
@@ -18,6 +17,7 @@ function kbhit()
     return 1
 }
 
+## @brief   Exit from lib and unload all variables and functions.
 function libKbHitExit()
 {
     unset -v libKbHit
@@ -28,4 +28,5 @@ function libKbHitExit()
     return 0
 }
 
-libKbHit='loaded'
+## @brief   Variable to check lib loaded.
+declare libKbHit='loaded'

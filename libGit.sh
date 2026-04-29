@@ -7,11 +7,7 @@
 ################################################################################
 
 # Must be sourced not running
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
-then
-    echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running."
-    exit 1
-fi
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running."
 
 ## @brief   Variable to store libGit status on load successfully.
 declare libGit=''
@@ -434,7 +430,7 @@ function gitRepositoryName()
 #           1..N        Failure or empty parameter.
 function createBranch()
 {
-    local error='\033[31m  error\033[0m:'
+    local error='\033[91m  error\033[0m:'
     [ -n "${1}" ] || { echo -e "${error} Empty parameter to function createBranch()" ; return 1 ; }
     local branch="${1}"
     local current="$([ -n "${2}" ] && echo -n "${2}" || echo -n "$(gitBranchName)")"
@@ -447,9 +443,9 @@ function createBranch()
         err=$?
         [ $err -eq 0 ] || echo -e "${error} gitSetLocalPushUpstream(${current}) return code:$err"
     fi
-    gitSetupPullRebase                    || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err" ; }
-    gitConfigBranchMerge      "${branch}" || { err=$? ; echo -e "${error} gitConfigBranchMerge(${branch}) return code:$err" ; }
-    gitConfigAutoSetupMerge   "${branch}" || { err=$? ; echo -e "${error} gitConfigAutoSetupMerge(${branch}) return code:$err" ; }
+    gitSetupPullRebase || { err=$? ; echo -e "${error} gitSetupRebase(${branch}) return code:$err" ; }
+    gitConfigBranchMerge "${branch}" || { err=$? ; echo -e "${error} gitConfigBranchMerge(${branch}) return code:$err" ; }
+    gitConfigAutoSetupMerge "${branch}" || { err=$? ; echo -e "${error} gitConfigAutoSetupMerge(${branch}) return code:$err" ; }
     return $err
 }
 
@@ -478,7 +474,9 @@ function gitAdd()
 #           1           Failure
 function gitCommitNotSigned()
 {
-    declare message='' res='' err=0
+    declare message='' 
+    declare res='' 
+    declare -i err=0
     [ -n "${1}" ] && message="${1}" || message="Updated by $USER on $(date +%Y-%m-%d) at $(date +%H:%M:%S)"
     res="$(git commit -q -m "${message}")"
     err=$?
@@ -619,4 +617,4 @@ function libGitExit()
 }
 
 ## @brief   Set variable to control libGit successfully sourced.
-libGit='loaded'
+declare libGit='loaded'

@@ -7,19 +7,98 @@
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { error "$(basename $0) must be sourced not running." ; return 1 ; }
-
-## @brief   Check dependences
-if [ "x$(libLog)"  = 'x' ] ; then echo -e "\033[91m  error\033[0m: libLog must be loaded before libCrypto." ; return 1 ; fi
-if [ "x$(libFile)" = 'x' ] ; then echo -e "\033[91m  error\033[0m: libFile must be loaded before libCrypto." ; return 1 ; fi
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; return 1 ; }
 
 declare FS='ext4'
 declare PREFIX='luks_'
 declare DEVICE=''
 declare rexFS='(btrfs|ext4|tmpfs)'
 declare rexCryptFS='(crypto_LUKS)'
+
+## @brief   Get mapper directory
+function _getMapperDir() { echo -n '/dev/mapper' ; }
+
+## @brief   Strip punctuation caracters from filename.
+function _stripPunct() { echo -n "$(basename ${1})" | tr -d '[:punct:]' ; }
+
+## @brief   Follow link and check if target exist on filesystem.
+function _linkTargetExist()
+{
+    local target
+    target="$(readlink -e "$1")"
+    if [ $? -eq 0 ] && [ -n "${target}" ] && [ -e "${target}" ]
+    then
+        true
+    else
+        false
+    fi
+}
+
+## @brief   Follow link and return the target destine.
+function _followLink()
+{
+    local target=''
+    local err=1
+    if [ -L "$1" ]
+    then
+        target="$(readlink -e "$1")"
+        err=$?
+    fi
+    echo -n "${target}"
+    return $err
+}
+
+##
+# @brief    Get directory to mount devices.
+# @result   string  Mount directory.
+# @return   0       Success
+#           N       Error code, not found a valid mount directory.
+function _getMountDir()
+{
+    declare -a list=('/media' '/run/media' '/mnt')
+    local target=''
+
+    for dir in "${list[@]}"
+    do
+        if _linkTargetExist ${dir}
+        then
+            target=$(_followLink ${dir})
+            if [ -d "${target}" ]
+            then
+                echo -n "${target}/$USER"
+                return 0
+            fi
+        fi
+    done
+    return 1
+}
+
+## @bruef   Declare variables paths for mount directory and mapper directory.
 declare MOUNT="$(getMountDir)"
 declare MAPPER="$(getMapperDir)"
+
+## @brief   Check and validate a device file system according a FS list.
+function _hasFS()
+{
+    local re="$([ -n "$2" ] && echo -n "${2}" || echo -n "${reFS}")"
+
+    if [ -b "${1}" ]
+    then
+        if lsblk -f "${1}" 2> /dev/null | grep -aoP "${re}" > /dev/null 1> /dev/null
+        then
+            true
+        else
+            false
+        fi
+    else
+        if df --output=fstype "${1}" 2> /dev/null | grep -aoP "${re}" > /dev/null 1> /dev/null
+        then
+            true
+        else
+            false
+        fi
+    fi
+}
 
 ##
 # @brief    Set device name from drive name.
@@ -29,7 +108,7 @@ declare MAPPER="$(getMapperDir)"
 #           N       Error code
 function setDeviceName()
 {
-    local name="$(stripPunct ${1})"
+    local name="$(_stripPunct ${1})"
     DEVICE="${PREFIX}${name}"
     echo -n "${DEVICE}"
 }
@@ -99,7 +178,7 @@ function mountDevice()
 function umountDevice()
 {
     local err=0
-    if hasFS "${1}"  ; then sudo umount -l "${1}" || err=$((err+1)) ; fi
+    if _hasFS "${1}" ; then sudo umount -l "${1}" || err=$((err+1)) ; fi
     if [ -d "${1}" ] ; then sudo rmdir     "${1}" || err=$((err+2)) ; fi
     return $err
 }
@@ -120,6 +199,10 @@ function setDeviceAccess()
     return 0
 }
 
+## @brief   Get device name from drives name,
+#           strip punctuation from drives name before return the result.
+function _getDeviceNameFromDrive() { echo -n "luks_$(_stripPunct $1)" ; }
+
 ##
 # @brief    Create an encrypted drive.
 # @param    $1      Path/Drive or Filename
@@ -130,7 +213,7 @@ function setDeviceAccess()
 #           N       Error code
 function createEncryptedDrive()
 {
-    local device="${2:-$(getDeviceName ${1})}"
+    local device="${2:-$(_getDeviceNameFromDrive ${1})}"
     encryptDrive "${1}" "${3}" || return 1
     openDrive "${1}" "${device}" "${3}" || return 2
     formatDevice "${device}" "${4}" || return 3
@@ -151,7 +234,7 @@ function createEncryptedDrive()
 #           N       Error code.
 function openEncryptedDevice()
 {
-    local device="${2:-$(getDeviceName ${1})}"
+    local device="${2:-$(_getDeviceNameFromDrive ${1})}"
     openDrive "${1}" "${device}" "${3}" || return 2
     mountDevice "${MAPPER}/${device}" "${MOUNT}/${device}" || return 4
     setDeviceAccess "${MOUNT}/${device}" || return $?

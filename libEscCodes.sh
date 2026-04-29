@@ -7,11 +7,9 @@
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
 declare libEscCodes=''
-
-# Variables
 
 # Escape Styles Fonts
 declare -i DEFAULT=0
@@ -88,24 +86,101 @@ declare escIWHITE='\033[97m'
 declare escScrRevON='\033[?5h'
 declare escScrRevOFF='\033[?5l'
 
-# Functions
+##
+# @brief    Generate extended Foreground RGB escape code
+# @param    $1  Red color.
+# @param    $2  Green color.
+# @param    $3  Blue color.
+# @result       Escape code for extended foreground RGB color.
+# @return   0   Success
+#           N   Error code.
 function genExtFgRGB()  { echo -e -n "\033[38;2;${1};${2};${3}m" ; }
+
+##
+# @brief    Generate extended Background RGB escape code
+# @param    $1  Red color.
+# @param    $2  Green color.
+# @param    $3  Blue color.
+# @result       Escape code for extended background RGB color.
+# @return   0   Success
+#           N   Error code.
 function genExtBgRGB()  { echo -e -n "\033[48;2;${1};${2};${3}m" ; }
+
+##
+# @brief    Generate extended font style, foreground and background escape code
+# @param    $1  Font style.
+# @param    $2  Foreground color.
+# @param    $3  Background color.
+# @result       Escape code for font style, foreground and background color.
+# @return   0   Success
+#           N   Error code.
 function genExtStFgBg() { echo -e -n "\033[${1};38;5;${2};48;5;${3}m" ; }
+
+##
+# @brief    Generate font style, foreground and background escape code
+# @param    $1  Font style.
+# @param    $2  Foreground color.
+# @param    $3  Background color.
+# @result       Escape code for font, foreground and background color.
+# @return   0   Success
+#           N   Error code.
 function genEscStFgBg() { echo -e -n "\033[${1};${2};${3}m" ; }
+
+##
+# @brief    Generate extended foreground escape code
+# @param    $1  Foreground color.
+# @result       Escape code foreground color.
+# @return   0   Success
+#           N   Error code.
 function genExtFg()     { echo -e -n "\033[38;5;${1}m" ; }
+
+##
+# @brief    Generate extended background escape code
+# @param    $1  Background color.
+# @result       Escape code background color.
+# @return   0   Success
+#           N   Error code.
 function genExtBg()     { echo -e -n "\033[48;5;${1}m" ; }
+
+##
+# @brief    Generate escape code from parameter.
+# @param    $1  Color code.
+# @result       Escape code for color.
+# @return   0   Success
+#           N   Error code.
 function genEscape()    { echo -e -n "\033[${1}m" ; }
+
+## @brief   Generate dark foreground escape code color from color code.
 function genDFg()       { echo -n $((30+$1))  ; }
+
+## @brief   Generate dark background escape code color from color code.
 function genDBg()       { echo -n $((40+$1))  ; }
+
+## @brief   Generate bright foreground escape code color from parameter.
 function genIFg()       { echo -n $((90+$1))  ; }
+
+## @brief   Generate bright background escape code color from parameter.
 function genIBg()       { echo -n $((100+$1)) ; }
+
+## @brief   Generate font style escape code from parameter.
 function genEscSt()     { genEscape $1 ; }
+
+## @brief   Generate dark foreground escape code color from parameter.
 function genEscDFg()    { genEscape $((30+$1))  ; }
+
+## @brief   Generate dark background escape code color from parameter.
 function genEscDBg()    { genEscape $((40+$1))  ; }
+
+## @brief   Generate bright foreground escape code color from parameter.
 function genEscIFg()    { genEscape $((90+$1))  ; }
+
+## @brief   Generate bright background escape code color from parameter.
 function genEscIBg()    { genEscape $((100+$1)) ; }
+
+## @brief   Generate a soft screen reset on screen.
 function softReset()    { printf '\033[!p' ; }
+
+## @brief   Generate a full screen reset.
 function fullReset()
 {
     # Reset Foreground Color
@@ -143,26 +218,22 @@ function fullReset()
     return 0
 }
 
-function _kbhit()
-{
-    local wait="${1:-'1.0'}"
-    local ans=''
-    read -r -s -n 1 -t ${wait} ans && { echo -n "${ans}" ; return 0 ; }
-    return 1
-}
+## @brief   Wait a key and return success if pressed or an error if timeout.
+function _kbhit() { read -r -s -n 1 -t ${1:-0.25} -u 0 && return 0 || return 1 ; }
 
 function escScreenFlashes()
 {
-    local  wait=${1:-'0.125'}
-    echo -e "Press any key..."
-    while ! _kbhit "$2"
+    echo -e "Press any keyboard key..."
+    while ! _kbhit $2
     do
         echo -ne "${escScrRevON}"
-        sleep $wait
+        sleep ${1:-0.25}
         echo -ne "${escScrRevOFF}"
+        sleep ${1:-0.25}
     done 
 }
 
+## @brief   Exit from libKbHit and unload all variables and functions.
 function libEscCodesExit()
 {
     # Unset Variables
@@ -249,11 +320,11 @@ function libEscCodesExit()
     unset -f genEscBgRGB
     unset -f softReset
     unset -f fullReset
-    unset -f _kbhit
     unset -f escScreenFlashes
     unset -f libEscCodesExit
     # Return Code
     return 0
 }
 
-libEscCodes='loaded'
+## @brief   Check if libRegex is loaded and available.
+declare libEscCodes='loaded'

@@ -8,16 +8,29 @@
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
-
-declare libTime=''
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
 declare -i libTimeout=10
 
-function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
-function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
+## @brief   Filter and validate integer numbers from a string.
+declare reINT='[+-]?\d+'
+
+## @brief   Filter and validate float numbers from a string.
+declare reNUM='[-+]?(\d+\.?\d*|\d*\.\d+)([eE][+-]?0*[1-9]+\d*)?'
+
+## @brief   Check parameter for 'yes' confirmation.
+function _isYes() { case "$1" in [yY] | [yY][eE][sS]) true ;; *) false ;; esac ; }
+
+## @brief   Check parameter for 'no|not' confirmation.
 function _isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false ;; esac ; }
-function _isYes() { case "$1" in [yY] | [yY][eE][sS])            true ;; *) false ;; esac ; }
+
+## @brief   Check parameter for a number.
+function _isNumber() { if echo -n "${1}" | grep -qaoP "^${reNUM}$" > /dev/null 2>&1 ; then true ; else false ; fi ; }
+
+## @brief   Check a parameter for an integer number.
+function _isInteger() { if echo -n "${1}" | grep -qaoP "^${reINT}$" > /dev/null 2>&1 ; then true ; else false ; fi ; }
+
+## @brief   Ask user to confirm question.
 function ask()
 {
     local tout="${1:-0}"
@@ -29,6 +42,7 @@ function ask()
     return $ret
 }
 
+## @brief   Ask user to confirm quention about to continue or not.
 function askToContinue()
 {
     local tout="${1:-0}"
@@ -41,8 +55,7 @@ function askToContinue()
     return $err
 }
 
-function libTimeIsArg() { if [ -n "$1" ] ; then case $1 in -*) false ;; *) true ;; esac ; else false ; fi ; }
-
+## @brief   Print an usage help message.
 function libTimeUsage()
 {
     cat << EOT
@@ -55,6 +68,7 @@ Options:
 EOT
 }
 
+## @brief   Setup lib time to change default timeout.
 function libTimeSetup()
 {
     local err=0
@@ -63,7 +77,7 @@ function libTimeSetup()
         case $1 in
         -h|--help) libTimeUsage ; break ;;
         -t|--timeout)
-            if _isInt "$2"
+            if _isInteger "$2"
             then
                 shift
                 libTimeout=$1
@@ -80,6 +94,7 @@ function libTimeSetup()
     return $err
 }
 
+## @brief   Exit from lib time and unload all variables and functions.
 function libTimeExit()
 {
     unset -v libTime
@@ -97,4 +112,5 @@ function libTimeExit()
     return 0
 }
 
-libTime='loaded'
+## @brief   Variable to check if lib time was loaded.
+declare libTime='loaded'
