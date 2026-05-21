@@ -2,15 +2,15 @@
 # @file         libVersion.sh
 # @brief        Source variables and functions to manage and get libShell version.
 # @author:      Leandro D. Huff
-# @copyright:   https://creativecommons.org/licenses/by/4.0/
-# @sintaxe:     source libVersion.sh ... libVersionExit
+# @copyright    https://creativecommons.org/licenses/by/4.0/
+# @sintaxe      source libVersion.sh ... libVersionExit
 ################################################################################
 
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
 ## @brief   libShell version (version release revision)
-declare -a -i libVERSION=(2 2 5)
+declare -a -i libVERSION=(2 2 6)
 
 ## @brief   Get libShell string version.
 function libVersionStr() { printf "%d.%d.%d" ${libVERSION[0]} ${libVERSION[1]} ${libVERSION[2]} ; }
@@ -28,7 +28,7 @@ function libVersionNum() { echo -n $(( libVERSION[0]*1000000 + libVERSION[1]*100
 function libVersionExit()
 {
     unset -v libVersion
-    unset -v libVersion
+    unset -v libVERSION
     unset -f libVersionStr
     unset -f libVersionNum
     unset -f libVersionExit

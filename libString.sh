@@ -13,7 +13,7 @@
 function genVersionStr() { local vector=("${@}") ; echo -n "${vector[0]}.${vector[1]}.${vector[2]}" ; }
 
 ## @brief   Generate version integer from integer array.
-function genVersionNum() { local vector=("${@}") ; echo -n $((vector[0]*100 + vector[1]*10 + vector[2])) ; }
+function genVersionNum() { local vector=("${@}") ; echo -n $((vector[0]*1000000 + vector[1]*1000 + vector[2])) ; }
 
 ## @brief   Generate date version string from a date integers array.
 function genDateVersionStr() { local vector=("${@}") ; printf "%04d-%02d-%02d" ${vector[0]} ${vector[1]} ${vector[2]} ; }
@@ -29,9 +29,6 @@ function isNot() { case "$1" in [nN] | [nN][oO] | [nN][oO][tT]) true ;; *) false
 
 ## @brief   Check for empty parameter.
 function isEmpty()  { if [ -n "$1" ] ; then false ; else true  ; fi ; }
-
-## @brief   Get date string, format YYYY-mm-dd
-function notEmpty() { if [ -n "$1" ] ; then true  ; else false ; fi ; }
 
 ## @brief   Parameter from command line.
 function isParam()  { if echo -n "$1" | grep -qaoP '^-{1}(\w|(-?\d+)|(-_*\w{2,}))$'; then true; else false; fi; }
@@ -72,12 +69,10 @@ function addPrefix()
     [ -n "${1}" ] || return 1
     local prefix="$1"
     shift
-    local join=''
     declare -a res=()
     while [ -n "$1" ]
     do
-        join="${prefix}${1}"
-        res+=("${join}")
+        res+=("${prefix}${1}")
         shift
     done
     echo -n ${res[@]}
@@ -91,12 +86,10 @@ function addSuffix()
     [ -n "${1}" ] || return 1
     local sufix="$1"
     shift
-    local join=''
     declare -a res=()
     while [ -n "$1" ]
     do
-        join="${1}${sufix}"
-        res+=("${join}")
+        res+=("${1}${sufix}")
         shift
     done
     echo -n ${res[@]}
@@ -111,12 +104,10 @@ function addPrefixSuffix()
     local prefix="$1"
     local sufix="$2"
     shift 2
-    local join=''
     declare -a res=()
     while [ -n "$1" ]
     do
-        join="${prefix}${1}${sufix}"
-        res+=("${join}")
+        res+=("${prefix}${1}${sufix}")
         shift
     done
     echo -n ${res[@]}
