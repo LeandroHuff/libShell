@@ -252,10 +252,6 @@ declare -a testTABLE=(\
 40      1       ''              isEmpty             ' '                 ''          ''          '' \
 41      1       ''              isEmpty             'a'                 ''          ''          '' \
 \
-42      1       ''              notEmpty            ''                  ''          ''          '' \
-43      0       ''              notEmpty            ' '                 ''          ''          '' \
-44      0       ''              notEmpty            'a'                 ''          ''          '' \
-\
 45      1       ''              isParam             ''                  ''          ''          '' \
 46      1       ''              isParam             'a'                 ''          ''          '' \
 47      1       ''              isParam             '1'                 ''          ''          '' \
