@@ -24,8 +24,8 @@ declare     flagLoadLib=false
 declare -a  libLIST=(Compress Config Conn EscCodes File Git KbHit Log Math Random
 Regex String Time Version)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/dev/libShell"
-declare     testPATH="/home/${USER}/dev/libShell/test"
+declare     libPATH="/home/${USER}/libShell"
+declare     testPATH="/home/${USER}/libShell/test"
 
 declare     flagDEBUG=false
 

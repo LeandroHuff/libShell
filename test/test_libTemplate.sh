@@ -23,8 +23,8 @@ declare -i  maxTYPE=3
 declare     flagLoadLib=false
 declare -a  libLIST=(Config Conn EscCodes File Git Log Math Random Regex String Time)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/dev/libShell"
-declare     testPATH="/home/${USER}/dev/libShell/test"
+declare     libPATH="/home/${USER}/libShell"
+declare     testPATH="/home/${USER}/libShell/test"
 
 declare     flagDEBUG=false
 

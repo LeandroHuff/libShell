@@ -23,8 +23,8 @@ declare -i  maxTYPE=2
 declare     flagLoadLib=false
 declare -a  libLIST=(Config EscCodes)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/dev/libShell"
-declare     testPATH="/home/${USER}/dev/libShell/test"
+declare     libPATH="/home/${USER}/libShell"
+declare     testPATH="/home/${USER}/libShell/test"
 
 declare -i flagDEBUG=0
 
