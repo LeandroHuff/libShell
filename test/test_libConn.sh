@@ -22,8 +22,8 @@ declare -i  maxTYPE=0
 declare     flagLoadLib=false
 declare -a  libLIST=(Conn EscCodes)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/dev/libShell"
-declare     testPATH="/home/${USER}/dev/libShell/test"
+declare     libPATH="/home/${USER}/libShell"
+declare     testPATH="/home/${USER}/libShell/test"
 
 declare -i flagDEBUG=0
 
@@ -359,6 +359,7 @@ done
 
 # Start line counter and offset at 0
 LINE=0
+TEST=0
 idxID=$columnID
 # Calculate the first function column OFFSET.
 idxFUNC=$((idxID+columnFILE))
@@ -366,9 +367,11 @@ idxFUNC=$((idxID+columnFILE))
 # while not empty function name
 while [ -n "${testTABLE[$idxFUNC]}" ]
 do
+    ((LINE++))
     # skip commented lines.
     if [[ "${testTABLE[$idxID]:0:1}" != "#" ]]
     then
+        ((TEST++))
         # calculate return column offset
         idxRET=$((idxID+columnRET))
         # calculate result column offset
@@ -413,27 +416,27 @@ do
         then
             if [ $_RET -eq ${testTABLE[ $idxRET ]} ] && [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRET ]}" ]
         then
             if [ $_RET -eq ${testTABLE[ $idxRET ]} ]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRES ]}" ]
         then
             if [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         else
@@ -444,18 +447,16 @@ do
         if [ $_SUCCESS = false ] && [ $flagDEBUG -ne 0 ]
         then
             echo
-            logDebug "Line:$LINE"
+            logDebug "Test:$TEST"
             logDebug "Run:${testTABLE[$idxFUNC]}(${testTABLE[$idxP1]},${testTABLE[$idxP2]},${testTABLE[$idxP3]},${testTABLE[$idxP4]})"
             logDebug "Ret:'$_RET' compare to Table Ret: '${testTABLE[$idxRET]}' "
             logDebug "Res:'$_RES' compare to Table Res: '${testTABLE[$idxRES]}' "
         fi
 
         # show bar graph
-        barGraph $LINE $_SUCCESS
+        barGraph $TEST $_SUCCESS
     fi
 
-    # next line
-    let LINE++
     # next idxID offset from line counter
     idxID=$((LINE*maxCOLUMNS))
     # next function offset

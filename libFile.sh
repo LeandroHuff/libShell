@@ -228,7 +228,7 @@ function hasFS()
 }
 
 ##
-# @brief    Execute and external program for n times.
+# @brief    Try and retry run an external program for N times until success.
 # @param    -r|--retry      Retry n times, default 1.
 # @param    -v|--verbose    Print result at the end, default false.
 # @param    -g|--debug      Print debug messages on terminal, default false.
@@ -253,8 +253,8 @@ function tryRun()
         -*) res=''; err=1; break ;;
          *) while [ $retry -gt 0 ] && [ $err -ne 0 ]
             do
-                tryDebug "eval $* 2> /dev/null"
-                res="$(eval "$*" 2> /dev/null)"
+                tryDebug "eval \"$*\""
+                eval "$*"
                 err=$?
                 ((retry--))
             done
@@ -263,8 +263,6 @@ function tryRun()
         esac
         shift
     done
-    tryDebug "${res}"
-    if $echoRes ; then echo "${res}" ; fi
     return $err
 }
 
