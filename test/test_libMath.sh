@@ -23,8 +23,8 @@ declare -i  maxTYPE=2
 declare     flagLoadLib=false
 declare -a  libLIST=(EscCodes Math)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/dev/libShell"
-declare     testPATH="/home/${USER}/dev/libShell/test"
+declare     libPATH="/home/${USER}/libShell"
+declare     testPATH="/home/${USER}/libShell/test"
 
 declare -i flagDEBUG=0
 
@@ -177,29 +177,29 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 declare -a testTABLE=(\
 '#ID'   return  result      function                parameter1  parameter2  parameter3  parameter4 \
 \
-1       0       ''          isZero                  -0          ''          ''          '' \
-2       0       ''          isZero                  +0          ''          ''          '' \
-3       0       ''          isZero                  0           ''          ''          '' \
-4       0       ''          isZero                  .0          ''          ''          '' \
-5       0       ''          isZero                  0.          ''          ''          '' \
-6       0       ''          isZero                  0.0         ''          ''          '' \
-7       1       ''          isZero                  1           ''          ''          '' \
-8       1       ''          isZero                  1.          ''          ''          '' \
-9       1       ''          isZero                  .1          ''          ''          '' \
-10      1       ''          isZero                  0.1         ''          ''          '' \
-11      1       ''          isZero                  1.0         ''          ''          '' \
-12      1       ''          isZero                  1d0         ''          ''          '' \
-13      1       ''          isZero                  0d1         ''          ''          '' \
+1       0       ''          _isZero                  -0          ''          ''          '' \
+2       0       ''          _isZero                  +0          ''          ''          '' \
+3       0       ''          _isZero                  0           ''          ''          '' \
+4       0       ''          _isZero                  .0          ''          ''          '' \
+5       0       ''          _isZero                  0.          ''          ''          '' \
+6       0       ''          _isZero                  0.0         ''          ''          '' \
+7       1       ''          _isZero                  1           ''          ''          '' \
+8       1       ''          _isZero                  1.          ''          ''          '' \
+9       1       ''          _isZero                  .1          ''          ''          '' \
+10      1       ''          _isZero                  0.1         ''          ''          '' \
+11      1       ''          _isZero                  1.0         ''          ''          '' \
+12      1       ''          _isZero                  1d0         ''          ''          '' \
+13      1       ''          _isZero                  0d1         ''          ''          '' \
 \
 '#'  '0:Success/1:Error' '' 'Test Valid Numbers' 'Float Number' '' '' '' \
-14      0       ''          isNumber                1           ''          ''          '' \
-15      0       ''          isNumber                .1          ''          ''          '' \
-16      0       ''          isNumber                1.          ''          ''          '' \
-17      0       ''          isNumber                1.2         ''          ''          '' \
-18      0       ''          isNumber                0.1         ''          ''          '' \
-19      0       ''          isNumber                1.0         ''          ''          '' \
-20      1       ''          isNumber                0d1         ''          ''          '' \
-21      1       ''          isNumber                1d0         ''          ''          '' \
+14      0       ''          _isNumber                1           ''          ''          '' \
+15      0       ''          _isNumber                .1          ''          ''          '' \
+16      0       ''          _isNumber                1.          ''          ''          '' \
+17      0       ''          _isNumber                1.2         ''          ''          '' \
+18      0       ''          _isNumber                0.1         ''          ''          '' \
+19      0       ''          _isNumber                1.0         ''          ''          '' \
+20      1       ''          _isNumber                0d1         ''          ''          '' \
+21      1       ''          _isNumber                1d0         ''          ''          '' \
 \
 '#'  '0:Success/1:Error' 'Result' 'Normalize Number' 'Float Number' '' '' '' \
 22      ''      0.1         normalizeNumber         .1          ''          ''          '' \
@@ -240,42 +240,42 @@ declare -a testTABLE=(\
 51      1       NaN         getFractionFromFloat    ''          ''          ''          '' \
 \
 '#'  '0:Success/1:Error' '' 'Is a EEE32 0 Float' 'EEE32 Number' '' '' '' \
-52      0       ''          isFloatZero             0.0E12      ''          ''          '' \
-53      0       ''          isFloatZero             0E12        ''          ''          '' \
-54      0       ''          isFloatZero             .0E12       ''          ''          '' \
-55      0       ''          isFloatZero             0.E12       ''          ''          '' \
-56      0       ''          isFloatZero             0.          ''          ''          '' \
-57      0       ''          isFloatZero             .0          ''          ''          '' \
-58      0       ''          isFloatZero             0.0         ''          ''          '' \
-59      1       ''          isFloatZero             .E12        ''          ''          '' \
-60      1       ''          isFloatZero             E12         ''          ''          '' \
-61      0       ''          isFloatZero             0           ''          ''          '' \
-62      0       ''          isFloatZero             0           ''          ''          '' \
-63      0       ''          isFloatZero             0.          ''          ''          '' \
-64      0       ''          isFloatZero             0.0         ''          ''          '' \
-65      1       ''          isFloatZero             1           ''          ''          '' \
-66      1       ''          isFloatZero             1.          ''          ''          '' \
-67      1       ''          isFloatZero             .1          ''          ''          '' \
-68      1       ''          isFloatZero             0.1         ''          ''          '' \
-69      1       ''          isFloatZero             1.0         ''          ''          '' \
-70      1       ''          isFloatZero             1d0         ''          ''          '' \
-71      1       ''          isFloatZero             0d1         ''          ''          '' \
+52      0       ''          _isFloatZero             0.0E12      ''          ''          '' \
+53      0       ''          _isFloatZero             0E12        ''          ''          '' \
+54      0       ''          _isFloatZero             .0E12       ''          ''          '' \
+55      0       ''          _isFloatZero             0.E12       ''          ''          '' \
+56      0       ''          _isFloatZero             0.          ''          ''          '' \
+57      0       ''          _isFloatZero             .0          ''          ''          '' \
+58      0       ''          _isFloatZero             0.0         ''          ''          '' \
+59      1       ''          _isFloatZero             .E12        ''          ''          '' \
+60      1       ''          _isFloatZero             E12         ''          ''          '' \
+61      0       ''          _isFloatZero             0           ''          ''          '' \
+62      0       ''          _isFloatZero             0           ''          ''          '' \
+63      0       ''          _isFloatZero             0.          ''          ''          '' \
+64      0       ''          _isFloatZero             0.0         ''          ''          '' \
+65      1       ''          _isFloatZero             1           ''          ''          '' \
+66      1       ''          _isFloatZero             1.          ''          ''          '' \
+67      1       ''          _isFloatZero             .1          ''          ''          '' \
+68      1       ''          _isFloatZero             0.1         ''          ''          '' \
+69      1       ''          _isFloatZero             1.0         ''          ''          '' \
+70      1       ''          _isFloatZero             1d0         ''          ''          '' \
+71      1       ''          _isFloatZero             0d1         ''          ''          '' \
 \
 '#'  '0:Success/1:Error' '' 'Is a EEE32 Float' 'EEE32 Number' '' '' '' \
-72      0       ''          isFloat                 1.2E12      ''          ''          '' \
-73      0       ''          isFloat                 1E12        ''          ''          '' \
-74      0       ''          isFloat                 .1E12       ''          ''          '' \
-75      0       ''          isFloat                 1.E12       ''          ''          '' \
-76      0       ''          isFloat                 1.          ''          ''          '' \
-77      0       ''          isFloat                 .1          ''          ''          '' \
-78      0       ''          isFloat                 1.2         ''          ''          '' \
-79      1       ''          isFloat                 .E12        ''          ''          '' \
-80      1       ''          isFloat                 E12         ''          ''          '' \
-81      0       ''          isFloat                 1           ''          ''          '' \
-82      0       ''          isFloat                 0.1         ''          ''          '' \
-83      0       ''          isFloat                 1.0         ''          ''          '' \
-84      1       ''          isFloat                 1d0         ''          ''          '' \
-85      1       ''          isFloat                 0d1         ''          ''          '' \
+72      0       ''          _isFloat                 1.2E12      ''          ''          '' \
+73      0       ''          _isFloat                 1E12        ''          ''          '' \
+74      0       ''          _isFloat                 .1E12       ''          ''          '' \
+75      0       ''          _isFloat                 1.E12       ''          ''          '' \
+76      0       ''          _isFloat                 1.          ''          ''          '' \
+77      0       ''          _isFloat                 .1          ''          ''          '' \
+78      0       ''          _isFloat                 1.2         ''          ''          '' \
+79      1       ''          _isFloat                 .E12        ''          ''          '' \
+80      1       ''          _isFloat                 E12         ''          ''          '' \
+81      0       ''          _isFloat                 1           ''          ''          '' \
+82      0       ''          _isFloat                 0.1         ''          ''          '' \
+83      0       ''          _isFloat                 1.0         ''          ''          '' \
+84      1       ''          _isFloat                 1d0         ''          ''          '' \
+85      1       ''          _isFloat                 0d1         ''          ''          '' \
 \
 '#'  '0:Success/1:Error' '0:False/1:True|Result' 'Calculate Number' 'Number 1' 'Operator' 'Number 2' '' \
 86      0       2.0         calcNumber              1          '+'          1           '' \
@@ -429,6 +429,7 @@ done
 
 # Start line counter and offset at 0
 LINE=0
+TEST=0
 idxID=$columnID
 # Calculate the first function column OFFSET.
 idxFUNC=$((idxID+columnFILE))
@@ -436,9 +437,11 @@ idxFUNC=$((idxID+columnFILE))
 # while not empty function name
 while [ -n "${testTABLE[$idxFUNC]}" ]
 do
+    ((LINE++))
     # skip commented lines.
     if [[ "${testTABLE[$idxID]:0:1}" != "#" ]]
     then
+        ((TEST++))
         # calculate return column offset
         idxRET=$((idxID+columnRET))
         # calculate result column offset
@@ -483,27 +486,27 @@ do
         then
             if [ $_RET -eq ${testTABLE[ $idxRET ]} ] && [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRET ]}" ]
         then
             if [ $_RET -eq ${testTABLE[ $idxRET ]} ]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRES ]}" ]
         then
             if [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         else
@@ -514,18 +517,15 @@ do
         if [ $_SUCCESS = false ] && [ $flagDEBUG -ne 0 ]
         then
             echo
-            logDebug "Line:$LINE"
+            logDebug "Test:$TEST"
             logDebug "Run:${testTABLE[$idxFUNC]}(${testTABLE[$idxP1]},${testTABLE[$idxP2]},${testTABLE[$idxP3]},${testTABLE[$idxP4]})"
             logDebug "Ret:'$_RET' compare to Table Ret: '${testTABLE[$idxRET]}' "
             logDebug "Res:'$_RES' compare to Table Res: '${testTABLE[$idxRES]}' "
         fi
-
         # show bar graph
-        barGraph $LINE $_SUCCESS
+        barGraph $TEST $_SUCCESS
     fi
 
-    # next line
-    let LINE++
     # next idxID offset from line counter
     idxID=$((LINE*maxCOLUMNS))
     # next function offset

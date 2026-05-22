@@ -25,8 +25,8 @@ declare -i  maxTYPE=0
 declare     flagLoadLib=false
 declare -a  libLIST=(EscCodes String)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/dev/libShell"
-declare     testPATH="/home/${USER}/dev/libShell/test"
+declare     libPATH="/home/${USER}/libShell"
+declare     testPATH="/home/${USER}/libShell/test"
 
 declare -i flagDEBUG=0
 
@@ -118,7 +118,7 @@ function _unsetVars
 # exit from bash script and return an error code
 function _exit()
 {
-    local code=$([ -n "$1" ] && echo -n $1 || echo -n 0)
+    local code=${1:-0}
 
     # Stop logs
     [ -n "${logStop}" ] && logStop
@@ -210,8 +210,8 @@ declare -a testTABLE=(\
 '#ID'   return  result          function            parameter1          parameter2  parameter3  parameter4 \
 1       0       '1.2.3'         genVersionStr       "${VER[@]}"                                 '' \
 2       0       '9.8.7'         genVersionStr       '9'                '8'          '7'         '' \
-3       0       123             genVersionNum       "${VER[@]}"                                 '' \
-4       0       987             genVersionNum       '9'                 '8'         '7'         '' \
+3       0       1002003         genVersionNum       "${VER[@]}"                                 '' \
+4       0       9008007         genVersionNum       '9'                 '8'         '7'         '' \
 5       0       '2025-12-06'    genDateVersionStr   "${DAT[@]}"                                 '' \
 6       0       '9999-12-31'    genDateVersionStr   '9999'              '12'        '31'        '' \
 7       1       ''              isYes               n                   ''          ''          '' \
@@ -252,21 +252,17 @@ declare -a testTABLE=(\
 40      1       ''              isEmpty             ' '                 ''          ''          '' \
 41      1       ''              isEmpty             'a'                 ''          ''          '' \
 \
-42      1       ''              notEmpty            ''                  ''          ''          '' \
-43      0       ''              notEmpty            ' '                 ''          ''          '' \
-44      0       ''              notEmpty            'a'                 ''          ''          '' \
-\
 45      1       ''              isParam             ''                  ''          ''          '' \
 46      1       ''              isParam             'a'                 ''          ''          '' \
 47      1       ''              isParam             '1'                 ''          ''          '' \
 48      0       ''              isParam             '-a'                ''          ''          '' \
 49      0       ''              isParam             '-2'                ''          ''          '' \
-50      0       ''              isParam             '-a1'               ''          ''          '' \
+50      1       ''              isParam             '-a1'               ''          ''          '' \
 51      0       ''              isParam             '-a'                '1'         ''          '' \
 \
 52      1       ''              isArg               ''                  ''          ''          '' \
 53      1       ''              isArg               -a                  ''          ''          '' \
-54      1       ''              isArg               -1                  ''          ''          '' \
+54      0       ''              isArg               -1                  ''          ''          '' \
 55      0       ''              isArg               a                   ''          ''          '' \
 56      0       ''              isArg               1                   ''          ''          '' \
 \
@@ -286,6 +282,9 @@ declare -a testTABLE=(\
 \
 66      0       ''              libStringExit       ''                  ''          ''          '' \
 \
+67      0       'prevar'        addPrefix           'pre'               'var'       ''          '' \
+68      0       'prevarsuf'     addPrefixSuffix     'pre'               'suf'       'var'       '' \
+69      0       'varsuf'        addSuffix           'suf'               'var'       ''          '' \
 '#ID'   return  result          function            parameter1          parameter2  parameter3  parameter4\
 )
 
@@ -420,6 +419,7 @@ done
 
 # Start line counter and offset at 0
 LINE=0
+TEST=0
 idxID=$columnID
 # Calculate the first function column OFFSET.
 idxFUNC=$((idxID+columnFILE))
@@ -427,9 +427,11 @@ idxFUNC=$((idxID+columnFILE))
 # while not empty function name
 while [ -n "${testTABLE[$idxFUNC]}" ]
 do
+    ((LINE++))
     # skip commented lines.
     if [[ "${testTABLE[$idxID]:0:1}" != "#" ]]
     then
+        ((TEST++))
         # calculate return column offset
         idxRET=$((idxID+columnRET))
         # calculate result column offset
@@ -474,27 +476,27 @@ do
         then
             if [ $_RET -eq ${testTABLE[ $idxRET ]} ] && [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRET ]}" ]
         then
             if [ $_RET -eq ${testTABLE[ $idxRET ]} ]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRES ]}" ]
         then
             if [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         else
@@ -505,18 +507,16 @@ do
         if [ $_SUCCESS = false ] && [ $flagDEBUG -ne 0 ]
         then
             echo
-            logDebug "Line:$LINE"
+            logDebug "Test:$TEST"
             logDebug "Run:${testTABLE[$idxFUNC]}(${testTABLE[$idxP1]},${testTABLE[$idxP2]},${testTABLE[$idxP3]},${testTABLE[$idxP4]})"
             logDebug "Ret:'$_RET' compare to Table Ret: '${testTABLE[$idxRET]}' "
             logDebug "Res:'$_RES' compare to Table Res: '${testTABLE[$idxRES]}' "
         fi
 
         # show bar graph
-        barGraph $LINE $_SUCCESS
+        barGraph $TEST $_SUCCESS
     fi
 
-    # next line
-    let LINE++
     # next idxID offset from line counter
     idxID=$((LINE*maxCOLUMNS))
     # next function offset

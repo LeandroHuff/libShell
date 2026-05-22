@@ -23,8 +23,8 @@ declare -i  maxTYPE=2
 declare     flagLoadLib=false
 declare -a  libLIST=(Config EscCodes)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/dev/libShell"
-declare     testPATH="/home/${USER}/dev/libShell/test"
+declare     libPATH="/home/${USER}/libShell"
+declare     testPATH="/home/${USER}/libShell/test"
 
 declare -i flagDEBUG=0
 
@@ -189,14 +189,11 @@ function test_readTagsFromFile()
     local err=0
     local ret=0
     local file="$1"
-    local res=''
-    res="$(readTagsFromFile "${file}")"
+    declare -a res=()
+    res=("$(readTagsFromFile ${file})")
     ret=$?
-    err=$((err+ret))
-    if [[ "${res}" != "zero one two three four five six seven eight nine" ]] ; then
-        err=$((err+100))
-    fi
-    return $err
+    echo -n "${res[@]}"
+    return $ret
 }
 
 function test_readValuesFromFile()
@@ -204,14 +201,11 @@ function test_readValuesFromFile()
     local err=0
     local ret=0
     local file="$1"
-    local res=''
-    res="$(readValuesFromFile "${file}")"
+    declare -a res=()
+    res=("$(readValuesFromFile ${file})")
     ret=$?
-    err=$((err+ret))
-    if [[ "${res}" != "0 11 22 33 44 55 66 77 88 99" ]] ; then
-        err=$((err+100))
-    fi
-    return $err
+    echo -n "${res[@]}"
+    return $ret
 }
 
 
@@ -221,14 +215,10 @@ function test_loadConfigFromFile()
     local ret=0
     local file="$1"
     declare -a res=()
-    res+=($(loadConfigFromFile "${file}" "${#tableTAG[@]}" "${tableTAG[@]}" "${tableVALUE[@]}"))
+    res=($(loadConfigFromFile "${file}" "${#tableTAG[@]}" "${tableTAG[@]}" "${tableVALUE[@]}"))
     ret=$?
-    err=$((err+ret))
-    if [[ "${res[@]}" != "0 11 22 33 44 55 66 77 88 99" ]] ; then
-        err=$((err+100))
-    fi
-    echo -n "${#res[@]}"
-    return "$err"
+    echo -n "${res[@]}"
+    return $ret
 }
 
 # check command line arguments
@@ -253,29 +243,20 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 # test table
 
 declare -a testTABLE=(\
-'#ID'   return  result  function            parameter1  parameter2  parameter3  parameter4 \
-\
-1       0       alpha   getTag              'alpha=11'  ''          ''          '' \
-2       0       beta    getTag              'beta=22'   ''          ''          '' \
-3       0       gama    getTag              'gama=33'   ''          ''          '' \
-4       0       delta   getTag              'delta=44'  ''          ''          '' \
-5       0       omega   getTag              'omega=999' ''          ''          '' \
-'#'     ''      ''      'Get Value'         ''          ''          ''          '' \
-6       0       111     getValue            'one=111'   ''          ''          '' \
-7       0       222     getValue            'two=222'   ''          ''          '' \
-8       0       333     getValue            'three=333' ''          ''          '' \
-9       0       444     getValue            'four=444'  ''          ''          '' \
-'#'     ''      ''      'Save Config'       ''          ''          ''          '' \
+1       0       alpha   _getTag              'alpha=11'  ''          ''          '' \
+2       0       beta    _getTag              'beta=22'   ''          ''          '' \
+3       0       gama    _getTag              'gama=33'   ''          ''          '' \
+4       0       delta   _getTag              'delta=44'  ''          ''          '' \
+5       0       omega   _getTag              'omega=999' ''          ''          '' \
+6       0       111     _getValue            'one=111'   ''          ''          '' \
+7       0       222     _getValue            'two=222'   ''          ''          '' \
+8       0       333     _getValue            'three=333' ''          ''          '' \
+9       0       444     _getValue            'four=444'  ''          ''          '' \
 10      0       ''      test_saveConfigToFile 'test_Config' ''      ''          '' \
-'#'     ''      ''      'Read tags from config file' ''     ''      ''          '' \
-11      10      ''      test_readTagsFromFile 'test_Config' ''      ''          '' \
-'#'     ''      ''      'Read Values'       ''          ''          ''          '' \
-12      10      ''      test_readValuesFromFile 'test_Config' ''    ''          '' \
-'#'     ''      ''      'Load config from file' ''      ''          ''          '' \
-13      0       10      test_loadConfigFromFile 'test_Config' ''    ''          '' \
-'#'     ''      ''      ''                  ''          ''          ''          '' \
+11      10      'zero one two three four five six seven eight nine'      test_readTagsFromFile 'test_Config' ''      ''          '' \
+12      10      '0 11 22 33 44 55 66 77 88 99'      test_readValuesFromFile 'test_Config' ''    ''          '' \
+13      10      '0 11 22 33 44 55 66 77 88 99'      test_loadConfigFromFile 'test_Config' ''    ''          '' \
 14      0       ''      libConfigExit       ''          ''          ''          '' \
-'#ID'   return  result  function            parameter1  parameter2  parameter3  parameter4\
 )
 
 # show help message
@@ -409,6 +390,7 @@ done
 
 # Start line counter and offset at 0
 LINE=0
+TEST=0
 idxID=$columnID
 # Calculate the first function column OFFSET.
 idxFUNC=$((idxID+columnFILE))
@@ -416,9 +398,11 @@ idxFUNC=$((idxID+columnFILE))
 # while not empty function name
 while [ -n "${testTABLE[$idxFUNC]}" ]
 do
+    ((LINE++))
     # skip commented lines.
     if [[ "${testTABLE[$idxID]:0:1}" != "#" ]]
     then
+        ((TEST++))
         # calculate return column offset
         idxRET=$((idxID+columnRET))
         # calculate result column offset
@@ -463,27 +447,27 @@ do
         then
             if [ $_RET -eq ${testTABLE[ $idxRET ]} ] && [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRET ]}" ]
         then
             if [ $_RET -eq ${testTABLE[ $idxRET ]} ]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         elif [ -n "${testTABLE[ $idxRES ]}" ]
         then
             if [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
             then
-                let _OK++
+                ((_OK++))
             else
-                let _ERR++
+                ((_ERR++))
                 _SUCCESS=false
             fi
         else
@@ -493,19 +477,17 @@ do
         # on debug mode, print a debug message on terminal
         if [ $_SUCCESS = false ] && [ $flagDEBUG -ne 0 ]
         then
-        echo
-            logDebug "Line:$LINE"
+            echo
+            logDebug "Test:$TEST"
             logDebug "Run:${testTABLE[$idxFUNC]}(${testTABLE[$idxP1]},${testTABLE[$idxP2]},${testTABLE[$idxP3]},${testTABLE[$idxP4]})"
             logDebug "Ret:'$_RET' compare to Table Ret: '${testTABLE[$idxRET]}' "
             logDebug "Res:'$_RES' compare to Table Res: '${testTABLE[$idxRES]}' "
         fi
 
         # show bar graph
-        barGraph $LINE $_SUCCESS
+        barGraph $TEST $_SUCCESS
     fi
 
-    # next line
-    let LINE++
     # next idxID offset from line counter
     idxID=$((LINE*maxCOLUMNS))
     # next function offset

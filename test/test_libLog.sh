@@ -2,8 +2,8 @@
 
 declare -a  libLIST=(Log)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/dev/libShell"
-declare     testPATH="/home/${USER}/dev/libShell/test"
+declare     libPATH="/home/${USER}/libShell"
+declare     testPATH="/home/${USER}/libShell/test"
 
 ################################################################################
 # @file     test_libLog.sh

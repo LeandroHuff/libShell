@@ -8,24 +8,25 @@
 ################################################################################
 
 # Must be sourced not running
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91merror\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
-declare libConfig=''
+## @brief   Get tag name from a string parameter as tag=value
+function _getTag() { echo -n "${1%=*}" ; }
 
-function getTag(){ echo -n "${1%=*}" ; }
-function getValue() { echo -n "${1##*=}" ; }
+## @brief   Get value from a string parameter as tag=value
+function _getValue() { echo -n "${1##*=}" ; }
 
 #
 # parameter:
 #   $1  : filename
-#   $2  : length
+#   $2  : tags|values array items counter
 #   $[@]: tags
 #   $[@]: values
 function saveConfigToFile()
 {
     local filename="$1"
     shift
-    local len=$1
+    local items=$1
     shift
     local tags=()
     local values=()
@@ -34,15 +35,15 @@ function saveConfigToFile()
     local string
     # Check filename parameters.
     [ -n "${filename}" ] || return 1
-    [ $len -gt 0 ] || return 2
+    [ $items -gt 0 ] || return 2
     # Get all tags
-    for ((index=0; index < len; index++))
+    for ((index=0; index < items; index++))
     do
         tags+=("$1")
         shift
     done
     # Get all values
-    for ((index=0; index < len; index++))
+    for ((index=0; index < items; index++))
     do
         values+=("$1")
         shift
@@ -50,136 +51,144 @@ function saveConfigToFile()
     # Clear target file.
     echo -n > "${filename}"
     # Save tag=value into filename.
-    for ((index=0; index < len; index++))
+    for ((index=0; index < items; index++))
     do
         printf -v string "%s=%s" "${tags[$index]}" "${values[$index]}"
-        echo "${string}" >> "${filename}" || { err=$((err|8)) ; echo -e "\033[31merror\033[0m: Save ${tags[$index]}=${values[$index]} into file ${filename}" ; }
+        echo "${string}" >> "${filename}" || { err=$((err|8)) ; echo -e "\033[31m  error\033[0m: Save ${tags[$index]}=${values[$index]} into file ${filename}" ; }
     done
     return $err
 }
 
 function readTagsFromFile()
 {
-    local filename="$1"
-    local tags=()
+    declare filename="$1"
+    declare -a tags=()
     if [ -f "${filename}" ]
     then
         while read -e line
         do
-            if [ -z "${line}" ] ; then continue ; fi
-            if [ ${line:0:1} = "#" ] ; then continue ; fi
-            tags+=("$(getTag "${line}")")
+            # skip empty lines
+            if echo -n "${line}" | grep -qaoP '^ *$' > /dev/null 2>&1 ; then continue ; fi
+            # skip commented lines
+            if echo -n "${line}" | grep -qaoP '^ *#+' > /dev/null 2>&1 ; then continue ; fi
+            tags+=("$(_getTag ${line})")
         done < "${filename}"
     else
-        return -1
+        return 0
     fi
-    echo -n "${tags[@]}"
-    return "${#tags[@]}"
+    # print list
+    echo -n ${tags[@]}
+    # return items counter
+    return ${#tags[@]}
 }
 
 function readValuesFromFile()
 {
-    local filename="$1"
-    local tableVALUES=()
+    declare filename="$1"
+    declare -a values=()
     if [ -f "${filename}" ]
     then
         while read -e line
         do
-            if [ -z "${line}" ] ; then continue ; fi
-            if [ ${line:0:1} = "#" ] ; then continue ; fi
-            tableVALUES+=("$(getValue "${line}")")
+            # skip empty lines
+            if echo -n "${line}" | grep -qaoP '^ *$' > /dev/null 2>&1 ; then continue ; fi
+            # skip commented lines
+            if echo -n "${line}" | grep -qaoP '^ *#+' > /dev/null 2>&1 ; then continue ; fi
+            values+=("$(_getValue ${line})")
         done < "${filename}"
     else
-        return -1
+        return 0
     fi
-    echo -n "${tableVALUES[@]}"
-    return "${#tableVALUES[@]}"
+    # print list
+    echo -n ${values[@]}
+    # print items counter
+    return ${#values[@]}
 }
 
 function loadConfigFromFile()
 {
-    local _filename="$1"
+    declare filename="$1"
     shift
-    local _len=$1
+    declare -i items=$1
     shift
 
-    declare -i _err=0
-    declare -i _index
-    local _tableTAG=()
-    local _tableDEFAULT=()
-    local _tableCONFIG=()
-    local _value=''
+    declare -i err=0
+    declare -i index
+    declare -a tableTAG=()
+    declare -a tableDEFAULT=()
+    declare -a tableCONFIG=()
+    declare -a value=''
 
     # Check filename parameters.
-    if [ -z "${_filename}" ]
+    if [ -z "${filename}" ]
     then
         return 1
     fi
-    if [ -z "$_len" ]
+    if [ -z "$items" ]
     then
         return 2
     fi
-    if [ $_len -le 0 ]
+    if [ $items -le 0 ]
     then
         return 4
     fi
 
     # Get all tags
-    for ((_index=0; _index < _len; _index++))
+    for ((index=0; index < items; index++))
     do
         [ -n "$1" ] || return 8
-        _tableTAG+=("$1")
+        tableTAG+=("$1")
         shift
     done
 
     # Get all values
-    for ((_index=0; _index < _len; _index++))
+    for ((index=0; index < items; index++))
     do
         [ -n "$1" ] || return 16
-        _tableDEFAULT+=("$1")
+        tableDEFAULT+=("$1")
         shift
     done
 
-    if ! [ -f "${_filename}" ]
+    if ! [ -f "${filename}" ]
     then
-        echo -n "${_tableDEFAULT[@]}"
+        echo -n "${tableDEFAULT[@]}"
         return 32
     fi
 
-    local _found
+    local found
     # search tag
-    for ((_index=0 ; _index < $_len ; _index++))
+    for ((index=0 ; index < $items ; index++))
     do
-        _found=false
-        while read -e _line ; do
-            # do not compute empty lines
-            if ! [ -n "${_line}" ] ; then continue ; fi
-            # do not compute commented lines
-            if [ ${_line:0:1} = "#" ] ; then continue ; fi
+        found=false
+        while read -e line ; do
+            # skip empty lines
+            if echo -n "${line}" | grep -qaoP '^ *$' > /dev/null 2>&1 ; then continue ; fi
+            # skip commented lines
+            if echo -n "${line}" | grep -qaoP '^ *#+' > /dev/null 2>&1 ; then continue ; fi
             # take tag from line
-            if [[ "$(getTag "${_line}")" == "${_tableTAG[$_index]}" ]]
+            if [[ "$(_getTag ${line})" == "${tableTAG[$index]}" ]]
             then
-                _value="$(getValue "${_line}")"
-                if [ -n "${_value}" ]
+                value="$(_getValue ${line})"
+                if [ -n "${value}" ]
                 then
-                    _tableCONFIG+=("${_value}")
-                    _found=true
+                    tableCONFIG+=("${value}")
+                    found=true
                 fi
                 break
             fi
-        done < "${_filename}"
-        if ! $_found ; then _tableCONFIG+=("${_tableTAG[$_index]}") ; fi
+        done < "${filename}"
+        if ! $found ; then tableCONFIG+=("${tableTAG[$index]}") ; fi
     done
 
-    echo -n "${_tableCONFIG[@]}"
-    return 0
+    echo -n "${tableCONFIG[@]}"
+    return ${#tableCONFIG[@]}
 }
 
 function libConfigExit()
 {
     unset -v libConfig
-    unset -f getTag
-    unset -f getValue
+    unset -f _getTag
+    unset -f _getValue
     unset -f saveConfigToFile
     unset -f readTagsFromFile
     unset -f readValuesFromFile
@@ -188,4 +197,4 @@ function libConfigExit()
     return 0
 }
 
-libConfig='loaded'
+declare libConfig='loaded'
