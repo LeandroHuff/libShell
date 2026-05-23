@@ -1,6 +1,6 @@
 # libShell
 
-Version: **2**.**2**.**5**
+Version: **2**.**2**.**6**
 
 libShell is a group of bash script files to service as a resource [library](#Libraries),
 these files help developers to write bash script programs without to re-write most of
