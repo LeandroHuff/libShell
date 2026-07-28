@@ -23,8 +23,8 @@ declare -i  maxTYPE=3
 declare     flagLoadLib=false
 declare -a  libLIST=(EscCodes Time)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/libShell"
-declare     testPATH="/home/${USER}/libShell/test"
+declare     libPATH="$HOME/dev/libShell"
+declare     testPATH="$HOME/dev/libShell/test"
 
 declare     flagDEBUG=false
 
@@ -155,11 +155,6 @@ function barGraph()
     if  [ $((num % 50)) -eq 0 ] ; then echo ; fi
 }
 
-# check command line arguments
-function _isArg() { if [ -n "$1" ] ; then case $1 in -*) false ;; *) true ;; esac ; else false ; fi ; }
-function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
-function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
-
 # +--------------+---------------------------------------------------------------
 # | Column       | Description
 # +--------------+---------------------------------------------------------------
@@ -178,90 +173,31 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 declare -a testTABLE=(\
 '#ID'   'return code'   'result string' 'function name' 'parameter 1'   'parameter 2'   'parameter 3'   'parameter 4' \
 \
-1       1               ''              _isArg          ''              ''              ''              '' \
-2       1               ''              _isArg          -a              ''              ''              '' \
-3       1               ''              _isArg          -1              ''              ''              '' \
-4       0               ''              _isArg          a               ''              ''              '' \
-5       0               ''              _isArg          1               ''              ''              '' \
+1      1               ''              libTimeIsYES          n               ''              ''              '' \
+2      1               ''              libTimeIsYES          N               ''              ''              '' \
+3      1               ''              libTimeIsYES          !               ''              ''              '' \
+4      0               ''              libTimeIsYES          y               ''              ''              '' \
+5      0               ''              libTimeIsYES          Y               ''              ''              '' \
+6      0               ''              libTimeIsYES          yes             ''              ''              '' \
+7      0               ''              libTimeIsYES          Yes             ''              ''              '' \
+8      0               ''              libTimeIsYES          yES             ''              ''              '' \
+9      0               ''              libTimeIsYES          yeS             ''              ''              '' \
+10      0               ''             libTimeIsYES          YEs             ''              ''              '' \
+11      0               ''             libTimeIsYES          YeS             ''              ''              '' \
+12      0               ''             libTimeIsYES          yeS             ''              ''              '' \
+13      0               ''             libTimeIsYES          YES             ''              ''              '' \
+14      1               ''             libTimeIsYES          yees            ''              ''              '' \
 \
-6       1               ''              _isNum          ''              ''              ''              '' \
-7       1               ''              _isNum          a               ''              ''              '' \
-8       1               ''              _isNum          '#'             ''              ''              '' \
-9       0               ''              _isNum          0               ''              ''              '' \
-10      0               ''              _isNum          .0              ''              ''              '' \
-11      0               ''              _isNum          0.              ''              ''              '' \
-12      0               ''              _isNum          0.0             ''              ''              '' \
-13      0               ''              _isNum          123.456         ''              ''              '' \
-14      0               ''              _isNum          123456          ''              ''              '' \
-15      0               ''              _isNum          +123456         ''              ''              '' \
-16      0               ''              _isNum          +123.456        ''              ''              '' \
-17      0               ''              _isNum          -123.456        ''              ''              '' \
-18      0               ''              _isNum          -123456         ''              ''              '' \
+15      2               ''              libTimeSetup    -x              ''              ''              '' \
+16      3               ''              libTimeSetup    a               ''              ''              '' \
+17      1               ''              libTimeSetup    -t              -x              ''              '' \
+18      1               ''              libTimeSetup    -t              x               ''              '' \
+19      0               ''              libTimeSetup    ''              ''              ''              '' \
+20      0               ''              libTimeSetup    -t              30              ''              '' \
+21      0               ''              libTimeSetup    -t              0               ''              '' \
+22      0               ''              libTimeSetup    -t              -10             ''              '' \
 \
-19      1               ''              _isInt          ''              ''              ''              '' \
-20      1               ''              _isInt          a               ''              ''              '' \
-21      1               ''              _isInt          '#'             ''              ''              '' \
-22      0               ''              _isInt          0               ''              ''              '' \
-23      1               ''              _isInt          .0              ''              ''              '' \
-24      1               ''              _isInt          0.              ''              ''              '' \
-25      1               ''              _isInt          0.0             ''              ''              '' \
-26      1               ''              _isInt          123.456         ''              ''              '' \
-27      0               ''              _isInt          123456          ''              ''              '' \
-28      0               ''              _isInt          +123456         ''              ''              '' \
-26      1               ''              _isInt          +123.456        ''              ''              '' \
-30      1               ''              _isInt          -123.456        ''              ''              '' \
-31      0               ''              _isInt          -123456         ''              ''              '' \
-\
-32      1               ''              _isNot          s               ''              ''              '' \
-33      1               ''              _isNot          S               ''              ''              '' \
-34      1               ''              _isNot          !               ''              ''              '' \
-35      0               ''              _isNot          n               ''              ''              '' \
-36      0               ''              _isNot          N               ''              ''              '' \
-37      0               ''              _isNot          No              ''              ''              '' \
-38      0               ''              _isNot          nO              ''              ''              '' \
-39      0               ''              _isNot          NO              ''              ''              '' \
-40      0               ''              _isNot          no              ''              ''              '' \
-41      0               ''              _isNot          not             ''              ''              '' \
-42      0               ''              _isNot          Not             ''              ''              '' \
-43      0               ''              _isNot          nOt             ''              ''              '' \
-44      0               ''              _isNot          noT             ''              ''              '' \
-45      0               ''              _isNot          NOt             ''              ''              '' \
-46      0               ''              _isNot          NoT             ''              ''              '' \
-47      0               ''              _isNot          noT             ''              ''              '' \
-48      0               ''              _isNot          NOT             ''              ''              '' \
-49      1               ''              _isNot          noot            ''              ''              '' \
-\
-50      1               ''              _isYes          n               ''              ''              '' \
-51      1               ''              _isYes          N               ''              ''              '' \
-52      1               ''              _isYes          !               ''              ''              '' \
-53      0               ''              _isYes          y               ''              ''              '' \
-54      0               ''              _isYes          Y               ''              ''              '' \
-55      0               ''              _isYes          yes             ''              ''              '' \
-56      0               ''              _isYes          Yes             ''              ''              '' \
-57      0               ''              _isYes          yES             ''              ''              '' \
-58      0               ''              _isYes          yeS             ''              ''              '' \
-59      0               ''              _isYes          YEs             ''              ''              '' \
-60      0               ''              _isYes          YeS             ''              ''              '' \
-61      0               ''              _isYes          yeS             ''              ''              '' \
-62      0               ''              _isYes          YES             ''              ''              '' \
-63      1               ''              _isYes          yees            ''              ''              '' \
-\
-64      2               ''              libTimeSetup    -x              ''              ''              '' \
-65      3               ''              libTimeSetup    a               ''              ''              '' \
-66      1               ''              libTimeSetup    -t              -x              ''              '' \
-67      1               ''              libTimeSetup    -t              x               ''              '' \
-68      0               ''              libTimeSetup    ''              ''              ''              '' \
-69      0               ''              libTimeSetup    -t              30              ''              '' \
-70      0               ''              libTimeSetup    -t              0               ''              '' \
-71      0               ''              libTimeSetup    -t              -10             ''              '' \
-\
-72      1               ''              _isArg          ''              ''              ''              '' \
-73      1               ''              _isArg          -a              ''              ''              '' \
-74      1               ''              _isArg          -1              ''              ''              '' \
-75      0               ''              _isArg          a               ''              ''              '' \
-76      0               ''              _isArg          1               ''              ''              '' \
-\
-77      0               ''              libTimeExit     ''              ''              ''              '' \
+23      0               ''              libTimeExit     ''              ''              ''              '' \
 \
 '#ID'   'return code'   'result string' 'function name' 'parameter 1'   'parameter 2'   'parameter 3'   'parameter 4'\
 )
@@ -294,7 +230,7 @@ do
     case $1 in
     -h|--help) usage ; _exit 0 ;;
     -p|--path)
-        if _isArg "$2"
+        if libTimeIsArg "$2"
         then
             shift
             libPATH="$1"
@@ -304,7 +240,7 @@ do
         fi
         ;;
     -t|--type)
-        if _isArg "$2" && _isInt "$2"
+        if libTimeIsArg "$2" && libTimeIsInt "$2"
         then
             shift
             if [ $1 -ge $minTYPE ] && [ $1 -le $maxTYPE ]
@@ -361,9 +297,9 @@ do
     case $1 in
     -h|--help) [ -n "${logHelp}" ] && logHelp ; _exit 0 ;;
     -t|--timeout)
-        if _isArg "$2"
+        if libTimeIsArg "$2"
         then
-            if _isNum "$2"
+            if libTimeIsNum "$2"
         then
                 libTimeSetup $1 $2
         else

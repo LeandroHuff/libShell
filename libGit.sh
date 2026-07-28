@@ -229,7 +229,7 @@ function getRepositoryChanges()
 #           1..N        Failure, branch does NOT EXIST in the current repository.
 function existBranch()
 {
-    if git branch -q | grep -aoE "${1:-'null'}$" > /dev/null 2>&1
+    if git branch -q | grep -aoP "${1:-'null'}$" > /dev/null 2>&1
     then
         return 0
     else
@@ -399,7 +399,7 @@ function gitBranchDelete()
 function gitHaveBranch()
 {
     [ -n "${1}" ] || return 1
-    if git branch | grep -aoE "${1}$" > /dev/null 2>&1
+    if git branch | grep -aoP "${1}$" > /dev/null 2>&1
     then
         return 0
     else
@@ -573,15 +573,13 @@ function gitSwitch()
     fi
 }
 
-##
-# @brief    Finish libGit, unset variables and functions.
-# @param    none
-# @result   none
-# @return   0           Success
+##  @brief  Exit from libGit, unload all variables and functions.
 function libGitExit()
 {
+    # unset variables
     unset -v libGit
     unset -v StatusLetters
+    # unset functions
     unset -f isGitRepository
     unset -f isBranchCurrent
     unset -f isBranchUpToDate
@@ -597,7 +595,7 @@ function libGitExit()
     unset -f gitRebase
     unset -f gitSetupPullRebase
     unset -f gitConfigBranchMerge
-    unset -f gitConfigBranchPushRemote
+    unset -f gitConfigBranchPushDefault
     unset -f gitConfigAutoSetupMerge
     unset -f gitSetLocalPushUpstream
     unset -f gitBranchName
@@ -606,15 +604,12 @@ function libGitExit()
     unset -f gitRepositoryName
     unset -f createBranch
     unset -f gitAdd
-    unset -f gitCommitSigned
     unset -f gitCommitNotSigned
+    unset -f gitCommitSigned
     unset -f gitFetch
     unset -f gitPull
     unset -f gitPush
     unset -f gitSwitch
-    unset -f libGitExt
-    return 0
 }
 
-## @brief   Set variable to control libGit successfully sourced.
 declare libGit='loaded'

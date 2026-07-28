@@ -25,8 +25,8 @@ declare -i  maxTYPE=0
 declare     flagLoadLib=false
 declare -a  libLIST=(EscCodes String)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/libShell"
-declare     testPATH="/home/${USER}/libShell/test"
+declare     libPATH="$HOME/dev/libShell"
+declare     testPATH="$HOME/dev/libShell/test"
 
 declare -i flagDEBUG=0
 
@@ -252,39 +252,39 @@ declare -a testTABLE=(\
 40      1       ''              isEmpty             ' '                 ''          ''          '' \
 41      1       ''              isEmpty             'a'                 ''          ''          '' \
 \
-45      1       ''              isParam             ''                  ''          ''          '' \
-46      1       ''              isParam             'a'                 ''          ''          '' \
-47      1       ''              isParam             '1'                 ''          ''          '' \
-48      0       ''              isParam             '-a'                ''          ''          '' \
-49      0       ''              isParam             '-2'                ''          ''          '' \
-50      1       ''              isParam             '-a1'               ''          ''          '' \
-51      0       ''              isParam             '-a'                '1'         ''          '' \
+42      1       ''              isParam             ''                  ''          ''          '' \
+43      1       ''              isParam             'a'                 ''          ''          '' \
+44      1       ''              isParam             '1'                 ''          ''          '' \
+45      0       ''              isParam             '-a'                ''          ''          '' \
+46      0       ''              isParam             '-2'                ''          ''          '' \
+47      1       ''              isParam             '-a1'               ''          ''          '' \
+48      0       ''              isParam             '-a'                '1'         ''          '' \
 \
-52      1       ''              isArg               ''                  ''          ''          '' \
-53      1       ''              isArg               -a                  ''          ''          '' \
-54      0       ''              isArg               -1                  ''          ''          '' \
-55      0       ''              isArg               a                   ''          ''          '' \
-56      0       ''              isArg               1                   ''          ''          '' \
+49      1       ''              isArg               ''                  ''          ''          '' \
+50      1       ''              isArg               -a                  ''          ''          '' \
+51      0       ''              isArg               -1                  ''          ''          '' \
+52      0       ''              isArg               a                   ''          ''          '' \
+53      0       ''              isArg               1                   ''          ''          '' \
 \
-57      0       ''              test_getDate        ''                  ''          ''          '' \
+54      0       ''              test_getDate        ''                  ''          ''          '' \
 \
-58      0       ''              test_getTime        ''                  ''          ''          '' \
+55      0       ''              test_getTime        ''                  ''          ''          '' \
 \
-59      0       ''              test_getDateTime    ''                  ''          ''          '' \
+56      0       ''              test_getDateTime    ''                  ''          ''          '' \
 \
-60      0       10              strLen              '1234567890'        ''          ''          '' \
-61      0       0               strLen              ''                  ''          ''          '' \
-62      0       11              strLen              'abc 123 #@!'       ''          ''          '' \
+57      0       10              strLen              '1234567890'        ''          ''          '' \
+58      0       0               strLen              ''                  ''          ''          '' \
+59      0       11              strLen              'abc 123 #@!'       ''          ''          '' \
 \
-63      0       0               cmpStr              'abc123#@!'         'abc123#@!' ''          '' \
-64      0       -1              cmpStr              'abc'               'def'       ''          '' \
-65      0       1               cmpStr              '987'               '123'       ''          '' \
+60      0       0               cmpStr              'abc123#@!'         'abc123#@!' ''          '' \
+61      0       -1              cmpStr              'abc'               'def'       ''          '' \
+62      0       1               cmpStr              '987'               '123'       ''          '' \
 \
-66      0       ''              libStringExit       ''                  ''          ''          '' \
+63      0       ''              libStringExit       ''                  ''          ''          '' \
 \
-67      0       'prevar'        addPrefix           'pre'               'var'       ''          '' \
-68      0       'prevarsuf'     addPrefixSuffix     'pre'               'suf'       'var'       '' \
-69      0       'varsuf'        addSuffix           'suf'               'var'       ''          '' \
+64      0       'prevar'        addPrefix           'pre'               'var'       ''          '' \
+65      0       'prevarsuf'     addPrefixSuffix     'pre'               'suf'       'var'       '' \
+66      0       'varsuf'        addSuffix           'suf'               'var'       ''          '' \
 '#ID'   return  result          function            parameter1          parameter2  parameter3  parameter4\
 )
 

@@ -22,8 +22,8 @@ declare -i  maxTYPE=0
 declare     flagLoadLib=false
 declare -a  libLIST=(Conn EscCodes)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/libShell"
-declare     testPATH="/home/${USER}/libShell/test"
+declare     libPATH="$HOME/dev/libShell"
+declare     testPATH="$HOME/dev/libShell/test"
 
 declare -i flagDEBUG=0
 
@@ -152,11 +152,6 @@ function barGraph()
     if  [ $((num % 50)) -eq 0 ] ; then echo ; fi
 }
 
-# check command line arguments
-function _isArg() { if [ -n "$1" ] ; then case $1 in -*) false ;; *) true ;; esac ; else false ; fi ; }
-function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
-function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
-
 function test_isConnected()
 {
     local err=0
@@ -192,39 +187,8 @@ function test_isConnected()
 declare -a testTABLE=(\
 '#ID'   return  result  function            parameter1  parameter2  parameter3  parameter4 \
 \
-1       1       ''      _isArg              ''          ''          ''          '' \
-2       0       ''      _isArg              'a'         ''          ''          '' \
-3       1       ''      _isArg              '-a'        ''          ''          '' \
-\
-4       1       ''      _isInt              ''          ''          ''          '' \
-5       0       ''      _isInt              '1'         ''          ''          '' \
-6       0       ''      _isInt              '+1'        ''          ''          '' \
-7       0       ''      _isInt              '-1'        ''          ''          '' \
-8       1       ''      _isInt              'a'         ''          ''          '' \
-9       1       ''      _isInt              '+a'        ''          ''          '' \
-10      1       ''      _isInt              '-a'        ''          ''          '' \
-11      1       ''      _isInt              '1l1'       ''          ''          '' \
-\
-12      1       ''      _isNum              ''          ''          ''          '' \
-13      0       ''      _isNum              '1'         ''          ''          '' \
-14      0       ''      _isNum              '+1'        ''          ''          '' \
-15      0       ''      _isNum              '-1'        ''          ''          '' \
-16      0       ''      _isNum              '.1'        ''          ''          '' \
-17      0       ''      _isNum              '+.1'       ''          ''          '' \
-18      0       ''      _isNum              '-.1'       ''          ''          '' \
-19      0       ''      _isNum              '1.'        ''          ''          '' \
-20      0       ''      _isNum              '+1.'       ''          ''          '' \
-21      0       ''      _isNum              '-1.'       ''          ''          '' \
-22      1       ''      _isNum              '1l'        ''          ''          '' \
-23      1       ''      _isNum              '+1l'       ''          ''          '' \
-24      1       ''      _isNum              '-1l'       ''          ''          '' \
-25      1       ''      _isNum              'a'         ''          ''          '' \
-26      1       ''      _isNum              '+a'        ''          ''          '' \
-27      1       ''      _isNum              '-a'        ''          ''          '' \
-28      1       ''      _isNum              '1l1'       ''          ''          '' \
-\
-29      0       ''      test_isConnected    '30'        '1'         ''          '' \
-30      0       ''      libConnExit         ''          ''          ''          '' \
+1      0       ''      test_isConnected    '30'        '1'         ''          '' \
+2      0       ''      libConnExit         ''          ''          ''          '' \
 \
 '#ID'   return  result  function            parameter1  parameter2  parameter3  parameter4\
 )

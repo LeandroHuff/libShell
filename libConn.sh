@@ -18,12 +18,14 @@
 #           false   internet is not available.
 function isConnected()
 {
-# tableIP=('CF I' 'CF II' 'Google I' 'Google II' 'Q9' 'OpenDNS I' 'OpenDNS II')
+    # tableIP=('CF I' 'CF II' 'Google I' 'Google II' 'Q9' 'OpenDNS I' 'OpenDNS II')
     declare -a tableIP=(1.0.0.1 1.1.1.1 8.8.4.4 8.8.8.8 9.9.9.9 208.67.220.220 208.67.222.222)
     declare -i time=${1:-30}
     declare -i retry=${2:-1}
     declare -i item=${3:-5}
+
     [ $item -le ${#tableIP[@]} ] || item=$((${#tableIP[@]}-1))
+
     if ping ${tableIP[$item]} -q -t $time -c $retry > /dev/null 2>&1
     then
         true

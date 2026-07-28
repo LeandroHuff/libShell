@@ -11,12 +11,11 @@
 
 declare libFlatpak=''
 
+##  @brief  Exit from libFlatpak, unload all variables and functions.
 function libFlatpakExit()
 {
+    # unset variables
     unset -v libFlatpak
-
-    unset -f libFlatpakExit
-    return 0
 }
 
-libFlatpak='loaded'
+declare libFlatpak='loaded'

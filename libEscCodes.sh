@@ -148,7 +148,7 @@ function genExtBg()     { echo -e -n "\033[48;5;${1}m" ; }
 # @result       Escape code for color.
 # @return   0   Success
 #           N   Error code.
-function genEscape()    { echo -e -n "\033[${1}m" ; }
+function genEscCode()    { echo -e -n "\033[${1}m" ; }
 
 ## @brief   Generate dark foreground escape code color from color code.
 function genDFg()       { echo -n $((30+$1))  ; }
@@ -163,19 +163,19 @@ function genIFg()       { echo -n $((90+$1))  ; }
 function genIBg()       { echo -n $((100+$1)) ; }
 
 ## @brief   Generate font style escape code from parameter.
-function genEscSt()     { genEscape $1 ; }
+function genEscSt()     { genEscCode $1 ; }
 
 ## @brief   Generate dark foreground escape code color from parameter.
-function genEscDFg()    { genEscape $((30+$1))  ; }
+function genEscDFg()    { genEscCode $((30+$1))  ; }
 
 ## @brief   Generate dark background escape code color from parameter.
-function genEscDBg()    { genEscape $((40+$1))  ; }
+function genEscDBg()    { genEscCode $((40+$1))  ; }
 
 ## @brief   Generate bright foreground escape code color from parameter.
-function genEscIFg()    { genEscape $((90+$1))  ; }
+function genEscIFg()    { genEscCode $((90+$1))  ; }
 
 ## @brief   Generate bright background escape code color from parameter.
-function genEscIBg()    { genEscape $((100+$1)) ; }
+function genEscIBg()    { genEscCode $((100+$1)) ; }
 
 ## @brief   Generate a soft screen reset on screen.
 function softReset()    { printf '\033[!p' ; }
@@ -194,13 +194,13 @@ function fullReset()
     # Show Cursor, make it visible.
     printf '\033[?25h'
     # Reset Cursor Shape to:
-    #   0:Default Cursor 
-    #   1:Block Blinking
-    #   2:Block Steady
-    #   3:Underline Blinking
-    #   4:Underline Steady
-    #   5:Bar Blinking
-    #   6:Bar Steady
+    # -> 0:Default Cursor
+    #    1:Block Blinking
+    #    2:Block Steady
+    #    3:Underline Blinking
+    #    4:Underline Steady
+    #    5:Bar Blinking
+    #    6:Bar Steady
     printf '\033[0 q'
     # Default Font
     printf '\033(B'
@@ -233,12 +233,11 @@ function escScreenFlashes()
     done 
 }
 
-## @brief   Exit from libKbHit and unload all variables and functions.
+##  @brief  Exit from libEscCodes, unload all variables and functions.
 function libEscCodesExit()
 {
-    # Unset Variables
+    # unset variables
     unset -v libEscCodes
-    unset -v STOFF
     unset -v DEFAULT
     unset -v CLEAR
     unset -v RESET
@@ -246,35 +245,21 @@ function libEscCodesExit()
     unset -v BRIGHT
     unset -v BOLD
     unset -v FADE
-    unset -v DIM
     unset -v ITALIC
     unset -v UNDERLINE
-    unset -v UNDERSCORE
     unset -v BLINK
-    unset -v BLINKFAST
     unset -v REVERSE
     unset -v INVERT
     unset -v HIDDEN
     unset -v STRIKETHR
-    unset -v FRAMED
-    unset -v CIRCLED
-    unset -v OVERLINE
-    unset -v notBRIGHT
-    unset -v notBOLD
+    unset -v STOFF
     unset -v notFADE
-    unset -v notDIM
     unset -v notITALIC
     unset -v notUNDERLINE
-    unset -v notUNDERSCORE
     unset -v notBLINK
-    unset -v notBLINKFAST
     unset -v notREVERSE
-    unset -v notINVERSE
     unset -v notHIDDEN
     unset -v notSTRIKETHR
-    unset -v notFRAMED
-    unset -v notCIRCLED
-    unset -v notOVERLINE
     unset -v DFG
     unset -v DBG
     unset -v IFG
@@ -287,9 +272,10 @@ function libEscCodesExit()
     unset -v MAGENTA
     unset -v CYAN
     unset -v WHITE
+    unset -v escDC
     unset -v escNC
-    unset -v escDBG
-    unset -v escDFG
+    unset -v escNBG
+    unset -v escNFG
     unset -v escBLACK
     unset -v escRED
     unset -v escGREEN
@@ -306,25 +292,29 @@ function libEscCodesExit()
     unset -v escIMAGENTA
     unset -v escICYAN
     unset -v escIWHITE
-    # Unset Functions
+    unset -v escScrRevON
+    unset -v escScrRevOFF
+    # unset functions
+    unset -f genExtFgRGB
+    unset -f genExtBgRGB
     unset -f genExtStFgBg
+    unset -f genEscStFgBg
     unset -f genExtFg
     unset -f genExtBg
-    unset -f genEscape
+    unset -f genEscCode
+    unset -f genDFg
+    unset -f genDBg
+    unset -f genIFg
+    unset -f genIBg
     unset -f genEscSt
     unset -f genEscDFg
     unset -f genEscDBg
     unset -f genEscIFg
     unset -f genEscIBg
-    unset -f genEscFgRGB
-    unset -f genEscBgRGB
     unset -f softReset
     unset -f fullReset
+    unset -f _kbhit
     unset -f escScreenFlashes
-    unset -f libEscCodesExit
-    # Return Code
-    return 0
 }
 
-## @brief   Check if libRegex is loaded and available.
 declare libEscCodes='loaded'

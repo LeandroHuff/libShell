@@ -21,10 +21,10 @@ declare -i  testTYPE=0
 declare -i  minTYPE=0
 declare -i  maxTYPE=3
 declare     flagLoadLib=false
-declare -a  libLIST=(EscCodes Random Regex)
+declare -a  libLIST=(EscCodes Random String)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/libShell"
-declare     testPATH="/home/${USER}/libShell/test"
+declare     libPATH="/home/${USER}/dev/libShell"
+declare     testPATH="/home/${USER}/dev/libShell/test"
 
 declare     flagDEBUG=false
 
@@ -182,27 +182,28 @@ function test_genRandom_asType()
 {
     local _type=$1
     declare -i len=$2
-    local str
+    local str=''
 
     str=$(genRandom $_type $len)
+    echo "$str"
 
     [ $? -eq 0 ] || return 1
     [ "${#str}" -eq $len ] || return 2
 
-    declare -a typeRANDOM=(alpha digit alnum lowhex uphex mixhex graph space date)
+    declare -a typeRANDOM=(alpha digit alphanum lowhex uphex mixhex graph space code)
 
     if [[ "${typeRANDOM[*]}" =~ "${_type}" ]]
     then
         case ${_type} in
         alpha)  reIsAlpha            "${str}" || return 3 ;;
         digit)  reIsDigit            "${str}" || return 3 ;;
-        alnum)  reIsAlphaNumeric     "${str}" || return 3 ;;
+        alphanum) reIsAlphaNumeric     "${str}" || return 3 ;;
         lowhex) reIsLowerHexadecimal "${str}" || return 3 ;;
         uphex)  reIsUpperHexadecimal "${str}" || return 3 ;;
         mixhex) reIsHexadecimal      "${str}" || return 3 ;;
         graph)  reIsGraph            "${str}" || return 3 ;;
         space)  reIsGraphSpace       "${str}" || return 3 ;;
-        date)   reIsDateTimeAsCode   "${str}" || return 3 ;;
+        code)   reIsDateTimeAsCode   "${str}" || return 3 ;;
         esac
     else
         return 4
@@ -266,35 +267,35 @@ declare -a testTABLE=(\
 32      1       ''      genRandomAlpha                  '1.2'       ''          ''          '' \
 33      0       ''      genRandomAlpha                  '8'         ''          ''          '' \
 \
-34      1       ''      genRandomNumeric                ''          ''          ''          '' \
-35      1       ''      genRandomNumeric                'a'         ''          ''          '' \
-36      1       ''      genRandomNumeric                '@'         ''          ''          '' \
-37      1       ''      genRandomNumeric                '1.2'       ''          ''          '' \
-38      0       ''      genRandomNumeric                '8'         ''          ''          '' \
+34      1       ''      genRandomNum                ''          ''          ''          '' \
+35      1       ''      genRandomNum                'a'         ''          ''          '' \
+36      1       ''      genRandomNum                '@'         ''          ''          '' \
+37      1       ''      genRandomNum                '1.2'       ''          ''          '' \
+38      0       ''      genRandomNum                '8'         ''          ''          '' \
 \
-39      1       ''      genRandomAlphaNumeric           ''          ''          ''          '' \
-40      1       ''      genRandomAlphaNumeric           'a'         ''          ''          '' \
-41      1       ''      genRandomAlphaNumeric           '@'         ''          ''          '' \
-42      1       ''      genRandomAlphaNumeric           '1.2'       ''          ''          '' \
-43      0       ''      genRandomAlphaNumeric           '8'         ''          ''          '' \
+39      1       ''      genRandomAlphaNum           ''          ''          ''          '' \
+40      1       ''      genRandomAlphaNum           'a'         ''          ''          '' \
+41      1       ''      genRandomAlphaNum           '@'         ''          ''          '' \
+42      1       ''      genRandomAlphaNum           '1.2'       ''          ''          '' \
+43      0       ''      genRandomAlphaNum           '8'         ''          ''          '' \
 \
-44      1       ''      genRandomLowerHexadecimalNumber ''          ''          ''          '' \
-45      1       ''      genRandomLowerHexadecimalNumber 'a'         ''          ''          '' \
-46      1       ''      genRandomLowerHexadecimalNumber '@'         ''          ''          '' \
-47      1       ''      genRandomLowerHexadecimalNumber '1.2'       ''          ''          '' \
-48      0       ''      genRandomLowerHexadecimalNumber '8'         ''          ''          '' \
+44      1       ''      genRandomLowHex ''          ''          ''          '' \
+45      1       ''      genRandomLowHex 'a'         ''          ''          '' \
+46      1       ''      genRandomLowHex '@'         ''          ''          '' \
+47      1       ''      genRandomLowHex '1.2'       ''          ''          '' \
+48      0       ''      genRandomLowHex '8'         ''          ''          '' \
 \
-49      1       ''      genRandomUpperHexadecimalNumber ''          ''          ''          '' \
-50      1       ''      genRandomUpperHexadecimalNumber 'a'         ''          ''          '' \
-51      1       ''      genRandomUpperHexadecimalNumber '@'         ''          ''          '' \
-52      1       ''      genRandomUpperHexadecimalNumber '1.2'       ''          ''          '' \
-53      0       ''      genRandomUpperHexadecimalNumber '8'         ''          ''          '' \
+49      1       ''      genRandomUpHex ''          ''          ''          '' \
+50      1       ''      genRandomUpHex 'a'         ''          ''          '' \
+51      1       ''      genRandomUpHex '@'         ''          ''          '' \
+52      1       ''      genRandomUpHex '1.2'       ''          ''          '' \
+53      0       ''      genRandomUpHex '8'         ''          ''          '' \
 \
-54      1       ''      genRandomHexadecimalNumber      ''          ''          ''          '' \
-55      1       ''      genRandomHexadecimalNumber      'a'         ''          ''          '' \
-56      1       ''      genRandomHexadecimalNumber      '@'         ''          ''          '' \
-57      1       ''      genRandomHexadecimalNumber      '1.2'       ''          ''          '' \
-58      0       ''      genRandomHexadecimalNumber      '8'         ''          ''          '' \
+54      1       ''      genRandomHex      ''          ''          ''          '' \
+55      1       ''      genRandomHex      'a'         ''          ''          '' \
+56      1       ''      genRandomHex      '@'         ''          ''          '' \
+57      1       ''      genRandomHex      '1.2'       ''          ''          '' \
+58      0       ''      genRandomHex      '8'         ''          ''          '' \
 \
 59      1       ''      genRandomGraph                  ''          ''          ''          '' \
 60      1       ''      genRandomGraph                  'a'         ''          ''          '' \
@@ -310,50 +311,42 @@ declare -a testTABLE=(\
 \
 69      0       ''      test_genDateTimeAsCode          ''          ''          ''          '' \
 \
-71      2       ''      genRandom                       ''          '8'         ''          '' \
+70      2       ''      genRandom                       ''          '8'         ''          '' \
 71      3       ''      genRandom                       'wrong'     '8'         ''          '' \
-72      4       ''      genRandom                       'alpha'     ''          ''          '' \
-73      5       ''      genRandom                       'alpha'     'a'         ''          '' \
-74      5       ''      genRandom                       'alpha'     '@'         ''          '' \
-75      5       ''      genRandom                       'alpha'     '1.2'       ''          '' \
+72      2       ''      genRandom                       'alpha'     ''          ''          '' \
+73      2       ''      genRandom                       'alpha'     'a'         ''          '' \
+74      2       ''      genRandom                       'alpha'     '@'         ''          '' \
+75      2       ''      genRandom                       'alpha'     '1.2'       ''          '' \
 \
 76      0       ''      genRandom                       'alpha'     '8'         ''          '' \
 77      0       ''      genRandom                       'digit'     '8'         ''          '' \
-78      0       ''      genRandom                       'alnum'     '8'         ''          '' \
+78      0       ''      genRandom                       'alphanum'  '8'         ''          '' \
 79      0       ''      genRandom                       'lowhex'    '8'         ''          '' \
 80      0       ''      genRandom                       'uphex'     '8'         ''          '' \
 81      0       ''      genRandom                       'mixhex'    '8'         ''          '' \
 82      0       ''      genRandom                       'graph'     '8'         ''          '' \
 83      0       ''      genRandom                       'space'     '8'         ''          '' \
-84      0       ''      genRandom                       'date'      ''          ''          '' \
+84      0       ''      genRandom                       'code'      ''          ''          '' \
 \
 85      0       ''      test_genRandom_asType           'alpha'     '8'         ''          '' \
 86      0       ''      test_genRandom_asType           'digit'     '8'         ''          '' \
-87      0       ''      test_genRandom_asType           'alnum'     '8'         ''          '' \
+87      0       ''      test_genRandom_asType           'alphanum'  '8'         ''          '' \
 88      0       ''      test_genRandom_asType           'lowhex'    '8'         ''          '' \
 89      0       ''      test_genRandom_asType           'uphex'     '8'         ''          '' \
 90      0       ''      test_genRandom_asType           'mixhex'    '8'         ''          '' \
 91      0       ''      test_genRandom_asType           'graph'     '8'         ''          '' \
 92      0       ''      test_genRandom_asType           'space'     '8'         ''          '' \
-93      0       ''      test_genRandom_asType           'date'      '23'        ''          '' \
+93      0       ''      test_genRandom_asType           'code'      '23'        ''          '' \
 \
-94      2       ''      genUUID                         ''          '8'         ''          '' \
-95      3       ''      genUUID                         'wrong'     '8'         ''          '' \
-96      4       ''      genUUID                         'alpha'     ''          ''          '' \
-97      5       ''      genUUID                         'alpha'     '&'         ''          '' \
-98      6       ''      genUUID                         'alpha'     '4'         '&'         '' \
-99      6       ''      genUUID                         'alpha'     '4'         '4'         '%' \
-100     0       ''      genUUID                         'alpha'     '4'         ''          '' \
-101     0       ''      genUUID                         'alpha'     '4'         '4'         '' \
-102     0       ''      genUUID                         'alpha'     '4'         '4'         '4' \
+94      2       ''      genUUID                         'a'         ''          ''          '' \
+95      3       ''      genUUID                         '4'         'a'         ''          '' \
+96      3       ''      genUUID                         '4'         '4'         'a'         '' \
+97      3       ''      genUUID                         '4'         '4'         '4'         'a' \
+98      0       ''      genUUID                         '4'         ''          ''          '' \
+99      0       ''      genUUID                         '4'         '4'         '4'         '' \
+100     0       ''      genUUID                         '4'         '4'         '4'         '4' \
 \
-103     0       ''      genUUID                         'digit'     '4'         '4'         '4' \
-104     0       ''      genUUID                         'alnum'     '4'         '4'         '4' \
-105     0       ''      genUUID                         'lowhex'    '4'         '4'         '4' \
-106     0       ''      genUUID                         'uphex'     '4'         '4'         '4' \
-107     0       ''      genUUID                         'mixhex'    '4'         '4'         '4' \
-\
-108     0       ''      libRandomExit                   ''          ''          ''          '' \
+101     0       ''      libRandomExit                   ''          ''          ''          '' \
 \
 '#ID'   return  result  function                        parameter1  parameter2  parameter3  parameter4\
 )

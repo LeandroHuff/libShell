@@ -16,72 +16,69 @@
 ################################################################################
 
 # Local variables.
-declare -a  typeTABLE=('notable' 'internal' 'external' 'load')
-declare -i  testTYPE=1
-declare -i  minTYPE=0
-declare -i  maxTYPE=3
-declare     flagLoadLib=false
-declare -a  libLIST=(EscCodes File Log Regex)
+declare -a  libLIST=(EscCodes Log String File)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/libShell"
-declare     testPATH="/home/${USER}/libShell/test"
+declare     libPATH="$HOME/dev/libShell"
+declare     testPATH="$HOME/dev/libShell/test"
 
-declare     flagDebug=false
+# Load Libs
+for name in ${libLIST[@]}
+do
+    if [ -f "${libPATH}/lib${name}.sh" ]
+    then
+        source "${libPATH}/lib${name}.sh"
+        if [ $? -eq 0 ]
+        then
+            libLOADED+=(${name})
+        else
+            echo -e "\033[91mfailure\033[0m: Load lib${name}.sh"
+            exit 1
+        fi
+    else
+        echo -e "\033[91mfailure\033[0m: File ${libPATH}/lib${name}.sh not found."
+        exit 1
+    fi
+done
 
-declare -i LINE=0
-declare -i _OK=0
-declare -i _ERR=0
-declare    _RES=''
-declare    _RET=0
-declare    _SUCCESS=true
+declare flagDebug=false
+
+declare mapperDir="$(getMapperDir)"
+declare mountDir="$(getMountDir)"
+
+declare -i countLINE=0
+declare -i countSUCCESS=0
+declare -i countERROR=0
+declare    RESULT=''
+declare    RETURN=0
+declare    flagSUCCESS=false
+declare    flagRetOnFailure=false
 
 # test table columns
 declare -i columnID=0
-declare -i columnRET=1
-declare -i columnRES=2
-declare -i columnFILE=3
+declare -i columnRET=0
+declare -i columnRES=1
+declare -i columnFILE=2
 declare -i columnP1=4
 declare -i columnP2=5
 declare -i columnP3=6
 declare -i columnP4=7
-declare -i maxCOLUMNS=8
-
-# colors
-declare _GRAY='\033[37m'
-declare _RED='\033[31m'
-declare _CYAN='\033[36m'
-declare _GREEN='\033[32m'
-declare _HRED='\033[91m'
-declare _HCYAN='\033[96m'
-declare _HGREEN='\033[92m'
-declare _WHITE='\033[97m'
-# no colors
-declare _NC='\033[0m'
-
-function logOk()   { echo -e "${_GRAY}Success${_NC}: $*" ; }
-function logFail() { echo -e "${_RED}Failure${_NC}: $*"  ; }
-function logWarn() { echo -e "${_CYAN}Warning${_NC}: $*" ; }
-function logDebug(){ if $flagDebug ; then echo -e "${_GREEN}Debug${_NC}: $*" ; fi ; }
+declare -i maxCOLUMNS=3
 
 # unset local variables and functions
-function _unsetVars
+function removeVars
 {
     # Unset Variables
-    unset -v typeTABLE
-    unset -v testTYPE
-    unset -v minTYPE
-    unset -v maxTYPE
     unset -v libLIST
     unset -v libLOADED
     unset -v libPATH
     unset -v testPATH
-    unset -v flagDebug
-    unset -v LINE
-    unset -v _OK
-    unset -v _ERR
-    unset -v _RES
-    unset -v _RET
-    unset -v _SUCCESS
+    unset -v countLINE
+    unset -v countTEST
+    unset -v countSUCCESS
+    unset -v countERROR
+    unset -v RESULT
+    unset -v RETURN
+    unset -v SUCCESS
     unset -v columnID
     unset -v columnRET
     unset -v columnRES
@@ -91,28 +88,11 @@ function _unsetVars
     unset -v columnP3
     unset -v columnP4
     unset -v maxCOLUMNS
-    unset -v _GRAY
-    unset -v _RED
-    unset -v _CYAN
-    unset -v _GREEN
-    unset -v _HRED
-    unset -v _HCYAN
-    unset -v _HGREEN
-    unset -v _WHITE
-    unset -v _NC
 
     # Unset Function
-    unset -f logOk
-    unset -f logFail
-    unset -f logWarn
-    unset -f logDebug
     unset -f barGraph
-    unset -f _isArg
-    unset -f _isInt
-    unset -f _isNum
-    unset -f _unsetVars
-    unset -f barGraph
-    unset -f isArg
+    unset -f removeVars
+
     # Return Code
     return 0
 }
@@ -120,53 +100,87 @@ function _unsetVars
 # unload libs, exit from bash script and return an error code
 function _exit()
 {
-    local code=$([ -n "$1" ] && echo -n $1 || echo -n 0)
+    declare -i code="${1:-0}"
 
     # Stop logs
-    [ -n "${logStop}" ] && logStop
+    if ! [ -z "${libLog}" ] ; then logStop ; fi
 
     # Unload Libs
-    if $flagLoadLib
-    then
-        for file in ${libLOADED[@]}
-        do
-            $(lib${file}Exit) || logFail "Unload lib${file}.sh"
-        done
-    fi
+    for file in "${libLOADED[@]}"
+    do
+        $(lib${file}Exit) || echo -e "\033[91mfailure\033[0m: Unload lib${file}.sh"
+    done
 
     # Unload local variables
     unset -v file
 
     # Unload Global Variables and Functions
-    _unsetVars
+    removeVars
     unset -f _exit
 
     exit $code
 }
 
+# call _exit() function for some sign int.
+trap _exit INT HUP TERM QUIT
+
+# show help message
+function usage()
+{
+    cat << EOT
+Bash script to run a list of function for test.
+Usage: $(basename "$0") [options] [-- libOptions]
+Options:
+-h|--help       Show usage message.
+-g|--debug)     Enable debug messages.
+-e|--error)     Return on error.
+   --           Let pass next options to libLog
+libLog Options:
+EOT
+    logHelp
+}
+
+# Parse parameters from command line.
+while [ $# -gt 0 ] && [ -n "$1" ]
+do
+    case $1 in
+    -h|--help) usage ; _exit 0 ;;
+    -g|--debug) flagDebug=true ; logSetup "$1" || _exit $? ;;
+    -e|--error) flagRetOnFailure=true ;;
+    --) shift ; logInit "$@" || _exit $? ; break ;;
+    -*) logSetup "$1" || _exit $? ;;
+     *) logF "Unknown option ($1)." ; _exit $? ;;
+    esac
+    shift
+done
+
 # draw a bar graph
 function barGraph()
 {
-    local num=$1
-    local ok=$2
-    # print '*' green for ok and red for not ok.
-    if $ok ; then printf "${_HGREEN}*${_NC}" ; else printf "${_HRED}*${_NC}" ; fi
-    # print [N] each 10 and '|' each 5
-    if   [ $((num % 10)) -eq 0 ] ; then printf "[%3d]" $num
-    elif [ $((num %  5)) -eq 0 ] ; then printf '|' ; fi
+    local testNum=$1
+    local success=$2
+    # print green "*" for success and red for failure.
+    if $success ; then printf "${escIGREEN}*${escDC}" ; else printf "${escIRED}*${escDC}" ; fi
+    # print [N] each 10 and "|" each 5
+    if   [ $((testNum % 10)) -eq 0 ] ; then printf "[%3d]" $testNum
+    elif [ $((testNum %  5)) -eq 0 ] ; then printf "|" ; fi
     # echo a new line each 50
-    if  [ $((num % 50)) -eq 0 ] ; then echo ; fi
+    if  [ $((testNum % 50)) -eq 0 ] ; then echo ; fi
 }
 
-# check command line arguments
-function _isArg() { if [ -n "$1" ] ; then case $1 in -*) false ;; *) true ;; esac ; else false ; fi ; }
-function _isInt() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
-function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
+function _wait() { sleep $1 ; }
+
+function _close()
+{
+    if [ -b "${mountDir}/$1"  ] ; then sudo umount -l "${mountDir}/$1"             ; fi
+    if [ -d "${mountDir}/$1"  ] ; then sudo rmdir "${mountDir}/$1"                 ; fi
+    if [ -b "${mapperDir}/$1" ] ; then sudo cryptsetup luksClose "${mapperDir}/$1" ; fi
+}
 
 # +--------------+---------------------------------------------------------------
 # | Column       | Description
 # +--------------+---------------------------------------------------------------
-# | columnID     | Line number, '#' is a commented line.
+# | columnID     | Line number, "#" is a commented line.
 # | columnRET    | Return success or error code (return n)
 # | columnRES    | Result from function (echo '' or printf '')
 # | columnFILE   | Function in lib or a local wapper test_Function
@@ -178,334 +192,387 @@ function _isNum() { if echo -n "${1}" | grep -aoP '^[-+]?(\d+\.?\d*|\d*\.\d+)$' 
 # +--------------+---------------------------------------------------------------
 
 # test table
+#ID   return  result              function            parameter1  parameter2  parameter3  parameter4
 declare -a testTABLE=(\
-'#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4 \
-\
-1       0       `basename "$0"`     getScriptName       ''          ''          ''          '' \
-\
-2       0       ''                  getFileName         ''          ''          ''          '' \
-3       0       'test_libFile.sh'   getFileName         "${PWD}/test_libFile.sh" '' ''      '' \
-\
-4       0       ''                  getName             ''          ''          ''          '' \
-5       0       'test_libFile'      getName             "${PWD}/test_libFile.sh" '' ''      '' \
-\
-6       0       ''                  getExt              ''          ''          ''          '' \
-7       0       'sh'                getExt              "${PWD}/test_libFile.sh" '' ''      '' \
-\
-8       0       ''                  getPath             ''          ''          ''          '' \
-9       0       "${PWD}"            getPath             "${PWD}/test_libFile.sh" '' ''      '' \
-\
-10      1       ''                  isLink              ''          ''          ''          '' \
-11      0       ''                  isLink              'linkToFile' ''         ''          '' \
-12      0       ''                  isLink              'linkNotExist' ''       ''          '' \
-\
-13      1       ''                  isFile              ''          ''          ''          '' \
-14      1       ''                  isFile              '/tmp'      ''          ''          '' \
-15      0       ''                  isFile              "${PWD}/test_libFile.sh" '' ''      '' \
-16      0       ''                  isFile              'linkToFile' ''         ''          '' \
-17      1       ''                  isFile              'linkToDir' ''          ''          '' \
-\
-18      1       ''                  isDir               ''          ''          ''          '' \
-19      1       ''                  isDir               "${PWD}/test_libFile.sh" '' ''      '' \
-20      0       ''                  isDir               '/tmp'      ''          ''          '' \
-21      1       ''                  isDir               'linkToFile' ''         ''          '' \
-22      0       ''                  isDir               'linkToDir' ''          ''          '' \
-\
-23      1       ''                  isBlockDevice       ''          ''          ''          '' \
-24      1       ''                  isBlockDevice       "${PWD}/test_libFile.sh" '' ''      '' \
-25      1       ''                  isBlockDevice       '/tmp'      ''          ''          '' \
-26      0       ''                  isBlockDevice       '/dev/sda'  ''          ''          '' \
-\
-27      0       '/tmp'              getTempDir          ''          ''          ''          '' \
-\
-28      1       ''                  followLink          ''          ''          ''          '' \
-29      1       ''                  followLink          'linkNotExist' ''       ''          '' \
-30      0       '/tmp/File'         followLink          'linkToFile' ''         ''          '' \
-31      0       '/tmp'              followLink          'linkToDir' ''          ''          '' \
-\
-32      1       ''                  linkTargetExist     ''          ''          ''          '' \
-33      1       ''                  linkTargetExist     'linkNotExist' ''       ''          '' \
-34      0       ''                  linkTargetExist     'linkToFile' ''         ''          '' \
-35      0       ''                  linkTargetExist     'linkToDir' ''          ''          '' \
-\
-36      1       ''                  itExist             ''          ''          ''          '' \
-37      1       ''                  itExist             'linkNotExist' ''       ''          '' \
-38      1       ''                  itExist             'empty'     ''          ''          '' \
-39      0       ''                  itExist             '/tmp'      ''          ''          '' \
-40      0       ''                  itExist             "${PWD}/test_libFile.sh" '' ''      '' \
-41      0       ''                  itExist             '/dev/sda'  ''          ''          '' \
-\
-42      0       "/run/media/$USER"  getMountDir         ''          ''          ''          '' \
-\
-43      1       ''                  tryRun              ''          ''          ''          '' \
-44      1       ''                  tryRun              '-x'        ''          ''          '' \
-45      1       ''                  tryRun              '-r'        '3'         '-x'        '' \
-46      1       ''                  tryRun              '-c'        '-r'        '3'         '' \
-47      0       ''                  tryRun              '-r'        '1' 'type -t git'       '' \
-48      0       'file'              tryRun              '-r'        '1'         '-v'        'type -t git' \
-49      0       'file'              tryRun              '-r'        '3'         '-v'        'type -t git' \
-50      0       ''                  tryRun              'type -t git' ''        ''          '' \
-\
-51      0       ''                  libFileExit         ''          ''          ''          '' \
-\
-'#ID'   return  result              function            parameter1  parameter2  parameter3  parameter4\
-)
-
-# show help message
-function usage()
-{
-    cat << EOT
-Bash script to run a list of function for test.
-Usage: $(basename "$0") [options] [-- libOptions]
-Options:
--h|--help               Show help message.
--g|--debug)             Set debug mode for test file.
--p|--path <directory/>  Set libShell path.
--t|--type <0|1|2>       Set test type, default is 0.
-                            0: Internal, call function from test table.
-                            1: External, call test_libName.sh
-                            2: Source libName.sh
-   --                   Let pass next options to libSell script files.
-libOptions:
--h|--help               Show help message for libShell files.
--t|--timeout <value>    Set timeout for libShell files.
-EOT
-    if [ -n "$logHelp" ] ; then logHelp ; fi
-}
-
-# Parse command line parameters until '--'
-while [ $# -gt 0 ] && [ -n "$1" ]
-do
-    case $1 in
-    -h|--help) usage ; _exit 0 ;;
-    -p|--path)
-        if _isArg "$2"
-        then
-            shift
-            libPATH="$1"
-        else
-            logFail "Option -p|--path </directory>"
-            _exit 1
-        fi
-        ;;
-    -t|--type)
-        if _isArg "$2" && _isInt "$2"
-        then
-            shift
-            if [ $1 -ge $minTYPE ] && [ $1 -le $maxTYPE ]
-            then
-                testTYPE=$1
-            else
-                logFail "Argument for -t|--type <$minTYPE..$maxTYPE> is out of range."
-                _exit 2
-            fi
-        else
-            logFail "Empty or wrong argument for -t|--type <$minTYPE..$maxTYPE>"
-            _exit 3
-        fi
-        ;;
-    -g) flagDebug=true ;;
-    -l|--load) flagLoadLib=true ;;
-    --) shift ; break ;;
-    -*) logFail "Option '$1' not available."        ; _exit 4 ;;
-     *) logFail "Argument '$1' not available."      ; _exit 5 ;;
-    esac
-    shift
-done
-
-if [ $testTYPE -gt 0 ]
-then
-    flagLoadLib=true
-fi
-
-# Load Libs
-if $flagLoadLib
-then
-    for file in ${libLIST[@]}
-    do
-        if [ -f "${libPATH}/lib${file}.sh" ]
-        then
-            source "${libPATH}/lib${file}.sh"
-            if [ $? -eq 0 ]
-            then
-                libLOADED+=(${file})
-            else
-                logFail "Load lib${file}.sh"
-                _exit 6
-            fi
-        else
-            logFail "File ${libPATH}/lib${file}.sh not found."
-            _exit 7
-        fi
-    done
-fi
-
-# Parse command line parameters after '--'
-while [ $# -gt 0 ] && [ -n "$1" ]
-do
-    case $1 in
-    -h|--help) [ -n "${logHelp}" ] && logHelp ; _exit 0 ;;
-    -t|--timeout)
-        if _isArg "$2"
-        then
-            if _isNum "$2"
-            then
-                libTimeSetup $1 $2
-            else
-                logFail "Invalid argument for -t|--timeout <time> option."
-                _exit 8
-            fi
-            shift
-        else
-            logFail "Empty or wrong argument for -t|--timeout <time> option."
-            _exit 9
-        fi
-        ;;
-    --) shift
-        logInit "$@" || _exit 10
-        break
-        ;;
-    -*) logFail "Option $1 not available."
-        _exit 11
-        ;;
-     *) logFail "Argument $1 not available."
-        _exit 12
-        ;;
-    esac
-    shift
-done
+1 '' file_regexIt \
+1 '' "file_regexIt 123 ''" \
+1 '' "file_regexIt '' '^[-+]?\d+$'" \
+1 '' "file_regexIt 123 '^[-+]?\d+$' --error" \
+0 123 "file_regexIt 123 '^[-+]?\d+$'" \
+0 '' "file_regexIt 123 '^[-+]?\d+$' -q" \
+0 abyz "file_regexIt 123abyz 'abyz'" \
+0 abyz "file_regexIt 123abyz123 'abyz'" \
+1 '' "file_regexIt .456 '^[+-]?(\d+|\d+\.\d+)$'" \
+0 '456' "file_regexIt 456 '^[+-]?(\d+|\d+\.\d+)$'" \
+0 123.456 "file_regexIt 123.456 '^[-+]?(\d+|\d+\.\d+)$'" \
+0 -123.456 "file_regexIt -123.456 '^[-+]?(\d+|\d+\.\d+)$'" \
+0 +123.456 "file_regexIt +123.456 '^[-+]?(\d+|\d+\.\d+)$'" \
+'#' '' 13
+0 $(basename $0) getScriptName \
+1 '' getFileName \
+0 "$(basename $0)" "getFileName $0" \
+'#' '' 17 \
+1 '' getName \
+0 'test_libFile' "getName $(basename $0)" \
+'#' '' 19 \
+1 '' getExt \
+0 'sh' "getExt $(basename $0)" \
+'#' '' 21 \
+1 '' getPath \
+1 '' "getPath ''" \
+0 "$PWD" "getPath $PWD/$(basename $0)" \
+'#' '' 24 \
+1 '' isLink \
+1 '' "isLink ''" \
+1 '' "isLink /tmp" \
+0 '' "isLink linkNotExist" \
+0 '' "isLink linkToDir" \
+'#' '' 29 \
+1 '' isFile \
+1 '' "isFile ''" \
+1 '' "isFile /tmp" \
+1 '' "isFile linkNotExist" \
+0 '' "isFile $(basename $0)" \
+0 '' "isFile $PWD/$(basename $0)" \
+'#' '' 35 \
+1 '' isDir \
+1 '' "isDir ''" \
+1 '' "isDir $(basename $0)" \
+1 '' "isDir linkToFile" \
+1 '' "isDir linkNotExist" \
+0 '' "isDir $PWD" \
+0 '' "isDir linkToDir" \
+'#' '' 42 \
+1 '' isBlockDevice \
+1 '' "isBlockDevice linkToDir" \
+1 '' "isBlockDevice $(basename $0)" \
+1 '' "isBlockDevice $PWD" \
+1 '' "isBlockDevice /tmp" \
+0 '' "isBlockDevice /dev/sda1" \
+'#' '' 48 \
+0 '' "echo teste > /tmp/file" \
+0 '' "[ -L linkToFile ] || ln -sf /tmp/file linkToFile" \
+0 '' "[ -L linkToDir ] || ln -sf /tmp linkToDir" \
+1 '' isLink \
+1 '' "isLink ''" \
+1 '' "isLink /tmp" \
+1 '' "isLink /tmp/file" \
+0 '' "isLink linkNotExist" \
+0 '' "isLink linkToFile" \
+0 '' "isLink linkToDir" \
+'#' '' 58 \
+1 '' getTarget \
+1 '' "getTarget ''" \
+0 '/tmp' "getTarget /tmp" \
+0 '/tmp/file' "getTarget /tmp/file" \
+1 '' "getTarget linkNotExist" \
+0 '/tmp' "getTarget linkToDir" \
+0 '/tmp/file' "getTarget linkToFile" \
+'#' '' 65 \
+1 '' targetExist \
+1 '' "targetExist ''" \
+1 '' "targetExist linkNotExist" \
+0 '' "targetExist /tmp" \
+0 '' "targetExist /tmp/file" \
+0 '' "targetExist linkToDir" \
+0 '' "targetExist linkToFile" \
+'#' '' 72 \
+1 '' tryRun \
+1 '' "tryRun ''" \
+1 '' "tryRun -x" \
+1 '' "tryRun -r 1" \
+1 '' "tryRun -r 1 -w 1" \
+1 '' "tryRun -r 1 -w 1 -g" \
+1 '' "tryRun -r 1 -w 1 -g -x" \
+0 '' "tryRun -r 1 -w 1 sleep 0.1" \
+0 '' 'tryRun -r 3 -w 1 sleep 0.1' \
+'#' 81 "buildFindCmd( dir ext '>|>>' hash )" \
+0 '' 'if [ -f /tmp/sha256sum ] ; then rm -f /tmp/sha256sum ; else true ; fi' \
+1 '' '[ -f /tmp/sha256sum ] && true || false' \
+1 '' "buildFindCmd '' '' '' ''" \
+1 '' "buildFindCmd dir '' '' ''" \
+1 '' "buildFindCmd dir '>' '' ''" \
+2 '' "buildFindCmd '/not/exist' '>' '/tmp/sha256sum' '*.sh'" \
+2 '' "buildFindCmd '/dir/error**.**' '>' '/tmp/sha256sum' '*.sh'" \
+3 '' "buildFindCmd /tmp/ '>>>' '/tmp/sha256sum' '*.sh'" \
+4 '' "buildFindCmd /tmp/ '>' '/tmp/sha256sum??error' '*.sh'" \
+5 '' "buildFindCmd /tmp/ '>' '/tmp/sha256sum' '**filter.error**'" \
+0 '' "buildFindCmd /tmp/ '>' '/tmp/sha256sum' '*.sh'" \
+0 '' "buildFindCmd /tmp/ '>>' '/tmp/sha256sum' '*.sh'" \
+0 "find $PWD/* -type f -not -path '.git' -exec sha256sum {} + > /tmp/sha256sum" "buildFindCmd $PWD/ '>' '/tmp/sha256sum'" \
+0 "find $PWD/* -type f -name '*.sh' -not -path '.git' -exec sha256sum {} + > /tmp/sha256sum" "buildFindCmd $PWD/ '>' '/tmp/sha256sum' '*.sh'" \
+0 "find $PWD/* -type f -not -path '.git' -exec sha256sum {} + | sha256sum >> /tmp/sha256sum" "buildFindCmd $PWD '>>' '/tmp/sha256sum'" \
+0 "find $PWD/* -type f -name '*.sh' -not -path '.git' -exec sha256sum {} + | sha256sum >> /tmp/sha256sum" "buildFindCmd $PWD '>>' '/tmp/sha256sum' '*.sh'" \
+'#' '' 97 \
+1 '' "calcChecksum '' '' ''" \
+1 '' "calcChecksum $PWD '' ''" \
+1 '' "calcChecksum $PWD '' ''" \
+2 '' "calcChecksum $PWD/**.error '/tmp/sha256sum' '*.sh'" \
+2 '' "calcChecksum $PWD/notExist '/tmp/sha256sum' '*.sh'" \
+4 '' "calcChecksum $PWD '/tmp/**error**' '*.sh'" \
+5 '' "calcChecksum $PWD '/tmp/sha256sum' '**.error**'" \
+0 '' '[ -f /tmp/sha256sum ] && rm /tmp/sha256sum || true' \
+0 '' "calcChecksum $PWD '/tmp/sha256sum' '*.sh'" \
+0 '' '[ -f /tmp/sha256sum ] && true || false' \
+0 '' '[ -f /tmp/sha256sum ] && rm /tmp/sha256sum || true' \
+0 '' "calcChecksum $PWD '/tmp/sha256sum' '*.sh'" \
+0 '' '[ -f /tmp/sha256sum ] && true || false' \
+0 '' '[ -f /tmp/sha256sum ] && rm /tmp/sha256sum || true' \
+'#' '' 111 \
+0 '' 'if [ -f /tmp/sha256sum ] ; then rm -f /tmp/sha256sum ; else true ; fi' \
+1 '' "addChecksum" \
+1 '' "addChecksum $PWD" \
+2 '' "addChecksum $PWD/notFound /tmp/sha256sum" \
+4 '' "addChecksum $PWD/ /tmp/**error**.**" \
+5 '' "addChecksum $PWD /tmp/sha256sum '**.**error**'" \
+0 '' '[ -f /tmp/sha256sum ] && rm /tmp/sha256sum || true' \
+0 '' "addChecksum $PWD /tmp/sha256sum" \
+0 '' '[ -f /tmp/sha256sum ] && true || false' \
+0 '' '[ -f /tmp/sha256sum ] && rm /tmp/sha256sum || true' \
+0 '' "addChecksum $PWD /tmp/sha256sum '*.sh'" \
+0 '' '[ -f /tmp/sha256sum ] && true || false' \
+0 '' '[ -f /tmp/sha256sum ] && rm /tmp/sha256sum || true' \
+'#' '' 124 \
+0 '' "echo 'a' > $PWD/teste.sh" \
+0 '' "calcChecksum $PWD/ /tmp/sha256sum '*.sh'" \
+0 '' '[ -f /tmp/sha256sum ] && true || false' \
+1 '' "verifyChecksum" \
+2 '' "verifyChecksum /tmp" \
+2 '' "verifyChecksum /tmp/notFound" \
+0 '' "verifyChecksum /tmp/sha256sum" \
+0 '' "echo 'b' > $PWD/teste.sh" \
+1 '' "verifyChecksum /tmp/sha256sum" \
+'#' '' 133 \
+1 '' haveChanges \
+2 '' "haveChanges /tmp/notFound" \
+0 '' "haveChanges /tmp/sha256sum" \
+0 '' "echo 'a' > $PWD/teste.sh" \
+1 '' "haveChanges /tmp/sha256sum" \
+0 '' "echo 'b' > $PWD/teste.sh" \
+0 '' "haveChanges /tmp/sha256sum" \
+0 '' "if [ -f $PWD/teste.sh  ] ; then rm -f $PWD/teste.sh  ; else true ; fi" \
+0 '' "if [ -f /tmp/sha256sum ] ; then rm -f /tmp/sha256sum ; else true ; fi" \
+'#' '' 142 \
+0 "/run/media/$USER" getMountDir \
+0 '/dev/mapper' getMapperDir \
+1 '' stripPunct \
+0 'test' "stripPunct '@.test.!'" \
+1 '' stripPathPunct \
+0 'test' "stripPathPunct '/path/@.test.!'" \
+1 '' genDeviceName \
+0 'luks-test' "genDeviceName '/path/@.test.!'" \
+'#' '' 150 \
+1 '' setMode \
+2 '' "setMode /tmp/notFound" \
+0 '' "[ -d /tmp/test ] || mkdir /tmp/test" \
+3 '' "setMode /tmp/test 1755" \
+0 '' "setMode /tmp/test" \
+0 '' "setMode /tmp/test 0755" \
+0 '' "[ -d '/tmp/test' ] && rm -rf '/tmp/test'" \
+'#' '' 157 \
+1 '' setOwner \
+2 '' "setOwner '/tmp/notFound'" \
+0 '' "[ -d /tmp/test ] || mkdir /tmp/test" \
+0 '' "setOwner /tmp/test" \
+0 '' "setOwner /tmp/test $USER" \
+0 '' "[ -d /tmp/test ] && rm -rf /tmp/test" \
+'#' '' 163 \
+1 '' makeDir \
+2 '' "makeDir /tmp/test 1755" \
+0 '' "makeDir /tmp/test" \
+0 '' "[ -d /tmp/test ] && true || false" \
+0 '' "[ -d /tmp/test ] && rm -rf /tmp/test" \
+0 '' "makeDir /tmp/test 0755" \
+0 '' "[ -d /tmp/test ] && true || false" \
+0 '' "[ -d /tmp/test ] && rm -rf /tmp/test" \
+"#" '' 171 \
+1 '' removeDir \
+1 '' "removeDir ''" \
+0 '' "[ -d /tmp/test ] && rm -rf /tmp/test || true" \
+1 '' "[ -d /tmp/test ] && true || false" \
+1 '' "removeDir /tmp/test" \
+0 '' "makeDir /tmp/test" \
+0 '' "removeDir /tmp/test" \
+1 '' "[ -d /tmp/test ] && true || false" \
+"#" '' 179 \
+1 '' getFS \
+1 '' "getFS ''" \
+1 '' "getFS '' ''" \
+2 '' "getFS /tmp/notExist" \
+3 '' "getFS /dev/sda1 notExist" \
+3 '' "getFS luks.test notExist" \
+0 'ext4' "getFS /dev/sda1" \
+0 'ext4' "getFS luks.test" \
+"#" '' 187 \
+1 '' hasFS \
+2 '' "hasFS notExist" \
+2 '' "hasFS notExist ext4" \
+3 '' "hasFS /dev/sda1 notExist" \
+3 '' "hasFS luks.test notExist" \
+0 '' "hasFS /dev/sda1" \
+0 '' "hasFS luks.test" \
+0 '' "hasFS /dev/sda1 ext4" \
+0 '' "hasFS luks.test ext4" \
+"#" '' 196 \
+1 '' isLuksDevice \
+1 '' "isLuksDevice ''" \
+2 '' "isLuksDevice /tmp/notExist" \
+0 '' "isLuksDevice /dev/sda1" \
+0 '' "isLuksDevice luks.test" \
+3 '' "isLuksDevice /tmp" \
+"#" '' 202 \
+1 '' format \
+2 '' "format notExist" \
+3 '' "format luks.test notExist" \
+0 '' "format luks.test <<< `tr < /dev/urandom -d -c [:alnum:] | head --bytes=8`" \
+0 '' "format luks.test password.txt" \
+"#" '' 207 \
+1 '' open \
+2 '' "open notExist" \
+3 '' "open luks.test" \
+4 '' "open luks.test luks-test notExist" \
+0 '' "open luks.test luks-test password.txt" \
+0 '' '[ -e /dev/mapper/luks-test ] && true || false' \
+"#" '' 213 \
+0 '' '_wait 2' \
+1 '' close \
+2 '' "close notExist" \
+0 '' "close luks-test" \
+1 '' '[ -e /dev/mapper/luks-test ] && true || false' \
+0 '' 'sudo mkdir /dev/mapper/luks-test' \
+3 '' "close luks-test" \
+0 '' 'sudo rmdir /dev/mapper/luks-test' \
+"#" '' 221 \
+1 '' formatFS \
+2 '' "formatFS notExist" \
+0 '' "open luks.test luks-test password.txt" \
+3 '' "formatFS /dev/mapper/luks-test notExist" \
+0 '' "formatFS /dev/mapper/luks-test" \
+0 '' '_wait 2' \
+0 '' "hasFS /dev/mapper/luks-test btrfs" \
+0 '' "formatFS /dev/mapper/luks-test ext4" \
+0 '' '_wait 2' \
+0 '' "hasFS /dev/mapper/luks-test ext4" \
+0 '' "close luks-test" \
+"#" '' 232 \
+1 '' mountDevice \
+1 '' umountDevice \
+1 '' setAccess \
+1 '' openDrive \
+"#" '' 237 \
+1 '' closeDevice \
+1 '' formatDrive \
+0 '' libFileExit
+"#" '' 240)
 
 ################################################################################
-# Run TEST TABLE if enabled
+# Run countTEST TABLE if enabled.
 ################################################################################
 
-# Start line counter and offset at 0
-LINE=0
-TEST=0
+# Start line counter and offset at 0.
+countLINE=0
+countTEST=0
 idxID=$columnID
 # Calculate the first function column OFFSET.
 idxFUNC=$((idxID+columnFILE))
-touch /tmp/File || _exit 13
-# while not empty function name
-if [ $testTYPE -gt 0 ]
-then
-    while [ -n "${testTABLE[$idxFUNC]}" ]
-    do
-        ((LINE++))
-        # skip commented lines.
-        if [[ "${testTABLE[$idxID]:0:1}" != "#" ]]
+
+# while function name is not empty.
+while [ -n "${testTABLE[$idxFUNC]}" ]
+do
+    if [[ "${testTABLE[$idxID]:0:1}" != "#" ]]
+    then
+        # inc test counter
+        ((countTEST++))
+        # calculate return column offset
+        idxRET=$((idxID+columnRET))
+        # calculate result column offset
+        idxRES=$((idxID+columnRES))
+        # calculate parameter 1 column offset
+        idxP1=$((idxID+columnP1))
+        # calculate parameter 2 column offset
+        idxP2=$((idxID+columnP2))
+        # calculate parameter 3 column offset
+        idxP3=$((idxID+columnP3))
+        # calculate parameter 4 column offset
+        idxP4=$((idxID+columnP4))
+
+        if $flagDebug ; then echo -e -n "${escIWHITE}   test${escDC}: ${testTABLE[$idxFUNC]} ${escIWHITE}->${escDC} " ; fi
+
+        # run test from table and get the result.
+        RESULT="$(eval "${testTABLE[$idxFUNC]}")"
+
+        # take returned code from test.
+        RETURN=$?
+
+        # preset result to true.
+        flagSUCCESS=true
+
+        # compare result and returned code from function according table to check
+        # for success or error and increment the respective counters.
+
+        if [ "x${testTABLE[ $idxRES ]}" != 'x' ]
         then
-            ((TEST++))
-            # calculate return column offset
-            idxRET=$((idxID+columnRET))
-            # calculate result column offset
-            idxRES=$((idxID+columnRES))
-            # calculate parameter 1 column offset
-            idxP1=$((idxID+columnP1))
-            # calculate parameter 2 column offset
-            idxP2=$((idxID+columnP2))
-            # calculate parameter 3 column offset
-            idxP3=$((idxID+columnP3))
-            # calculate parameter 4 column offset
-            idxP4=$((idxID+columnP4))
-
-            # check test type and run it
-            case ${typeTABLE[$testTYPE]} in
-                notable)
-                    # no tests from table
-                    ;;
-                internal)
-                    # Uncomment/Commant to enable/disable test functions from internal test table.
-                    if $flagDebug ; then echo -e -n "${escFGWHITE}Function${NC}: ${testTABLE[$idxFUNC]} ${testTABLE[$idxP1]} ${testTABLE[$idxP2]} ${testTABLE[$idxP3]} ${testTABLE[$idxP4]}\t-> " ; fi
-                    _RES="$(${testTABLE[$idxFUNC]} "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
-                    ;;
-                external)
-                    # Uncomment/Commant to enable/disable call extarnal tests files
-                    if $flagDebug ; then echo -e -n "${escFGWHITE}File${NC}: test_lib${testTABLE[$idxFUNC]}.sh\t-> " ; fi
-                    _RES="$(. ${testPATH}/test_lib${testTABLE[$idxFUNC]}.sh "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
-                    ;;
-                load)
-                    # Uncomment/Commant to enable/disable test source library
-                    if $flagDebug ; then echo -e -n "${escFGWHITE}File${NC}: lib${testTABLE[$idxFUNC]}.sh\t-> " ; fi
-                    _RES="$(source ${libPATH}/lib${testTABLE[$idxFUNC]}.sh "${testTABLE[$idxP1]}" "${testTABLE[$idxP2]}" "${testTABLE[$idxP3]}" "${testTABLE[$idxP4]}")"
-                    ;;
-                *)
-                    logFail "Test type (${typeTABLE[$testTYPE]}) not available."
-                    _exit 13
-                    ;;
-            esac
-
-            # take returned code
-            _RET=$?
-
-            # preset result to true
-            _SUCCESS=true
-
-            # compare result and returned code from function according table to check success or error
-            # increment success counter or error counter
-            if [ -n "${testTABLE[ $idxRET ]}" ] && [ -n "${testTABLE[ $idxRES ]}" ]
+            if [ "${RESULT}" != "${testTABLE[ $idxRES ]}" ]
             then
-                if [ $_RET -eq ${testTABLE[ $idxRET ]} ] && [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
-                then
-                    ((_OK++))
-                else
-                    ((_ERR++))
-                    _SUCCESS=false
-                fi
-            elif [ -n "${testTABLE[ $idxRET ]}" ]
-            then
-                if [ $_RET -eq ${testTABLE[ $idxRET ]} ]
-                then
-                    ((_OK++))
-                else
-                    ((_ERR++))
-                    _SUCCESS=false
-                fi
-            elif [ -n "${testTABLE[ $idxRES ]}" ]
-            then
-                if [[ "$_RES" == "${testTABLE[ $idxRES ]}" ]]
-                then
-                    ((_OK++))
-                else
-                    ((_ERR++))
-                    _SUCCESS=false
-                fi
-            else
-                logWarn "Bouth testTABLE[idxRES:$idxRES] and testTABLE[idxRET:$idxRET] columns are empty."
-            fi
-
-            # on debug mode, print a debug message on terminal
-            if  $flagDebug && ! $_SUCCESS
-            then
-                echo
-                logDebug "Test:$TEST"
-                logDebug "Run:${testTABLE[$idxFUNC]}(${testTABLE[$idxP1]},${testTABLE[$idxP2]},${testTABLE[$idxP3]},${testTABLE[$idxP4]})"
-                logDebug "Ret:'$_RET' compare to Table Ret: '${testTABLE[$idxRET]}' "
-                logDebug "Res:'$_RES' compare to Table Res: '${testTABLE[$idxRES]}' "
-            fi
-
-            # show bar graph or result message.
-            if ! $flagDebug ; then barGraph $TEST $_SUCCESS
-            elif $_SUCCESS  ; then echo -e "${escFGDGREEN}success${NC}."
-            else                   echo -e "${escFGDRED}failure${NC}."
+                flagSUCCESS=false
             fi
         fi
 
-        # next idxID offset from line counter
-        idxID=$((LINE*maxCOLUMNS))
-        # next function offset
-        idxFUNC=$((idxID+columnFILE))
-    done
-else
-    logOk "${escFGIGREEN}No tests from table${NC}"
-fi
+        # check only result
+        if [ "x${testTABLE[ $idxRET ]}" != 'x' ]
+        then
+            if [ "${RETURN}" != "${testTABLE[ $idxRET ]}" ]
+            then
+                flagSUCCESS=false
+            fi
+        fi
+        
+        if $flagSUCCESS
+        then
+            ((countSUCCESS++))
+        else
+            ((countERROR++))
+        fi
 
-# new line after last bar graph
+        # on debug mode, for any error, print the result on terminal.
+        if $flagDebug
+        then
+            # for success...
+            if $flagSUCCESS
+            then
+                echo -e "${escIGREEN}success${escDC}."
+            # for failure...
+            else
+                echo
+                logD "Test: $countTEST"
+                #logD "Run: ${testTABLE[$idxFUNC]}(${testTABLE[$idxP1]},${testTABLE[$idxP2]},${testTABLE[$idxP3]},${testTABLE[$idxP4]})"
+                logD "Run: ${testTABLE[$idxFUNC]}"
+                logD "Ret: $RETURN compare to Table Ret: ${testTABLE[$idxRET]}"
+                logD "Res: ${RESULT} compare to Table Res: ${testTABLE[$idxRES]}"
+                echo -e "         ${escIRED}failure${escDC}."
+                if $flagRetOnFailure ; then _exit $? ; fi
+            fi
+        # not in debug mode.
+        else
+            # show a bar graph,
+            barGraph $countTEST $flagSUCCESS
+        fi
+    fi
+
+    # inc line counter
+    ((countLINE++))
+    # next idxID offset from line counter.
+    idxID=$((countLINE*maxCOLUMNS))
+    # next function offset
+    idxFUNC=$((idxID+columnFILE))
+done
+
+# new line after last bar graph.
 echo
 
-# print success and error counters on terminal
-if [ $_OK  -gt 0 ] ; then logOk   "${_HGREEN}$_OK${_NC} Test(s)" ; fi
-if [ $_ERR -gt 0 ] ; then logFail "${_HRED}$_ERR${_NC} Test(s)"  ; fi
+# print success and error counters on terminal.
+if [ $countSUCCESS  -gt 0 ] ; then logS "${escIGREEN}$countSUCCESS${escDC} Test(s)" ; fi
+if [ $countERROR    -gt 0 ] ; then logE "${escIRED}$countERROR${escDC} Test(s)"     ; fi
 
 ########################################
 # This are is reserved for specific tests before exit from script.
@@ -516,4 +583,5 @@ if [ $_ERR -gt 0 ] ; then logFail "${_HRED}$_ERR${_NC} Test(s)"  ; fi
 ########################################
 
 # Unload Libs, Variables and Functions.
-_exit $_ERR
+_exit $countERROR
+

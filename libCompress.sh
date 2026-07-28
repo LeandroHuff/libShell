@@ -10,7 +10,7 @@
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
 ##
-# @brief    unCompress files.
+# @brief    Estract files from filename.
 # @param    $1          Crompressed filename.
 #           $2..$10     Extra parameters to uncompressor program.
 # @return   0           Success
@@ -20,7 +20,7 @@
 #           103         Unknown compressed method by file extension.
 function unCompress()
 {
-    local err=0
+    local -i err=0
     local source="$1"
     shift
 
@@ -56,7 +56,7 @@ function unCompress()
 #           103         Unknown compressed method by file extension.
 function compress()
 {
-    local err=0
+    local -i err=0
     local destine="$1"
     shift
 
@@ -81,17 +81,13 @@ function compress()
     return $err
 }
 
-##
-# @brief    Exit from Compress program.
-# @param    none
-# @return   0       Success
+##  @brief  Exit from libCompress, unload all variables and functions.
 function libCompressExit()
 {
-    unset -v libCompress
-    unset -f compress
+    # unset variables
+    # unset functions
     unset -f unCompress
-    unset -f libCompressExit
-    return 0
+    unset -f compress
 }
 
 declare libCompress='loaded'

@@ -14,7 +14,7 @@
 function _isNumber()
 {
     local regexFloat='^[+-]?(\d+\.?\d*|\d*\.?\d+)$'
-    if echo -n "$1" | grep -qaoP "${regexFloat}" > /dev/null 2>&1
+    if echo -n "$1" | grep -qaoP "${regexFloat}" &> /dev/null
     then
         true
     else
@@ -28,7 +28,7 @@ function _isZero()
     local regexZero='^[-+]?(0+\.?0*|0*\.?0+)$'
     if _isNumber "$1"
     then
-        if echo -n "$1" | grep -qaoP "${regexZero}" > /dev/null 2>&1
+        if echo -n "$1" | grep -qaoP "${regexZero}" &> /dev/null
         then
             true
         else
@@ -43,7 +43,7 @@ function _isZero()
 function _isFloatZero()
 {
     local regexZero='^[-+]?(0+\.?0*|0*\.?0+)([eE][+-]?0*[1-9]+\d*)?$'
-    if echo -n "$1" | grep -qaoP "${regexZero}" > /dev/null 2>&1
+    if echo -n "$1" | grep -qaoP "${regexZero}" &> /dev/null
     then
         true
     else
@@ -55,7 +55,7 @@ function _isFloatZero()
 function _isFloat()
 {
     local regexFloat='^[-+]?([0-9]+\.?[0-9]*|[0-9]*\.[0-9]+)([eE][+-]?0*[1-9]+\d*)?$'
-    if echo -n "$1" | grep -qaoP "${regexFloat}" > /dev/null 2>&1
+    if echo -n "$1" | grep -qaoP "${regexFloat}" &> /dev/null
     then
         true
     else
@@ -196,24 +196,20 @@ function calcNumber()
     return $err
 }
 
-## @brief   Exit from lib and unload all variables and functions.
+##  @brief  Exit from libMath, unload all variables and functions.
 function libMathExit()
 {
     # unset variables
-    unset -v libMath
-    unset -v regexDouble
-    unset -v regexZero
     # unset functions
-    unset -f _isZero
     unset -f _isNumber
-    unset -f getIntegerFromFloat
-    unset -f getFractionFromFloat
+    unset -f _isZero
     unset -f _isFloatZero
     unset -f _isFloat
-    unset -f isNumberInRange
-    unset -f libMathExit
-    return 0
+    unset -f normalizeNumber
+    unset -f trimZeros
+    unset -f getIntegerFromFloat
+    unset -f getFractionFromFloat
+    unset -f calcNumber
 }
 
-## @brief   Check if libRegex is loaded and available.
 declare libMath='loaded'

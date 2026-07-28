@@ -9,36 +9,34 @@
 # Must be sourced not running
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\033[91mfailure\033[0m: $(basename $0) must be sourced not running." ; exit 1 ; }
 
-declare libRandom=''
+declare -a typeRANDOM=(alpha digit alphanum lowhex uphex mixhex graph space code)
 
-declare -a typeRANDOM=(alpha digit alnum lowhex uphex mixhex graph space date)
-
-# Functions
-function _isInteger() { if echo -n "${1}" | grep -aoP '^[+-]?\d+$' > /dev/null 2>&1 ; then true ; else false ; fi ; }
+declare libRandomRegexInt='^\d+$'
+function libRandomIsInt() { echo -n "${1}" | grep -qaoP "${libRandomRegexInt}" ; }
 
 ## @brief   Generate a randomic alphabetic caracters with length size by parameter.
-function genRandomAlpha() { if _isInteger "$1" ; then tr < /dev/urandom -d -c [:alpha:] | head --bytes=$1 ; else return 1 ; fi ; }
+function genRandomAlpha() { if libRandomIsInt "${1}" ; then tr < /dev/urandom -d -c [:alpha:] | head --bytes=$1 ; else return 1 ; fi ; }
 
 ## @brief   Generate a randomic numeric string with length size by parameter.
-function genRandomNumeric() { if _isInteger "$1" ; then tr < /dev/urandom -d -c [:digit:] | head --bytes=$1 ; else return 1 ; fi ; }
+function genRandomNum() { if libRandomIsInt "${1}" ; then tr < /dev/urandom -d -c [:digit:] | head --bytes=$1 ; else return 1 ; fi ; }
 
 ## @brief   Generate a randomic alphanumeric string with length size by parameter.
-function genRandomAlphaNumeric() { if _isInteger "$1" ; then tr < /dev/urandom -d -c [:alnum:] | head --bytes=$1 ; else return 1 ; fi ; }
+function genRandomAlphaNum() { if libRandomIsInt "${1}" ; then tr < /dev/urandom -d -c [:alnum:] | head --bytes=$1 ; else return 1 ; fi ; }
 
 ## @brief   Generate a randomic lower case hexadecimal string with length size by parameter.
-function genRandomLowerHexadecimalNumber() { if _isInteger "$1" ; then tr < /dev/urandom -d -c [:digit:]"a-f" | head --bytes=$1 ; else return 1 ; fi ; }
+function genRandomLowHex() { if libRandomIsInt "${1}" ; then tr < /dev/urandom -d -c [:digit:]"a-f" | head --bytes=$1 ; else return 1 ; fi ; }
 
 ## @brief   Generate a randomic upper case hexadecimal string with length size by parameter.
-function genRandomUpperHexadecimalNumber() { if _isInteger "$1" ; then tr < /dev/urandom -d -c [:digit:]"A-F" | head --bytes=$1 ; else return 1 ; fi ; }
+function genRandomUpHex() { if libRandomIsInt "${1}" ; then tr < /dev/urandom -d -c [:digit:]"A-F" | head --bytes=$1 ; else return 1 ; fi ; }
 
 ## @brief   Generate a randomic lower|upper case hexadecimal string with length size by parameter.
-function genRandomHexadecimalNumber() { if _isInteger "$1" ; then tr < /dev/urandom -d -c [:xdigit:] | head --bytes=$1 ; else return 1 ; fi ; }
+function genRandomHex() { if libRandomIsInt "${1}" ; then tr < /dev/urandom -d -c [:xdigit:] | head --bytes=$1 ; else return 1 ; fi ; }
 
 ## @brief   Generate randomic graphic caracters string with length size by parameter.
-function genRandomGraph() { if _isInteger "$1" ; then tr < /dev/urandom -d -c [:graph:] | head --bytes=$1 ; else return 1 ; fi ; }
+function genRandomGraph() { if libRandomIsInt "${1}" ; then tr < /dev/urandom -d -c [:graph:] | head --bytes=$1 ; else return 1 ; fi ; }
 
 ## @brief   Generate randomic graphic and space caracters string with length size by parameter.
-function genRandomGraphSpace() { if _isInteger "$1" ; then tr < /dev/urandom -d -c [:graph:][:space:] | head --bytes=$1 ; else return 1 ; fi ; }
+function genRandomGraphSpace() { if libRandomIsInt "${1}" ; then tr < /dev/urandom -d -c [:graph:][:space:] | head --bytes=$1 ; else return 1 ; fi ; }
 
 ##
 # @brief    Generate a date and time string as a timestamp code.
@@ -60,124 +58,89 @@ function genDateTimeAsCode() { echo -n $(date '+%Y-%m-%d-%H-%M-%S-%3N') ; }
 # @param    $2      String size.
 # @result   string  Randomic string.
 # @return   0       Success
-#           1       Empty parameter for random type.
-#           2       Invalid random type, not in typeRANDOM list.
-#           3       Empty string size parameter.
-#           4       String size is not an integer parameter.
-#           N       Error code to generate randomic string.
+#           1       Empty parameter or string size is not an integer.
+#           2       Code type is not valid.
+#           3       Random type fail.
 function genRandom()
 {
-    local err=1
-    local str=''
-    if [ -n "$1" ]
+    declare -i err=1
+    declare random=''
+    if [ -n "$1" ] && ! [ "$1" = 'code' ] && [ -n "$2" ] && libRandomIsInt "$2"
     then
-        if [[ "${typeRANDOM[@]}" =~ "$1" ]]
-        then
-            declare type="$1"
-            if [ -n "$2" ] || [ "${type}" = 'date' ]
-            then
-                if _isInteger "$2" || [ "${type}" = 'date' ]
-                then 
-                    declare -i len=$2
-                    case "$type" in
-                    alpha)  str="$(genRandomAlpha                  $len)" ; err=$? ;;
-                    digit)  str="$(genRandomNumeric                $len)" ; err=$? ;;
-                    alnum)  str="$(genRandomAlphaNumeric           $len)" ; err=$? ;;
-                    lowhex) str="$(genRandomLowerHexadecimalNumber $len)" ; err=$? ;;
-                    uphex)  str="$(genRandomUpperHexadecimalNumber $len)" ; err=$? ;;
-                    mixhex) str="$(genRandomHexadecimalNumber      $len)" ; err=$? ;;
-                    graph)  str="$(genRandomGraph                  $len)" ; err=$? ;;
-                    space)  str="$(genRandomGraphSpace             $len)" ; err=$? ;;
-                    date)   str="$(genDateTimeAsCode)"                  ; err=$? ;;
-                    esac
-                else
-                    err=5
-                fi
-            else
-                err=4
-            fi
-        else
-            err=3
-        fi
+        case "$1" in
+        alpha)    random="$(genRandomAlpha      $2)" ; err=$? ;;
+        digit)    random="$(genRandomNum        $2)" ; err=$? ;;
+        alphanum) random="$(genRandomAlphaNum   $2)" ; err=$? ;;
+        lowhex)   random="$(genRandomLowHex     $2)" ; err=$? ;;
+        uphex)    random="$(genRandomUpHex      $2)" ; err=$? ;;
+        mixhex)   random="$(genRandomHex        $2)" ; err=$? ;;
+        graph)    random="$(genRandomGraph      $2)" ; err=$? ;;
+        space)    random="$(genRandomGraphSpace $2)" ; err=$? ;;
+        *)                                             err=3 ;;
+        esac
+    elif [ "$1" = 'code' ]
+    then
+        random="$(genDateTimeAsCode)"
+        err=$?
     else
         err=2
     fi
-    echo -n "${str}"
+    echo -n "${random}"
     return $err
 }
 
-## @brief   Generate an UUID random hexadecimal number.
+## @brief   Generate an UUID random hexadecimal number as a format.
+# examble:
+# genUUID 8 4 4 4 12
+# 798c5484-06a0-43e7-9114-597ead18af7b
 function genUUID()
 {
-    local err=1
-    local str=''
-    if [ -n "$1" ]
+    declare -i err=1
+    declare uuid=''
+    # not empty and is an integer
+    if [ "x$1" != 'x' ] && echo -n "${1}" | grep -qaoP '^\d+$'
     then
-        declare -a typeUUID=(alpha digit alnum lowhex uphex mixhex)
-        if [[ "${typeUUID[*]}" =~ "$1" ]]
-        then
-            local _type="$1"
-            shift
-            if [ -n "$1" ]
+        uuid="$(genRandom lowhex $1)"
+        err=$?
+        shift
+        while [ "x$1" != 'x' ] && [ $err -eq 0 ]
+        do
+            # is an insteger
+            if echo -n "${1}" | grep -qaoP '^\d+$'
             then
-                if _isInteger $1
-                then
-                    str="$(genRandom ${_type} $1)"
-                    err=$?
-                    shift
-                    [ $err -eq 0 ] || str=''
-                    while [ -n "$1" ] && [ $err -eq 0 ]
-                    do
-                        if _isInteger $1
-                        then
-                            len=$1
-                            str="${str}-$(genRandom $_type $len)"
-                            err=$?
-                        else
-                            str=''
-                            err=6
-                        fi
-                        shift
-                    done
-                else
-                    err=5
-                fi
+                uuid="${uuid}-$(genRandom lowhex $1)"
+                err=$?
             else
-                err=4
+                err=3
             fi
-        else
-            err=3
-        fi
+            shift
+        done
     else
         err=2
     fi
-    echo -n "${str}"
+    [ $err -eq 0 ] && echo -n "${uuid}" || echo -n ''
     return $err
 }
 
-## @brief   Exit from lib and unload all variables and functions.
+##  @brief  Exit from libRandom, unload all variables and functions.
 function libRandomExit()
 {
-    # local variables
-    unset -v libRandom
+    # unset variables
     unset -v typeRANDOM
-    # local functions
-    unset -f _isInteger
+    unset -v libRandomRegexInt
+    # unset functions
     unset -f libRandomIsInt
     unset -f genRandomAlpha
-    unset -f genRandomNumeric
-    unset -f genRandomAlphaNumeric
-    unset -f genRandomLowerHexadecimalNumber
-    unset -f genRandomUpperHexadecimalNumber
-    unset -f genRandomHexadecimalNumber
-    unset -f genRandomString
-    unset -f genRandomStringSpace
+    unset -f genRandomNum
+    unset -f genRandomAlphaNum
+    unset -f genRandomLowHex
+    unset -f genRandomUpHex
+    unset -f genRandomHex
+    unset -f genRandomGraph
+    unset -f genRandomGraphSpace
     unset -f genDateTimeAsCode
     unset -f genRandom
     unset -f genUUID
-    unset -f libRandomExit
-    return 0
 }
 
-## @brief   Check if libRandom is loaded and available.
 declare libRandom='loaded'

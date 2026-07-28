@@ -13,10 +13,10 @@ declare -i  testTYPE=1
 declare -i  minTYPE=0
 declare -i  maxTYPE=3
 declare     flagLoadLib=false
-declare -a  libLIST=(EscCodes Git Log Regex Conn)
+declare -a  libLIST=(EscCodes Git Log Conn)
 declare -a  libLOADED=()
-declare     libPATH="/home/${USER}/libShell"
-declare     testPATH="/home/${USER}/libShell/test"
+declare     libPATH="$HOME/dev/libShell"
+declare     testPATH="$HOME/dev/libShell/test"
 
 declare     flagDebug=false
 

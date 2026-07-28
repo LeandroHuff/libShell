@@ -31,7 +31,7 @@ function saveConfigToFile()
     local tags=()
     local values=()
     local err=0
-    local index
+    local -i index
     local string
     # Check filename parameters.
     [ -n "${filename}" ] || return 1
@@ -86,6 +86,7 @@ function readValuesFromFile()
 {
     declare filename="$1"
     declare -a values=()
+
     if [ -f "${filename}" ]
     then
         while read -e line
@@ -124,10 +125,12 @@ function loadConfigFromFile()
     then
         return 1
     fi
+
     if [ -z "$items" ]
     then
         return 2
     fi
+
     if [ $items -le 0 ]
     then
         return 4
@@ -184,6 +187,7 @@ function loadConfigFromFile()
     return ${#tableCONFIG[@]}
 }
 
+##  @brief  Exit from libConfig, unload all variables and functions.
 function libConfigExit()
 {
     unset -v libConfig
